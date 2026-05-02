@@ -204,7 +204,6 @@ export function QuickSimulationModal({
           </div>
         </div>
       </div>
-      </div>
     </div>,
     document.body
   )
