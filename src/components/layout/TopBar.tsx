@@ -1,9 +1,9 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
-import { Bell, LogOut, TrendingUp, User } from 'lucide-react'
+import { Bell, LogOut, User, Download } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface TopBarProps {
   user: {
@@ -15,6 +15,33 @@ interface TopBarProps {
 
 export function TopBar({ user }: TopBarProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [isInstalled, setIsInstalled] = useState(false)
+
+  useEffect(() => {
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true)
+      return
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setInstallPrompt(e)
+    }
+    window.addEventListener('beforeinstallprompt', handler as any)
+    return () => window.removeEventListener('beforeinstallprompt', handler as any)
+  }, [])
+
+  async function handleInstall() {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const result = await installPrompt.userChoice
+    if (result.outcome === 'accepted') {
+      setInstallPrompt(null)
+      setIsInstalled(true)
+    }
+  }
 
   return (
     <header
@@ -67,6 +94,30 @@ export function TopBar({ user }: TopBarProps) {
         >
           <Bell size={18} />
         </Link>
+
+        {/* Install App Button — only shows when app is installable */}
+        {installPrompt && !isInstalled && (
+          <button
+            onClick={handleInstall}
+            title="Instalar App"
+            style={{
+              height: '38px',
+              paddingLeft: '12px', paddingRight: '12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              borderRadius: '10px',
+              background: '#ccff00',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#050505',
+              fontWeight: 700,
+              fontSize: '12px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Download size={14} />
+            Instalar
+          </button>
+        )}
 
         <button
           onClick={() => setShowMenu(!showMenu)}
