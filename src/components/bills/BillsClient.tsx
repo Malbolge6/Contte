@@ -113,7 +113,7 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
             <X size={16} />
           </button>
         </div>
-        <div style={{ padding: '0 20px 24px' }}>
+        <div style={{ padding: '0 20px 80px' }}>
           {error && (
             <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', color: '#f87171', fontSize: '13px' }}>
               {error}

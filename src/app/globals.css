@@ -241,14 +241,16 @@ body {
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   width: 100%;
   max-width: 500px;
-  max-height: 90vh;
+  max-height: calc(100dvh - 60px);
   overflow-y: auto;
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }
 
 @media (min-width: 768px) {
   .modal-content {
     border-radius: var(--radius-xl);
     max-height: 85vh;
+    padding-bottom: 0;
   }
 }

@@ -77,7 +77,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
           </button>
         </div>
 
-        <div style={{ padding: '0 20px 24px' }}>
+        <div style={{ padding: '0 20px 80px' }}>
           {/* Type toggle */}
           <div
             style={{
