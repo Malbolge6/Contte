@@ -233,28 +233,28 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
         )}
       </div>
 
-      {/* Recent Transactions - White Sheet Style */}
+      {/* Recent Transactions */}
       {data.recentTransactions && data.recentTransactions.length > 0 && (
-        <div className="glass-sheet" style={{ padding: '24px', margin: '0 -16px -16px' }}>
+        <div className="card" style={{ padding: '20px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#111' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>
               Transações Recentes
             </h3>
-            <Link href="/transacoes" style={{ fontSize: '13px', color: '#666', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/transacoes" style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600, textDecoration: 'none' }}>
               Ver todas
             </Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {data.recentTransactions.slice(0, 5).map((tx: any) => {
               const cat = CATEGORIES.find(c => c.value === tx.category)
               return (
                 <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                    <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#f4f4f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
                       {cat?.icon || '💸'}
                     </div>
                     <div>
-                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#111' }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#f8f9fa' }}>
                         {tx.description}
                       </p>
                       <p style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
@@ -262,7 +262,7 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
                       </p>
                     </div>
                   </div>
-                  <p style={{ fontSize: '16px', fontWeight: 800, color: tx.type === 'INCOME' ? '#10b981' : '#111' }}>
+                  <p style={{ fontSize: '15px', fontWeight: 800, color: tx.type === 'INCOME' ? '#4ade80' : '#f87171', flexShrink: 0 }}>
                     {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </p>
                 </div>
