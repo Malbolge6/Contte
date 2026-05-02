@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { X, ChevronDown, Loader2 } from 'lucide-react'
 import { createTransaction } from '@/actions/transactions'
 import { CATEGORIES, PAYMENT_METHODS } from '@/lib/helpers'
+import { createPortal } from 'react-dom'
+import { useEffect } from 'react'
 
 interface AddTransactionModalProps {
   onClose: () => void
@@ -24,6 +26,11 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,7 +62,9 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-content">
         {/* Handle */}
@@ -281,6 +290,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

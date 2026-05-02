@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, X, Target, TrendingUp, Loader2, Trash2, Edit2 } from 'lucide-react'
 import { formatCurrency, CATEGORIES } from '@/lib/helpers'
 import { createGoal, deleteGoal, updateGoal } from '@/actions/goals'
+import { createPortal } from 'react-dom'
 
 interface Goal {
   id: string
@@ -30,6 +31,11 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
   const [targetAmount, setTargetAmount] = useState('')
   const [period, setPeriod] = useState('monthly')
   const [loading, setLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,7 +56,9 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-content">
         <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
@@ -60,7 +68,7 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
             <X size={16} />
           </button>
         </div>
-        <div style={{ padding: '0 20px 24px' }}>
+        <div style={{ padding: '0 20px 80px' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '4px' }}>
               {(['LIMIT', 'SAVINGS'] as const).map(t => (
@@ -110,7 +118,8 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

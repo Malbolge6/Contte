@@ -9,6 +9,8 @@ import {
 } from 'lucide-react'
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
 import { markBillAsPaid, deleteBill, createBill } from '@/actions/bills'
+import { createPortal } from 'react-dom'
+import { useEffect } from 'react'
 
 interface Bill {
   id: string
@@ -74,6 +76,11 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
   const [recurrent, setRecurrent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -103,7 +110,8 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  return (
+  if (!mounted) return null
+  return createPortal(
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-content">
         <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
@@ -181,7 +189,8 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -191,6 +200,11 @@ export function BillsClient({ bills }: BillsClientProps) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const filtered = bills.filter(b => {
     if (activeTab === 'PENDING') return b.status === 'PENDING'

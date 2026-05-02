@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, TrendingUp, AlertTriangle } from 'lucide-react'
 import { formatCurrency, CATEGORIES } from '@/lib/helpers'
+import { createPortal } from 'react-dom'
 
 interface Goal {
   id: string
@@ -29,6 +30,11 @@ export function QuickSimulationModal({
 }: QuickSimulationProps) {
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const simulatedAmount = parseFloat(amount.replace(',', '.')) || 0
 
@@ -56,7 +62,9 @@ export function QuickSimulationModal({
     }
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div className="modal-content" style={{ background: '#0a0a0a' }}>
         <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '12px auto 0' }} />
@@ -78,7 +86,7 @@ export function QuickSimulationModal({
           </button>
         </div>
 
-        <div style={{ padding: '0 24px 30px' }}>
+        <div style={{ padding: '0 24px 80px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '30px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#a1a1aa', marginBottom: '8px' }}>
@@ -196,6 +204,8 @@ export function QuickSimulationModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </div>,
+    document.body
   )
 }
