@@ -13,7 +13,7 @@ import {
 } from 'recharts'
 import { AddTransactionModal } from '@/components/transactions/AddTransactionModal'
 import { QuickSimulationModal } from './QuickSimulationModal'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635', '#fde047', '#818cf8']
 
@@ -34,6 +34,13 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
   const router = useRouter()
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showSimulation, setShowSimulation] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   const firstName = userName?.split(' ')[0] || 'Usuário'
 

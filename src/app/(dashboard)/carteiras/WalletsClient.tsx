@@ -98,6 +98,10 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
     }
   }
 
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) return null
+
   const totalBalance = initialWallets.reduce((sum, w) => sum + w.balance, 0)
 
   return (

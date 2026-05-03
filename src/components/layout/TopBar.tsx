@@ -17,8 +17,10 @@ export function TopBar({ user }: TopBarProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [isInstalled, setIsInstalled] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true)
@@ -42,6 +44,8 @@ export function TopBar({ user }: TopBarProps) {
       setIsInstalled(true)
     }
   }
+
+  if (!mounted) return null
 
   return (
     <header

@@ -32,6 +32,11 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
   const [showAdd, setShowAdd] = useState(false)
   const [showImport, setShowImport] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) return null
 
   async function handleDelete(id: string) {
     if (!confirm('Excluir esta transação?')) return

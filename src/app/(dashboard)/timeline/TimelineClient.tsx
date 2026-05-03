@@ -36,6 +36,13 @@ function getEventIcon(type: string) {
 
 export function TimelineClient({ initialEvents }: TimelineClientProps) {
   const [events, setEvents] = useState(initialEvents)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   return (
     <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '80px' }}>

@@ -32,6 +32,8 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
     setMounted(true)
   }, [])
 
+  if (!mounted) return null
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!amount || !category || !description) {
