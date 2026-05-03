@@ -9,9 +9,6 @@ export default async function GoalsPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect('/login')
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
-  if (user?.plan !== 'PREMIUM') redirect('/premium')
-
   let goals: any[] = []
   try {
     goals = await getGoals()

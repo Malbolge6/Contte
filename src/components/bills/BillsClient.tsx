@@ -206,6 +206,8 @@ export function BillsClient({ bills }: BillsClientProps) {
     setMounted(true)
   }, [])
 
+  if (!mounted) return null
+
   const filtered = bills.filter(b => {
     if (activeTab === 'PENDING') return b.status === 'PENDING'
     return b.status === 'PAID'

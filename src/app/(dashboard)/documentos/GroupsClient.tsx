@@ -62,6 +62,8 @@ export function GroupsClient({ groups }: GroupsClientProps) {
     }
   }
 
+  if (!mounted) return null
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)

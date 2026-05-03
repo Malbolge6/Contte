@@ -126,7 +126,14 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
 export function GoalsClient({ goals }: GoalsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   async function handleDelete(id: string) {
     if (!confirm('Excluir esta meta?')) return

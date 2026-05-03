@@ -10,7 +10,7 @@ export default async function BillsPage() {
   if (!session?.user?.id) redirect('/login')
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
-  if (user?.plan !== 'PREMIUM') redirect('/premium')
+  // Removida restrição para modo produção inicial
 
   let bills: any[] = []
   try {

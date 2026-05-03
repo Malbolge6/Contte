@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   X, Upload, FileText, CheckCircle2, 
   AlertCircle, Loader2, Search, BrainCircuit 
