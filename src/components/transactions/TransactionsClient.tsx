@@ -6,6 +6,8 @@ import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertic
 import { formatCurrency, formatDate, CATEGORIES } from '@/lib/helpers'
 import { deleteTransaction } from '@/actions/transactions'
 import { AddTransactionModal } from './AddTransactionModal'
+import { ImportModal } from './ImportModal'
+import { BrainCircuit } from 'lucide-react'
 
 interface Transaction {
   id: string
@@ -28,6 +30,7 @@ interface TransactionsClientProps {
 export function TransactionsClient({ transactions }: TransactionsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
+  const [showImport, setShowImport] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleDelete(id: string) {
@@ -61,9 +64,32 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
             Todo o seu histórico financeiro
           </p>
         </div>
-        <button onClick={() => setShowAdd(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Plus size={20} />
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => setShowImport(true)}
+            style={{ 
+              height: '40px', paddingLeft: '14px', paddingRight: '14px', 
+              borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', 
+              color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', 
+              display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
+              fontWeight: 700, fontSize: '13px'
+            }}
+          >
+            <BrainCircuit size={16} />
+            Importar
+          </button>
+          <button 
+            onClick={() => setShowAdd(true)} 
+            style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: '#ccff00', color: '#050505', border: 'none', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              cursor: 'pointer', boxShadow: '0 8px 20px rgba(204, 255, 0, 0.2)' 
+            }}
+          >
+            <Plus size={22} />
+          </button>
+        </div>
       </div>
 
       {Object.keys(grouped).length === 0 ? (
@@ -165,6 +191,7 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
 
 
       {showAdd && <AddTransactionModal onClose={() => setShowAdd(false)} />}
+      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
     </div>
   )
 }

@@ -34,13 +34,14 @@ export async function getTransactions(params?: {
   })
 }
 
+import { createTimelineEvent } from './timeline'
+
 export async function createTransaction(data: {
   amount: number
   type: string
   category: string
   description: string
   date: Date
-
   paymentMethod?: string
   installments?: number
   notes?: string
@@ -49,8 +50,9 @@ export async function createTransaction(data: {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
+  const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.amount)
+
   if (data.installments && data.installments > 1) {
-    // Create multiple installments
     const transactions = []
     const installmentAmount = data.amount / data.installments
     const baseDate = new Date(data.date)
@@ -74,6 +76,14 @@ export async function createTransaction(data: {
       )
     }
     await prisma.$transaction(transactions)
+    
+    await createTimelineEvent({
+      type: data.type === 'INCOME' ? 'income' : 'expense',
+      title: data.type === 'INCOME' ? 'Entrada parcelada' : 'Gasto parcelado',
+      description: `Você registrou ${data.description} em ${data.installments}x de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(installmentAmount)}`,
+      amount: data.amount,
+      category: data.category
+    })
   } else {
     await prisma.transaction.create({
       data: {
@@ -81,10 +91,66 @@ export async function createTransaction(data: {
         userId: session.user.id,
       },
     })
+
+    // Create Timeline Event
+    await createTimelineEvent({
+      type: data.type === 'INCOME' ? 'income' : 'expense',
+      title: data.type === 'INCOME' ? 'Nova entrada 💰' : 'Novo gasto 💸',
+      description: data.type === 'INCOME' 
+        ? `Você recebeu ${formattedAmount} de ${data.description}`
+        : `Você gastou ${formattedAmount} no ${data.description}`,
+      amount: data.amount,
+      category: data.category
+    })
+
+    // Smart Logic: Detect high spending in category
+    if (data.type === 'EXPENSE') {
+      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      const categoryTotal = await prisma.transaction.aggregate({
+        where: {
+          userId: session.user.id,
+          category: data.category,
+          type: 'EXPENSE',
+          date: { gte: startOfMonth }
+        },
+        _sum: { amount: true }
+      })
+
+      const total = categoryTotal._sum.amount || 0
+      if (total > 500 && data.amount > 100) { // Simple threshold for demo
+        await createTimelineEvent({
+          type: 'alert',
+          title: 'Gasto acima da média 👀',
+          description: `Seus gastos com ${data.category} estão crescendo rápido este mês. Já somam ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(total)}.`,
+          category: data.category
+        })
+      }
+
+      // Detect repetitions (e.g. iFood)
+      if (data.description.toLowerCase().includes('ifood') || data.description.toLowerCase().includes('uber')) {
+        const repetitions = await prisma.transaction.count({
+          where: {
+            userId: session.user.id,
+            description: { contains: data.description, mode: 'insensitive' },
+            date: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } // last 7 days
+          }
+        })
+
+        if (repetitions >= 3) {
+          await createTimelineEvent({
+            type: 'insight',
+            title: 'Padrão detectado 📊',
+            description: `Você usou ${data.description} ${repetitions} vezes nos últimos 7 dias. Que tal economizar um pouco aqui?`,
+            category: data.category
+          })
+        }
+      }
+    }
   }
 
   revalidatePath('/dashboard')
   revalidatePath('/transacoes')
+  revalidatePath('/timeline')
 }
 
 export async function deleteTransaction(id: string) {

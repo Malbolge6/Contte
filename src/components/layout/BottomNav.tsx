@@ -9,9 +9,9 @@ export function BottomNav() {
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Início' },
+    { href: '/timeline', icon: Activity, label: 'Timeline' },
     { href: '/transacoes', icon: Wallet, label: 'Transações' },
     { href: '/carteiras', icon: CreditCard, label: 'Carteiras' },
-    { href: '/documentos', icon: Folder, label: 'Comprovat.' },
     { href: '/metas', icon: Target, label: 'Metas' },
   ]
 

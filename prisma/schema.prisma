@@ -34,6 +34,7 @@ model User {
   goals        Goal[]
   documents    Document[]
   wallets      Wallet[]
+  timeline     TimelineEvent[]
 }
 
 model Account {
@@ -176,4 +177,21 @@ model Wallet {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  type        String   // expense, income, alert, insight, goal
+  title       String
+  description String
+  amount      Float?
+  category    String?
+  metadata    Json?    // For extra data like category comparison %
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
 }
