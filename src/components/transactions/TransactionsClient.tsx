@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react'
 import { formatCurrency, formatDate, CATEGORIES } from '@/lib/helpers'

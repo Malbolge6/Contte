@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Target, Wallet, CreditCard, Activity } from 'lucide-react'
+import { Home, Target, Wallet, CreditCard, Activity, FileText } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export function BottomNav() {
@@ -17,9 +17,10 @@ export function BottomNav() {
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Início' },
-    { href: '/timeline', icon: Activity, label: 'Timeline' },
-    { href: '/transacoes', icon: Wallet, label: 'Transações' },
-    { href: '/carteiras', icon: CreditCard, label: 'Carteiras' },
+    { href: '/timeline', icon: Activity, label: 'Feed' },
+    { href: '/transacoes', icon: Wallet, label: 'Extrato' },
+    { href: '/contas', icon: FileText, label: 'Contas' },
+    { href: '/carteiras', icon: CreditCard, label: 'Bancos' },
     { href: '/metas', icon: Target, label: 'Metas' },
   ]
 
@@ -45,11 +46,11 @@ export function BottomNav() {
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
               color: isActive ? '#ccff00' : '#71717a',
               textDecoration: 'none', transition: 'all 0.2s ease',
-              width: '64px',
+              width: '58px',
             }}
           >
             <div style={{
-              padding: '8px 16px', borderRadius: '16px',
+              padding: '6px 12px', borderRadius: '12px',
               background: isActive ? 'rgba(204, 255, 0, 0.1)' : 'transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 0.3s ease',
