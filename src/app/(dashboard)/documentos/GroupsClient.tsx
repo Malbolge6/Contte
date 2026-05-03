@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Folder, UploadCloud, Plus, X, FileText, Download, Trash2, Loader2 } from 'lucide-react'
 import { createBillGroup, deleteBillGroup } from '@/actions/groups'
 import { saveDocument, getDocuments, deleteDocument } from '@/actions/documents'
-import { supabase } from '@/lib/supabase'
 import { createPortal } from 'react-dom'
 
 interface Document {
@@ -87,7 +86,6 @@ export function GroupsClient({ groups }: GroupsClientProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Max 10MB
     if (file.size > 10 * 1024 * 1024) {
       setUploadError('Arquivo muito grande. Máximo: 10MB')
       return
@@ -97,33 +95,28 @@ export function GroupsClient({ groups }: GroupsClientProps) {
     setUploadError('')
 
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'bin'
-      const fileName = `${selectedGroup!.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('groupId', selectedGroup!.id)
 
-      const { data, error } = await supabase.storage
-        .from('comprovantes')
-        .upload(fileName, file, { upsert: false })
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const result = await res.json()
 
-      if (error) throw new Error(error.message)
-
-      const { data: urlData } = supabase.storage
-        .from('comprovantes')
-        .getPublicUrl(data.path)
+      if (!res.ok) throw new Error(result.error || 'Erro no upload')
 
       await saveDocument({
-        name: file.name,
-        url: urlData.publicUrl,
-        type: ext,
-        size: file.size,
+        name: result.name,
+        url: result.url,
+        type: result.type,
+        size: result.size,
         billId: selectedGroup!.id,
       })
 
       await loadDocuments()
     } catch (err: any) {
-      setUploadError(err.message || 'Erro ao fazer upload. Verifique se o bucket "comprovantes" foi criado no Supabase.')
+      setUploadError(err.message || 'Erro ao enviar arquivo.')
     } finally {
       setUploading(false)
-      // Reset input
       e.target.value = ''
     }
   }
@@ -149,10 +142,10 @@ export function GroupsClient({ groups }: GroupsClientProps) {
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
-            Meus Grupos
+            Comprovantes
           </h1>
           <p style={{ color: '#a1a1aa', fontSize: '14px', marginTop: '4px' }}>
-            Organize contas e comprovantes
+            Arquivos e comprovantes por grupo
           </p>
         </div>
         {!selectedGroup && (

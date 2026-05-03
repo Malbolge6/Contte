@@ -2,16 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, FileText, Target, Wallet, AlertCircle, Folder } from 'lucide-react'
+import { Home, FileText, Target, Wallet, Folder, CreditCard } from 'lucide-react'
 
 export function BottomNav() {
   const pathname = usePathname()
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Início' },
-    { href: '/transacoes', icon: Wallet, label: 'Transação' },
-    { href: '/contas', icon: FileText, label: 'Contas' },
-    { href: '/documentos', icon: Folder, label: 'Grupos' },
+    { href: '/transacoes', icon: Wallet, label: 'Transações' },
+    { href: '/carteiras', icon: CreditCard, label: 'Carteiras' },
+    { href: '/documentos', icon: Folder, label: 'Comprovat.' },
     { href: '/metas', icon: Target, label: 'Metas' },
   ]
 
