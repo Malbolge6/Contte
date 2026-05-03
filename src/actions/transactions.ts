@@ -109,7 +109,7 @@ export async function getDashboardData() {
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
-  const [currentMonthTx, lastMonthTx, pendingBills, overdueBills, goals] = await Promise.all([
+  const [currentMonthTx, lastMonthTx, pendingBills, overdueBills, goals, wallets] = await Promise.all([
     prisma.transaction.findMany({
       where: {
         userId: session.user.id,
@@ -141,8 +141,13 @@ export async function getDashboardData() {
     }),
     prisma.goal.findMany({
       where: { userId: session.user.id }
+    }),
+    prisma.wallet.findMany({
+      where: { userId: session.user.id }
     })
   ])
+
+  const walletBalance = wallets.reduce((sum, w) => sum + w.balance, 0)
 
   const currentIncome = currentMonthTx
     .filter(t => t.type === 'INCOME')
@@ -187,7 +192,7 @@ export async function getDashboardData() {
   }
 
   return {
-    balance: currentIncome - currentExpense,
+    balance: walletBalance,
     currentIncome,
     currentExpense,
     lastIncome,
@@ -199,5 +204,6 @@ export async function getDashboardData() {
     monthlyData,
     recentTransactions: currentMonthTx.slice(0, 5),
     goals,
+    wallets,
   }
 }
