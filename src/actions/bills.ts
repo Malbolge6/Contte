@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createTimelineEvent } from './timeline'
 
 export async function getBills(status?: string) {
   const session = await getServerSession(authOptions)
@@ -62,15 +63,22 @@ export async function createBill(data: {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  await prisma.bill.create({
+  const bill = await prisma.bill.create({
     data: {
       ...data,
       userId: session.user.id,
     },
   })
 
+  await createTimelineEvent({
+    type: 'alert',
+    title: 'Nova conta agendada 📅',
+    description: `Você cadastrou a conta "${data.name}" no valor de ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.amount)} para o dia ${new Date(data.dueDate).toLocaleDateString('pt-BR')}.`,
+  })
+
   revalidatePath('/contas')
   revalidatePath('/dashboard')
+  revalidatePath('/timeline')
 }
 
 export async function updateBill(id: string, data: Partial<{
@@ -94,6 +102,7 @@ export async function updateBill(id: string, data: Partial<{
 
   revalidatePath('/contas')
   revalidatePath('/dashboard')
+  revalidatePath('/timeline')
 }
 
 export async function markBillAsPaid(id: string) {
@@ -128,8 +137,17 @@ export async function markBillAsPaid(id: string) {
     },
   })
 
+  await createTimelineEvent({
+    type: 'expense',
+    title: 'Conta Paga! ✅',
+    description: `A conta "${bill.name}" foi marcada como paga. Menos uma preocupação!`,
+    amount: bill.amount,
+    category: bill.category,
+  })
+
   revalidatePath('/contas')
   revalidatePath('/dashboard')
+  revalidatePath('/timeline')
 }
 
 export async function deleteBill(id: string) {
