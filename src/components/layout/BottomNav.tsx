@@ -2,10 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, FileText, Target, Wallet, Folder, CreditCard } from 'lucide-react'
+import { Home, Target, Wallet, CreditCard, Activity } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export function BottomNav() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Início' },
