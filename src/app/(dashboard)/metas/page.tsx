@@ -10,9 +10,15 @@ export default async function GoalsPage() {
   if (!session?.user?.id) redirect('/login')
 
   let goals: any[] = []
+  let wallets: any[] = []
   try {
-    goals = await getGoals()
+    const [goalsData, walletsData] = await Promise.all([
+      getGoals(),
+      prisma.wallet.findMany({ where: { userId: session.user.id } })
+    ])
+    goals = goalsData
+    wallets = walletsData
   } catch {}
 
-  return <GoalsClient goals={goals} />
+  return <GoalsClient goals={goals} wallets={wallets} />
 }

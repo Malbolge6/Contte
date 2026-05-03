@@ -2,9 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, X, Target, TrendingUp, Loader2, Trash2, Edit2 } from 'lucide-react'
+import { 
+  Plus, X, Target, TrendingUp, Loader2, 
+  Trash2, Edit2, ChevronRight, ArrowUpCircle, 
+  ArrowDownCircle, Wallet as WalletIcon, History, Sparkles, CheckCircle2
+} from 'lucide-react'
 import { formatCurrency, CATEGORIES } from '@/lib/helpers'
-import { createGoal, deleteGoal, updateGoal } from '@/actions/goals'
+import { createGoal, deleteGoal } from '@/actions/goals'
+import { addGoalContribution, getGoalContributions } from '@/actions/goals_extra'
 import { createPortal } from 'react-dom'
 
 interface Goal {
@@ -18,8 +23,171 @@ interface Goal {
   period: string
 }
 
+interface Wallet {
+  id: string
+  name: string
+  balance: number
+  color?: string | null
+}
+
 interface GoalsClientProps {
   goals: Goal[]
+  wallets: Wallet[]
+}
+
+// --- Modals ---
+
+function GoalDetailsModal({ goal, wallets, onClose }: { goal: Goal; wallets: Wallet[]; onClose: () => void }) {
+  const router = useRouter()
+  const [contributions, setContributions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAddMoney, setShowAddMoney] = useState(false)
+  const [addType, setAddType] = useState<'ADD' | 'SUBTRACT'>('ADD')
+  const [amount, setAmount] = useState('')
+  const [selectedWalletId, setSelectedWalletId] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await getGoalContributions(goal.id)
+        setContributions(data)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [goal.id])
+
+  async function handleContribution(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    try {
+      await addGoalContribution({
+        goalId: goal.id,
+        amount: parseFloat(amount),
+        type: addType,
+        walletId: selectedWalletId || undefined
+      })
+      router.refresh()
+      onClose()
+    } catch (err) {
+      alert('Erro ao registrar aporte')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return createPortal(
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
+        
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div>
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>{goal.name}</h2>
+              <p style={{ fontSize: '13px', color: '#71717a' }}>{goal.type === 'LIMIT' ? 'Controle de Gastos' : 'Meta de Economia'}</p>
+            </div>
+            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={18} />
+            </button>
+          </div>
+
+          <div style={{ 
+            background: 'linear-gradient(135deg, rgba(204, 255, 0, 0.1) 0%, rgba(204, 255, 0, 0.02) 100%)',
+            padding: '24px', borderRadius: '24px', border: '1px solid rgba(204, 255, 0, 0.15)',
+            textAlign: 'center', marginBottom: '24px'
+          }}>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: '#ccff00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Saldo Atual</p>
+            <p style={{ fontSize: '36px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>{formatCurrency(goal.currentAmount)}</p>
+            {goal.targetAmount && (
+              <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '8px' }}>Objetivo final: {formatCurrency(goal.targetAmount)}</p>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '32px' }}>
+            <button onClick={() => { setAddType('ADD'); setShowAddMoney(true); }} style={{ 
+              padding: '16px', borderRadius: '20px', border: 'none', background: 'rgba(74, 222, 128, 0.1)',
+              color: '#4ade80', fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'
+            }}>
+              <ArrowUpCircle size={24} />
+              Guardar
+            </button>
+            <button onClick={() => { setAddType('SUBTRACT'); setShowAddMoney(true); }} style={{ 
+              padding: '16px', borderRadius: '20px', border: 'none', background: 'rgba(248, 113, 113, 0.1)',
+              color: '#f87171', fontWeight: 800, fontSize: '14px', cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px'
+            }}>
+              <ArrowDownCircle size={24} />
+              Resgatar
+            </button>
+          </div>
+
+          {showAddMoney && (
+            <div className="fade-in" style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '32px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '16px' }}>
+                {addType === 'ADD' ? 'Quanto quer guardar?' : 'Quanto quer retirar?'}
+              </h3>
+              <form onSubmit={handleContribution} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <input 
+                  type="number" step="0.01" className="input-field" placeholder="R$ 0,00" autoFocus
+                  value={amount} onChange={e => setAmount(e.target.value)} required
+                />
+                
+                <label style={{ fontSize: '12px', color: '#71717a', fontWeight: 600 }}>De qual banco/carteira?</label>
+                <select className="input-field" value={selectedWalletId} onChange={e => setSelectedWalletId(e.target.value)}>
+                  <option value="">Apenas registro virtual</option>
+                  {wallets.map(w => (
+                    <option key={w.id} value={w.id} style={{ background: '#16161f' }}>
+                      {w.name} (Saldo: {formatCurrency(w.balance)})
+                    </option>
+                  ))}
+                </select>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                  <button type="button" onClick={() => setShowAddMoney(false)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 700 }}>Cancelar</button>
+                  <button type="submit" disabled={submitting} style={{ flex: 2, padding: '12px', borderRadius: '12px', border: 'none', background: addType === 'ADD' ? '#4ade80' : '#f87171', color: '#000', fontWeight: 800 }}>
+                    {submitting ? <Loader2 className="animate-spin" size={18} /> : 'Confirmar'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <History size={18} color="#71717a" />
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>Histórico</h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 className="animate-spin" color="#ccff00" /></div>
+            ) : contributions.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#52525b', fontSize: '13px', padding: '20px' }}>Nenhum aporte registrado ainda.</p>
+            ) : (
+              contributions.map((c, i) => (
+                <div key={c.id} style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {c.type === 'ADD' ? <ArrowUpCircle size={14} color="#4ade80" /> : <ArrowDownCircle size={14} color="#f87171" />}
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{c.type === 'ADD' ? 'Depósito' : 'Resgate'}</span>
+                    </div>
+                    <p style={{ fontSize: '11px', color: '#71717a', marginTop: '2px' }}>{new Date(c.date).toLocaleDateString('pt-BR')} {c.walletName && `• ${c.walletName}`}</p>
+                  </div>
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: c.type === 'ADD' ? '#4ade80' : '#f87171' }}>
+                    {c.type === 'ADD' ? '+' : '-'} {formatCurrency(c.amount)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
 }
 
 function AddGoalModal({ onClose }: { onClose: () => void }) {
@@ -84,7 +252,7 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Nome</label>
-              <input type="text" className="input-field" placeholder="Ex: Não gastar mais com delivery" value={name} onChange={e => setName(e.target.value)} required />
+              <input type="text" className="input-field" placeholder="Ex: Viagem de Fim de Ano" value={name} onChange={e => setName(e.target.value)} required />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Categoria</label>
@@ -95,25 +263,18 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
             </div>
             {type === 'LIMIT' ? (
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Limite (R$)</label>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Limite Mensal (R$)</label>
                 <input type="number" step="0.01" className="input-field" placeholder="Valor máximo" value={limitAmount} onChange={e => setLimitAmount(e.target.value)} />
               </div>
             ) : (
               <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Meta de economia (R$)</label>
-                <input type="number" step="0.01" className="input-field" placeholder="Valor alvo" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} />
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Valor Alvo (R$)</label>
+                <input type="number" step="0.01" className="input-field" placeholder="Quanto quer juntar?" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} />
               </div>
             )}
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Período</label>
-              <select className="input-field" value={period} onChange={e => setPeriod(e.target.value)} style={{ appearance: 'none' }}>
-                <option value="monthly" style={{ background: '#16161f' }}>Mensal</option>
-                <option value="yearly" style={{ background: '#16161f' }}>Anual</option>
-              </select>
-            </div>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px', opacity: loading ? 0.8 : 1 }}>
+            <button type="submit" className="btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>
               {loading && <Loader2 size={18} className="animate-spin" />}
-              Criar meta
+              Criar meta agora
             </button>
           </form>
         </div>
@@ -123,9 +284,12 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-export function GoalsClient({ goals }: GoalsClientProps) {
+// --- Main Client ---
+
+export function GoalsClient({ goals, wallets }: GoalsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
   const [mounted, setMounted] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -135,7 +299,8 @@ export function GoalsClient({ goals }: GoalsClientProps) {
 
   if (!mounted) return null
 
-  async function handleDelete(id: string) {
+  async function handleDelete(e: React.MouseEvent, id: string) {
+    e.stopPropagation()
     if (!confirm('Excluir esta meta?')) return
     setDeletingId(id)
     try {
@@ -147,37 +312,34 @@ export function GoalsClient({ goals }: GoalsClientProps) {
   }
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px' }}>
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
+      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#f8f9fa', letterSpacing: '-0.5px' }}>
-            Metas Financeiras
-          </h1>
-          <p style={{ color: '#6b6b80', fontSize: '13px', marginTop: '4px' }}>
-            Controle limites e objetivos de economia
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>Metas</h1>
+            <div style={{ padding: '4px 8px', borderRadius: '8px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>Cofre</div>
+          </div>
+          <p style={{ color: '#71717a', fontSize: '13px', fontWeight: 500 }}>
+            Planeje o seu futuro, passo a passo.
           </p>
         </div>
-        <button onClick={() => setShowAdd(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Plus size={20} />
+        <button onClick={() => setShowAdd(true)} style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+          <Plus size={24} />
         </button>
       </div>
 
-      {goals.length === 0 ? (
-        <div className="card" style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '32px', marginBottom: '12px' }}>🎯</p>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f8f9fa', marginBottom: '8px' }}>
-            Defina suas metas
-          </h3>
-          <p style={{ fontSize: '13px', color: '#6b6b80', marginBottom: '20px' }}>
-            Crie limites por categoria ou metas de economia
-          </p>
-          <button className="btn-accent" onClick={() => setShowAdd(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <Plus size={16} /> Criar primeira meta
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {goals.map(goal => {
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+        {goals.length === 0 ? (
+          <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '30px' }}>
+            <Target size={48} color="#ccff00" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>Defina seu primeiro alvo</h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', marginBottom: '24px' }}>Economize para uma viagem ou controle seus gastos mensais.</p>
+            <button className="btn-primary" onClick={() => setShowAdd(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={18} /> Criar meta
+            </button>
+          </div>
+        ) : (
+          goals.map(goal => {
             const cat = CATEGORIES.find(c => c.value === goal.category)
             const max = goal.type === 'LIMIT' ? goal.limitAmount : goal.targetAmount
             const progress = max && max > 0 ? Math.min((goal.currentAmount / max) * 100, 100) : 0
@@ -185,88 +347,109 @@ export function GoalsClient({ goals }: GoalsClientProps) {
             const isComplete = goal.type === 'SAVINGS' && max && goal.currentAmount >= max
 
             return (
-              <div key={goal.id} className="card" style={{ padding: '18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div 
+                key={goal.id} 
+                onClick={() => setSelectedGoal(goal)}
+                className="scale-in card" 
+                style={{ 
+                  padding: '20px', cursor: 'pointer', position: 'relative', 
+                  overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)',
+                  background: 'rgba(255,255,255,0.03)'
+                }}
+              >
+                {/* Visual Accent */}
+                <div style={{ position: 'absolute', top: 0, right: 0, width: '100px', height: '100px', background: `radial-gradient(circle at top right, ${goal.type === 'LIMIT' ? 'rgba(248, 113, 113, 0.05)' : 'rgba(74, 222, 128, 0.05)'}, transparent)`, zIndex: 0 }}></div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
-                      width: '40px', height: '40px', borderRadius: '12px',
-                      background: goal.type === 'LIMIT' ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
+                      width: '48px', height: '48px', borderRadius: '16px',
+                      background: goal.type === 'LIMIT' ? 'rgba(248,113,113,0.1)' : 'rgba(74,222,128,0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px',
+                      border: '1px solid rgba(255,255,255,0.05)'
                     }}>
-                      {cat?.icon || (goal.type === 'LIMIT' ? '🚫' : '🎯')}
+                      {cat?.icon || '🎯'}
                     </div>
                     <div>
-                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8f9fa' }}>{goal.name}</h3>
-                      <p style={{ fontSize: '12px', color: '#6b6b80', marginTop: '2px' }}>
-                        {goal.type === 'LIMIT' ? 'Limite' : 'Meta de economia'} · {goal.period === 'monthly' ? 'Mensal' : 'Anual'}
-                      </p>
+                      <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#fff' }}>{goal.name}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: goal.type === 'LIMIT' ? '#f87171' : '#4ade80', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          {goal.type === 'LIMIT' ? 'Limite' : 'Economia'}
+                        </span>
+                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#52525b' }}></span>
+                        <span style={{ fontSize: '12px', color: '#71717a' }}>{goal.period === 'monthly' ? 'Mensal' : 'Anual'}</span>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {isComplete && <span style={{ fontSize: '18px' }}>🏆</span>}
-                    {isOverLimit && <span style={{ fontSize: '18px' }}>⚠️</span>}
-                    <button
-                      onClick={() => handleDelete(goal.id)}
-                      disabled={deletingId === goal.id}
-                      style={{
-                        width: '30px', height: '30px', borderRadius: '8px',
-                        background: 'rgba(239,68,68,0.08)', border: 'none',
-                        cursor: 'pointer', color: '#6b6b80',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      {deletingId === goal.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                    </button>
-                  </div>
+                  <button
+                    onClick={(e) => handleDelete(e, goal.id)}
+                    disabled={deletingId === goal.id}
+                    style={{
+                      width: '32px', height: '32px', borderRadius: '10px',
+                      background: 'rgba(248,113,113,0.05)', border: 'none',
+                      cursor: 'pointer', color: '#52525b',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {deletingId === goal.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  </button>
                 </div>
 
                 {max && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '13px', color: '#a0a0b0' }}>
-                        {formatCurrency(goal.currentAmount)} de {formatCurrency(max)}
-                      </span>
-                      <span style={{
-                        fontSize: '13px', fontWeight: 700,
-                        color: isOverLimit ? '#f87171' : isComplete ? '#4ade80' : '#ccff00',
-                      }}>
-                        {progress.toFixed(0)}%
-                      </span>
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
+                      <div>
+                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', marginBottom: '2px' }}>Progresso</p>
+                        <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>
+                          {formatCurrency(goal.currentAmount)} <span style={{ fontSize: '13px', fontWeight: 500, color: '#52525b' }}>/ {formatCurrency(max)}</span>
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <p style={{ 
+                          fontSize: '20px', fontWeight: 900, 
+                          color: isOverLimit ? '#f87171' : isComplete ? '#4ade80' : '#ccff00',
+                        }}>
+                          {progress.toFixed(0)}%
+                        </p>
+                      </div>
                     </div>
-                    <div className="progress-bar">
+                    <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
                       <div
-                        className="progress-fill"
                         style={{
-                          width: `${progress}%`,
-                          background: isOverLimit
-                            ? 'linear-gradient(90deg, #f87171, #ef4444)'
-                            : isComplete
-                              ? 'linear-gradient(90deg, #4ade80, #22c55e)'
-                              : undefined,
+                          height: '100%', width: `${progress}%`,
+                          background: isOverLimit ? '#f87171' : isComplete ? '#4ade80' : '#ccff00',
+                          borderRadius: '10px', transition: 'width 1s ease-out',
+                          boxShadow: `0 0 15px ${isOverLimit ? '#f8717140' : isComplete ? '#4ade8040' : '#ccff0040'}`
                         }}
                       />
                     </div>
                     {isOverLimit && (
-                      <p style={{ fontSize: '12px', color: '#f87171', marginTop: '8px' }}>
-                        Limite excedido por {formatCurrency(goal.currentAmount - max)}
-                      </p>
+                      <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171', fontSize: '12px', fontWeight: 600 }}>
+                        <AlertCircle size={14} />
+                        Excedido em {formatCurrency(goal.currentAmount - max)}
+                      </div>
                     )}
                     {isComplete && (
-                      <p style={{ fontSize: '12px', color: '#4ade80', marginTop: '8px' }}>
-                        Meta atingida! Parabéns! 🎉
-                      </p>
+                      <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '6px', color: '#4ade80', fontSize: '12px', fontWeight: 600 }}>
+                        <CheckCircle2 size={14} />
+                        Meta alcançada! Parabéns!
+                      </div>
                     )}
-                  </>
+                  </div>
                 )}
+                
+                <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa', fontSize: '12px', fontWeight: 600 }}>
+                  <History size={14} />
+                  Clique para ver detalhes e aportes
+                </div>
               </div>
             )
-          })}
-        </div>
-      )}
-
-
+          })
+        )}
+      </div>
 
       {showAdd && <AddGoalModal onClose={() => setShowAdd(false)} />}
+      {selectedGoal && <GoalDetailsModal goal={selectedGoal} wallets={wallets} onClose={() => setSelectedGoal(null)} />}
     </div>
   )
 }

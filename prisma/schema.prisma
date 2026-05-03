@@ -35,6 +35,7 @@ model User {
   documents    Document[]
   wallets      Wallet[]
   timeline     TimelineEvent[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Account {
@@ -145,6 +146,30 @@ model Goal {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contributions GoalContribution[]
+}
+
+model GoalContribution {
+  id        String   @id @default(cuid())
+  amount    Float
+  type      String   // ADD | SUBTRACT
+  walletId  String?
+  walletName String?
+  date      DateTime @default(now())
+
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Document {

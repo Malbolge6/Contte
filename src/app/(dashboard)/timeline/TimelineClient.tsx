@@ -5,7 +5,7 @@ import {
   TrendingUp, TrendingDown, AlertCircle, 
   Target, Activity, Clock, DollarSign, 
   ShoppingBag, Utensils, Car, House, 
-  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal
+  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 
@@ -45,30 +45,59 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
   if (!mounted) return null
 
   return (
-    <div className="fade-in" style={{ paddingTop: '12px', paddingBottom: '100px', maxWidth: '500px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '28px', padding: '0 4px' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px', marginBottom: '4px' }}>
-          Feed Social
-        </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ccff00', boxShadow: '0 0 10px #ccff00' }}></div>
-          <p style={{ color: '#a1a1aa', fontSize: '14px', fontWeight: 500 }}>
-            Atividade em tempo real
+    <div className="fade-in" style={{ paddingTop: '12px', paddingBottom: '120px', maxWidth: '500px', margin: '0 auto' }}>
+      {/* Stories Section */}
+      <div style={{ marginBottom: '32px', overflowX: 'auto', display: 'flex', gap: '12px', padding: '0 4px', scrollbarWidth: 'none' }} className="no-scrollbar">
+        {[
+          { label: 'Meu Dia', icon: '☀️', color: '#ccff00' },
+          { label: 'Dicas', icon: '💡', color: '#38bdf8' },
+          { label: 'Economia', icon: '💰', color: '#4ade80' },
+          { label: 'Alertas', icon: '⚠️', color: '#facc15' },
+          { label: 'Metas', icon: '🎯', color: '#c084fc' },
+        ].map((story, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <div style={{ 
+              width: '68px', height: '68px', borderRadius: '50%', 
+              padding: '3px', border: `2px solid ${story.color}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <div style={{ 
+                width: '100%', height: '100%', borderRadius: '50%', 
+                background: 'rgba(255,255,255,0.05)', display: 'flex', 
+                alignItems: 'center', justifyContent: 'center', fontSize: '24px' 
+              }}>
+                {story.icon}
+              </div>
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>{story.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginBottom: '24px', padding: '0 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>
+            Seu Feed
+          </h1>
+          <p style={{ color: '#71717a', fontSize: '13px', fontWeight: 500 }}>
+            Vida financeira em tempo real
           </p>
+        </div>
+        <div style={{ padding: '8px 12px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Sparkles size={14} />
+          Personalizado
         </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {events.length === 0 ? (
           <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '30px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(204, 255, 0, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <Activity size={40} color="#ccff00" style={{ opacity: 0.5 }} />
-            </div>
+            <Activity size={48} color="#ccff00" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
-              Silêncio no feed...
+              O feed está vindo...
             </h3>
-            <p style={{ fontSize: '15px', color: '#a1a1aa', lineHeight: '1.6' }}>
-              Suas movimentações e insights aparecerão aqui com um visual incrível.
+            <p style={{ fontSize: '14px', color: '#a1a1aa' }}>
+              Suas movimentações e dicas personalizadas aparecerão aqui.
             </p>
           </div>
         ) : (
@@ -79,87 +108,83 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
                 key={event.id} 
                 className="scale-in" 
                 style={{ 
-                  animationDelay: `${index * 0.1}s`,
+                  animationDelay: `${index * 0.08}s`,
                   background: 'rgba(255,255,255,0.03)',
-                  borderRadius: '24px',
+                  borderRadius: '28px',
                   border: '1px solid rgba(255,255,255,0.06)',
-                  overflow: 'hidden',
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
+                  position: 'relative'
                 }}
               >
-                {/* Header */}
-                <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ 
-                      width: '42px', height: '42px', borderRadius: '50%', 
-                      background: gradient, display: 'flex', 
-                      alignItems: 'center', justifyContent: 'center',
-                      boxShadow: `0 4px 15px ${color}40`
-                    }}>
-                      <Icon size={20} color="#000" strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Contte AI</h3>
-                        <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <CheckCircle2 size={10} color="#fff" />
-                        </div>
+                {/* User Info / Header */}
+                <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ 
+                    width: '40px', height: '40px', borderRadius: '50%', 
+                    background: gradient, display: 'flex', 
+                    alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 4px 12px ${color}30`
+                  }}>
+                    <Icon size={18} color="#000" strokeWidth={2.5} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Contte Intelligence</span>
+                      <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <CheckCircle2 size={10} color="#fff" />
                       </div>
-                      <p style={{ fontSize: '12px', color: '#71717a' }}>@{event.type} • {new Date(event.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
+                    <p style={{ fontSize: '11px', color: '#71717a' }}>@{event.type} • {new Date(event.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
                   <button style={{ background: 'transparent', border: 'none', color: '#52525b' }}>
                     <MoreHorizontal size={20} />
                   </button>
                 </div>
 
-                {/* Content */}
-                <div style={{ padding: '0 16px 16px' }}>
-                  <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#fff', marginBottom: '8px', lineHeight: '1.3' }}>
+                {/* Main Content Area */}
+                <div style={{ padding: '0 20px 20px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '8px', lineHeight: '1.4' }}>
                     {event.title}
                   </h2>
-                  <p style={{ fontSize: '15px', color: '#d4d4d8', lineHeight: '1.5', marginBottom: event.amount ? '16px' : '8px' }}>
+                  <p style={{ fontSize: '15px', color: '#d4d4d8', lineHeight: '1.6', marginBottom: event.amount ? '16px' : '0' }}>
                     {event.description}
                   </p>
 
                   {event.amount && (
                     <div style={{ 
-                      background: 'linear-gradient(135deg, rgba(204, 255, 0, 0.1) 0%, rgba(204, 255, 0, 0.02) 100%)',
-                      padding: '20px', borderRadius: '20px', border: '1px solid rgba(204, 255, 0, 0.15)',
-                      textAlign: 'center'
+                      background: 'rgba(255,255,255,0.02)',
+                      padding: '24px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)',
+                      textAlign: 'center', position: 'relative', overflow: 'hidden'
                     }}>
-                      <p style={{ fontSize: '12px', fontWeight: 700, color: '#ccff00', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                        Valor do Evento
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: gradient }}></div>
+                      <p style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+                        Valor da Movimentação
                       </p>
-                      <p style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>
+                      <p style={{ fontSize: '36px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
                         {formatCurrency(event.amount)}
                       </p>
+                      <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', fontSize: '11px', color: '#a1a1aa' }}>
+                        <Activity size={12} />
+                        Analisado por IA
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Footer Interaction */}
-                <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f87171' }}>
-                    <Heart size={20} fill="#f87171" strokeWidth={0} />
-                    <span style={{ fontSize: '13px', fontWeight: 700 }}>24</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#a1a1aa' }}>
-                    <MessageCircle size={20} />
-                    <span style={{ fontSize: '13px', fontWeight: 600 }}>Comentar</span>
-                  </div>
-                  <div style={{ marginLeft: 'auto' }}>
-                    <Share2 size={18} color="#71717a" />
-                  </div>
+                {/* Quick Action Button */}
+                <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#52525b', textTransform: 'uppercase' }}>
+                    {formatDate(event.createdAt)}
+                  </span>
+                  <button style={{ 
+                    display: 'flex', alignItems: 'center', gap: '6px', 
+                    background: 'transparent', border: 'none', color: '#ccff00', 
+                    fontSize: '13px', fontWeight: 700, cursor: 'pointer' 
+                  }}>
+                    Ver Detalhes
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
-
-                {/* Category Tag */}
-                {event.category && (
-                  <div style={{ position: 'absolute', top: '16px', right: '50px', fontSize: '10px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '20px', color: '#a1a1aa', fontWeight: 700, textTransform: 'uppercase' }}>
-                    {event.category}
-                  </div>
-                )}
               </div>
             )
           })

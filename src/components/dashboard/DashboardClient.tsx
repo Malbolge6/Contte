@@ -3,8 +3,9 @@
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
 import {
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Clock, Plus, Activity
+  ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell
 } from 'lucide-react'
+import { subscribeToPush } from '@/actions/push'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -44,6 +45,38 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
 
   const firstName = userName?.split(' ')[0] || 'Usuário'
 
+  async function handleNotificationSubscription() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('Seu dispositivo não suporta notificações.')
+      return
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js')
+      const permission = await Notification.requestPermission()
+      
+      if (permission === 'granted') {
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: 'BPaYV_y2p0I6pUfG3Gj6L7v6_p6z_H_h1p_E_T_O_Y_N_p_G_h_E_1_G_g_I_E' // Public VAPID Key (Placeholder)
+        })
+        
+        const subJson = JSON.parse(JSON.stringify(subscription))
+        await subscribeToPush({
+          endpoint: subJson.endpoint,
+          keys: {
+            p256dh: subJson.keys.p256dh,
+            auth: subJson.keys.auth
+          }
+        })
+        alert('Notificações ativadas com sucesso! 🔔')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Erro ao ativar notificações.')
+    }
+  }
+
   if (!data) {
     return (
       <div className="fade-in" style={{ padding: '20px 0' }}>
@@ -69,22 +102,34 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
   return (
     <div className="fade-in" style={{ paddingTop: '8px' }}>
       {/* Greeting Area */}
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <p style={{ color: '#a1a1aa', fontSize: '15px' }}>{getGreeting()},</p>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
-            {firstName}
-          </h1>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+            👤
+          </div>
+          <div>
+            <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>
+              {getGreeting()}, {firstName}
+            </h1>
+            <p style={{ color: '#71717a', fontSize: '12px', fontWeight: 500 }}>Resumo de hoje</p>
+          </div>
         </div>
-        <button onClick={() => {
-          if (!isPremium) {
-            router.push('/premium')
-            return
-          }
-          setShowAddTransaction(true)
-        }} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Plus size={20} />
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={handleNotificationSubscription}
+            style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', cursor: 'pointer'
+            }}
+          >
+            <Bell size={18} />
+          </button>
+          <button onClick={() => setShowAddTransaction(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Plus size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Main Balance Card - Premium Fintech Gradient */}

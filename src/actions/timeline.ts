@@ -45,6 +45,12 @@ const TIPS = [
   "📊 Insights: O início do mês é o melhor momento para definir seu teto de gastos por categoria.",
   "🚀 Dica Premium: Use a aba 'Carteiras' para ver o saldo real somado de todos os seus bancos.",
   "💸 Evite compras por impulso: Espere 24 horas antes de fechar aquele carrinho online.",
+  "☕ O 'efeito café': R$ 7 por dia em café parecem pouco, mas são R$ 2.500 por ano!",
+  "🧘 Paz financeira: Ter uma reserva de emergência é o primeiro passo para a liberdade.",
+  "📉 Renegocie: Ligue para sua operadora de internet e peça um desconto. Funciona 80% das vezes!",
+  "🍱 Marmita é vida: Além de saudável, economiza uma fortuna em almoços fora.",
+  "🛒 Regra do Mercado: Nunca vá às compras com fome. Você gastará 20% a mais.",
+  "📅 Dia de Faxina: Tire 30 min hoje para cancelar assinaturas que você não usa mais.",
 ]
 
 export async function generateDailyTip() {
