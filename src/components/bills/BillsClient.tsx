@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   Plus, Copy, CheckCircle, Clock, AlertCircle,
   X, ChevronDown, Loader2, Trash2, Edit2,
-  QrCode, Barcode
+  QrCode, Barcode, FileText
 } from 'lucide-react'
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
 import { markBillAsPaid, deleteBill, createBill } from '@/actions/bills'
@@ -248,9 +248,24 @@ export function BillsClient({ bills }: BillsClientProps) {
             Gerencie e pague suas contas rapidamente
           </p>
         </div>
-        <button onClick={() => setShowAddModal(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Plus size={20} />
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={() => router.push('/documentos')}
+            style={{ 
+              height: '40px', padding: '0 16px', borderRadius: '12px', 
+              background: 'rgba(255, 255, 255, 0.05)', color: '#fff', 
+              border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer',
+              fontSize: '13px', fontWeight: 700
+            }}
+          >
+            <FileText size={18} />
+            Comprovantes
+          </button>
+          <button onClick={() => setShowAddModal(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <Plus size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Summary */}

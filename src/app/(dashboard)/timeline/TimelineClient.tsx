@@ -5,13 +5,14 @@ import {
   TrendingUp, TrendingDown, AlertCircle, 
   Target, Activity, Clock, DollarSign, 
   ShoppingBag, Utensils, Car, House, 
-  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight
+  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 
 interface TimelineEvent {
   id: string
   type: string
+  profileType?: string | null
   title: string
   description: string
   amount?: number | null
@@ -19,23 +20,25 @@ interface TimelineEvent {
   createdAt: Date
 }
 
-interface TimelineClientProps {
-  initialEvents: TimelineEvent[]
-}
+function getEventIcon(type: string, profileType?: string | null) {
+  if (type === 'admin') {
+    if (profileType === 'FINANCE') return { icon: TrendingUp, color: '#4ade80', gradient: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)', label: 'Contte Finance' }
+    if (profileType === 'NOTICIAS') return { icon: Sparkles, color: '#38bdf8', gradient: 'linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)', label: 'Contte Notícias' }
+    return { icon: Shield, color: '#f87171', gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)', label: 'Contte Official' }
+  }
 
-function getEventIcon(type: string) {
   switch (type) {
-    case 'expense': return { icon: ShoppingBag, color: '#f87171', gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)' }
-    case 'income': return { icon: DollarSign, color: '#4ade80', gradient: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)' }
-    case 'alert': return { icon: AlertCircle, color: '#facc15', gradient: 'linear-gradient(135deg, #eab308 0%, #facc15 100%)' }
-    case 'goal': return { icon: Target, color: '#c084fc', gradient: 'linear-gradient(135deg, #a855f7 0%, #c084fc 100%)' }
-    case 'insight': return { icon: Activity, color: '#38bdf8', gradient: 'linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)' }
-    default: return { icon: Clock, color: '#ccff00', gradient: 'linear-gradient(135deg, #a3e635 0%, #ccff00 100%)' }
+    case 'expense': return { icon: ShoppingBag, color: '#f87171', gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)', label: 'Gasto' }
+    case 'income': return { icon: DollarSign, color: '#4ade80', gradient: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)', label: 'Entrada' }
+    case 'alert': return { icon: AlertCircle, color: '#facc15', gradient: 'linear-gradient(135deg, #eab308 0%, #facc15 100%)', label: 'Alerta' }
+    case 'goal': return { icon: Target, color: '#c084fc', gradient: 'linear-gradient(135deg, #a855f7 0%, #c084fc 100%)', label: 'Meta' }
+    case 'insight': return { icon: Activity, color: '#38bdf8', gradient: 'linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)', label: 'Insight' }
+    default: return { icon: Clock, color: '#ccff00', gradient: 'linear-gradient(135deg, #a3e635 0%, #ccff00 100%)', label: 'Contte Intelligence' }
   }
 }
 
 export function TimelineClient({ initialEvents }: TimelineClientProps) {
-  const [events, setEvents] = useState(initialEvents)
+  const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -44,22 +47,38 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
 
   if (!mounted) return null
 
+  const filteredEvents = activeFilter 
+    ? initialEvents.filter(e => {
+        if (activeFilter === 'Meu Dia') return e.type === 'expense' || e.type === 'income'
+        if (activeFilter === 'Dicas') return e.type === 'insight'
+        if (activeFilter === 'Alertas') return e.type === 'alert'
+        if (activeFilter === 'Metas') return e.type === 'goal'
+        return true
+      })
+    : initialEvents
+
   return (
     <div className="fade-in" style={{ paddingTop: '12px', paddingBottom: '120px', maxWidth: '500px', margin: '0 auto' }}>
       {/* Stories Section */}
       <div style={{ marginBottom: '32px', overflowX: 'auto', display: 'flex', gap: '12px', padding: '0 4px', scrollbarWidth: 'none' }} className="no-scrollbar">
         {[
+          { label: 'Tudo', icon: '📱', color: '#fff' },
           { label: 'Meu Dia', icon: '☀️', color: '#ccff00' },
           { label: 'Dicas', icon: '💡', color: '#38bdf8' },
           { label: 'Economia', icon: '💰', color: '#4ade80' },
           { label: 'Alertas', icon: '⚠️', color: '#facc15' },
           { label: 'Metas', icon: '🎯', color: '#c084fc' },
         ].map((story, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <div 
+            key={i} 
+            onClick={() => setActiveFilter(story.label === 'Tudo' ? null : story.label)}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flexShrink: 0, cursor: 'pointer' }}
+          >
             <div style={{ 
               width: '68px', height: '68px', borderRadius: '50%', 
-              padding: '3px', border: `2px solid ${story.color}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
+              padding: '3px', border: `2px solid ${activeFilter === story.label || (activeFilter === null && story.label === 'Tudo') ? story.color : 'rgba(255,255,255,0.1)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.3s'
             }}>
               <div style={{ 
                 width: '100%', height: '100%', borderRadius: '50%', 
@@ -69,7 +88,7 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
                 {story.icon}
               </div>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>{story.label}</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: activeFilter === story.label ? '#fff' : '#a1a1aa' }}>{story.label}</span>
           </div>
         ))}
       </div>
@@ -90,19 +109,19 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {events.length === 0 ? (
+        {filteredEvents.length === 0 ? (
           <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '30px' }}>
             <Activity size={48} color="#ccff00" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
-              O feed está vindo...
+              Nada por aqui ainda...
             </h3>
             <p style={{ fontSize: '14px', color: '#a1a1aa' }}>
-              Suas movimentações e dicas personalizadas aparecerão aqui.
+              Tente mudar o filtro ou adicione novas movimentações.
             </p>
           </div>
         ) : (
-          events.map((event, index) => {
-            const { icon: Icon, color, gradient } = getEventIcon(event.type)
+          filteredEvents.map((event, index) => {
+            const { icon: Icon, color, gradient, label: profileLabel } = getEventIcon(event.type, event.profileType)
             return (
               <div 
                 key={event.id} 
@@ -129,10 +148,13 @@ export function TimelineClient({ initialEvents }: TimelineClientProps) {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>Contte Intelligence</span>
+                      <span style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>{profileLabel}</span>
                       <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <CheckCircle2 size={10} color="#fff" />
                       </div>
+                      {event.type === 'admin' && (
+                        <span style={{ fontSize: '9px', fontWeight: 900, background: 'rgba(255,255,255,0.1)', color: '#fff', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Oficial</span>
+                      )}
                     </div>
                     <p style={{ fontSize: '11px', color: '#71717a' }}>@{event.type} • {new Date(event.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>

@@ -17,9 +17,8 @@ export async function checkAndGenerateDailyUpdate() {
   const existing = await prisma.timelineEvent.findFirst({
     where: {
       userId,
-      type: 'insight',
       createdAt: { gte: today },
-      title: { contains: 'Resumo' }
+      title: { contains: 'Resumo Matinal' }
     }
   })
 

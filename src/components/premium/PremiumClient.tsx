@@ -72,12 +72,13 @@ export function PremiumClient({ isPremium }: { isPremium: boolean }) {
           </h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              'Transações e extrato ilimitados',
-              'Contas a pagar sem restrições',
-              'Metas financeiras avançadas',
-              'Anexar comprovantes e documentos',
-              'Grupos organizacionais (Energia, Água, etc)',
-              'Simulação rápida de impacto'
+              'MIA: Sua assistente IA pessoal 🤖',
+              'Timeline Social Financeira Ilimitada 📱',
+              'Pastas de Comprovantes com Referência 📂',
+              'Transações e Extratos Ilimitados 📊',
+              'Contas a Pagar e Alertas Antecipados 🔔',
+              'Cofres: Metas com Vínculo Bancário 🎯',
+              'Simulação de Impacto Financeiro ⚡'
             ].map((feature, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#e4e4e7', fontWeight: 500 }}>
                 <Check size={16} color="#ccff00" />

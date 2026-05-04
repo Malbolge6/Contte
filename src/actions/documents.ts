@@ -11,6 +11,8 @@ export async function saveDocument(data: {
   type: string
   size: number
   billId?: string
+  folderId?: string
+  referenceDate?: Date
 }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
@@ -26,14 +28,40 @@ export async function saveDocument(data: {
   return doc
 }
 
-export async function getDocuments(billId?: string) {
+export async function createFolder(name: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Não autenticado')
+
+  const folder = await prisma.documentFolder.create({
+    data: {
+      name,
+      userId: session.user.id
+    }
+  })
+
+  revalidatePath('/documentos')
+  return folder
+}
+
+export async function getFolders() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Não autenticado')
+
+  return await prisma.documentFolder.findMany({
+    where: { userId: session.user.id },
+    include: { documents: true }
+  })
+}
+
+export async function getDocuments(params?: { billId?: string; folderId?: string }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
   return await prisma.document.findMany({
     where: {
       userId: session.user.id,
-      ...(billId ? { billId } : {}),
+      ...(params?.billId ? { billId: params.billId } : {}),
+      ...(params?.folderId ? { folderId: params.folderId } : {}),
     },
     orderBy: { createdAt: 'desc' },
   })

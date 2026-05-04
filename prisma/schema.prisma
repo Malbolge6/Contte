@@ -19,6 +19,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Settings
+  theme         String    @default("ORIGINAL") // DARK, LIGHT, ORIGINAL
+  
   // Stripe
   stripeCustomerId       String?   @unique
   stripeSubscriptionId   String?   @unique
@@ -36,6 +39,20 @@ model User {
   wallets      Wallet[]
   timeline     TimelineEvent[]
   pushSubscriptions PushSubscription[]
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @default("bank") // bank | va | vr | digital | cash | investment
+  balance   Float    @default(0)
+  color     String?  @default("#ccff00")
+  icon      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -106,6 +123,18 @@ model BillGroup {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bills       Bill[]
+  folders     DocumentFolder[]
+}
+
+model DocumentFolder {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now())
+  
+  userId    String
+  groupId   String?
+  group     BillGroup? @relation(fields: [groupId], references: [id])
+  documents Document[]
 }
 
 model Bill {
@@ -173,50 +202,40 @@ model PushSubscription {
 }
 
 model Document {
-  id        String       @id @default(cuid())
-  name      String
-  url       String
-  type      String       // "pdf" | "jpg" | "png"
-  size      Int
-  status    String       @default("PENDING")
-  category  String?
-  paidAt    DateTime?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  name          String
+  url           String
+  type          String       // "pdf" | "jpg" | "png"
+  size          Int
+  referenceDate DateTime?    // Referente a:
+  status        String       @default("PENDING")
+  category      String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  billId String?
-  bill   Bill?  @relation(fields: [billId], references: [id])
-}
-
-model Wallet {
-  id        String   @id @default(cuid())
-  name      String
-  type      String   @default("bank") // bank | va | vr | digital | cash | investment
-  balance   Float    @default(0)
-  color     String?  @default("#ccff00")
-  icon      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billId        String?
+  bill          Bill?          @relation(fields: [billId], references: [id])
+  folderId      String?
+  folder        DocumentFolder? @relation(fields: [folderId], references: [id])
 }
 
 model TimelineEvent {
   id          String   @id @default(cuid())
-  type        String   // expense, income, alert, insight, goal
+  type        String   // expense, income, alert, insight, goal, admin
+  profileType String?  @default("INTELLIGENCE") // INTELLIGENCE, FINANCE, NOTICIAS, ADMIN
   title       String
   description String
   amount      Float?
   category    String?
   metadata    Json?    // For extra data like category comparison %
+  isPublic    Boolean  @default(false) // If true, show to everyone
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String?  // Null if isPublic
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
 }

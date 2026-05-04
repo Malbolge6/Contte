@@ -5,23 +5,11 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #050505;
-  --bg-secondary: #121212;
-  --bg-card: #1a1a1a;
-  --bg-card-hover: #222222;
-  
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
+  --bg-main: #0a0a0a;
+  --accent: #ccff00;
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --text-main: #ffffff;
   --text-muted: #71717a;
-
-  --border-subtle: rgba(255, 255, 255, 0.08);
-
-  --accent-green-light: #ccff00;
-  --accent-green-dark: #99cc00;
-  --accent-purple: #c084fc;
-  --accent-pink: #f472b6;
-
-  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
   
   --radius-sm: 12px;
   --radius-md: 18px;
@@ -42,12 +30,13 @@ html {
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg-main);
+  color: var(--text-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar */
@@ -79,40 +68,33 @@ body {
 
 /* Card */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-lg);
   transition: all 0.2s ease;
 }
 
 .card:hover {
-  background: var(--bg-card-hover);
+  background: rgba(255,255,255,0.06);
   transform: translateY(-2px);
 }
 
 .glass-card {
-  background: rgba(26, 26, 26, 0.6);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
 }
 
-.glass-sheet {
-  background: #ffffff;
-  color: #111111;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
-}
-
 /* Buttons */
 .btn-primary {
-  background: var(--text-primary);
-  color: var(--bg-primary);
+  background: var(--accent);
+  color: #000;
   border: none;
   border-radius: var(--radius-md);
   padding: 14px 28px;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -124,11 +106,11 @@ body {
 
 .btn-primary:hover {
   transform: scale(1.02);
-  background: #e4e4e7;
+  box-shadow: 0 8px 25px rgba(204, 255, 0, 0.2);
 }
 
 .btn-accent {
-  background: var(--accent-green-light);
+  background: var(--accent);
   color: #050505;
   border: none;
   border-radius: var(--radius-md);
@@ -140,17 +122,12 @@ body {
   box-shadow: 0 4px 20px rgba(204, 255, 0, 0.2);
 }
 
-.btn-accent:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 30px rgba(204, 255, 0, 0.3);
-}
-
 /* Inputs */
 .input-field {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
-  color: var(--text-primary);
+  color: var(--text-main);
   font-size: 15px;
   padding: 14px 18px;
   width: 100%;
@@ -160,7 +137,7 @@ body {
 }
 
 .input-field:focus {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--accent);
   background: rgba(255, 255, 255, 0.08);
 }
 

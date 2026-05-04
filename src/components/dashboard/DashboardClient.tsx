@@ -3,7 +3,8 @@
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
 import {
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell
+  ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
+  Settings, Shield, LogOut
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
 import { useRouter } from 'next/navigation'
@@ -21,6 +22,7 @@ const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635'
 interface DashboardClientProps {
   data: any
   userName: string
+  userEmail?: string
   isPremium?: boolean
 }
 
@@ -31,10 +33,11 @@ function getGreeting() {
   return 'Boa noite'
 }
 
-export function DashboardClient({ data, userName, isPremium = false }: DashboardClientProps) {
+export function DashboardClient({ data, userName, userEmail, isPremium = false }: DashboardClientProps) {
   const router = useRouter()
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showSimulation, setShowSimulation] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -103,10 +106,35 @@ export function DashboardClient({ data, userName, isPremium = false }: Dashboard
     <div className="fade-in" style={{ paddingTop: '8px' }}>
       {/* Greeting Area */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
+          <button 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: 'none', cursor: 'pointer' }}
+          >
             👤
-          </div>
+          </button>
+          {showProfileMenu && (
+            <div className="fade-in" style={{ 
+              position: 'absolute', top: '60px', left: 0, width: '220px', 
+              background: '#16161f', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden'
+            }}>
+              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button onClick={() => router.push('/configuracoes')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#fff', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <Settings size={16} /> Configurações
+                </button>
+                {userEmail === 'brunosscontatos@gmail.com' && (
+                  <button onClick={() => router.push('/admin')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'rgba(204, 255, 0, 0.05)', color: '#ccff00', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                    <Shield size={16} /> Painel Admin
+                  </button>
+                )}
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
+                <button onClick={() => router.push('/api/auth/signout')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#f87171', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <LogOut size={16} /> Sair
+                </button>
+              </div>
+            </div>
+          )}
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>
               {getGreeting()}, {firstName}
