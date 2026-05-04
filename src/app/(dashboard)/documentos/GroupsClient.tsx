@@ -86,14 +86,14 @@ export function GroupsClient() {
       const filePath = `documents/${fileNamePath}`
 
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('contte-docs')
+        .from('comprovantes')
         .upload(filePath, selectedFile)
 
       if (uploadError) throw uploadError
 
       // 2. Get Public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('contte-docs')
+        .from('comprovantes')
         .getPublicUrl(filePath)
 
       // 3. Save to Database
