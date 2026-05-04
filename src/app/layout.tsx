@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Contte',
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
   openGraph: {
     title: 'Contte — Controle Financeiro',
     description: 'Controle financeiro inteligente para o seu dia a dia.',

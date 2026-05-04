@@ -78,6 +78,9 @@ export function GroupsClient() {
     setUploading(true)
     try {
       // 1. Upload to Supabase Storage
+      if (!supabase) {
+        throw new Error('Supabase não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY às variáveis de ambiente.')
+      }
       const fileExt = selectedFile.name.split('.').pop()
       const fileNamePath = `${Date.now()}.${fileExt}`
       const filePath = `documents/${fileNamePath}`
