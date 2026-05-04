@@ -262,58 +262,86 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
 }
 
 function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () => void }) {
-  const { icon: Icon, color, gradient, label: profileLabel } = getEventIcon(event.type, event.profileType)
+  // Defensive icon check
+  let iconData;
+  try {
+    iconData = getEventIcon(event?.type || 'default', event?.profileType);
+  } catch (e) {
+    iconData = { icon: Clock, color: '#ccff00', gradient: 'linear-gradient(135deg, #a3e635 0%, #ccff00 100%)', label: 'Contte Intelligence' };
+  }
   
+  const { icon: Icon, color, gradient, label: profileLabel } = iconData;
+
+  // Check if event data is "broken" (e.g. deleted bill)
+  const isBroken = !event || !event.title || event.title.includes('undefined');
+
   return createPortal(
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal-content" style={{ background: '#0a0a0a' }}>
         <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '12px auto 0' }} />
         
         <div style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ 
-                width: '56px', height: '56px', borderRadius: '50%', 
-                background: gradient, display: 'flex', 
-                alignItems: 'center', justifyContent: 'center'
-              }}>
-                <Icon size={24} color="#000" strokeWidth={2.5} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{profileLabel}</h3>
-                <p style={{ fontSize: '13px', color: '#71717a' }}>@{event.type} • Postado às {new Date(event.createdAt).toLocaleTimeString('pt-BR')}</p>
-              </div>
+          {isBroken ? (
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔍</div>
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff', marginBottom: '12px' }}>Ops, não tem nada aqui!</h2>
+              <p style={{ fontSize: '15px', color: '#71717a', lineHeight: '1.6', marginBottom: '24px' }}>
+                Acho que você apagou ou reverteu essa conta para pendente, por isso os detalhes não estão mais disponíveis.
+              </p>
+              <button onClick={onClose} style={{ padding: '14px 24px', borderRadius: '14px', border: 'none', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+                Entendi, fechar
+              </button>
             </div>
-            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <X size={18} />
-            </button>
-          </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{ 
+                    width: '56px', height: '56px', borderRadius: '50%', 
+                    background: gradient, display: 'flex', 
+                    alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <Icon size={24} color="#000" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{profileLabel}</h3>
+                    <p style={{ fontSize: '13px', color: '#71717a' }}>
+                      @{event.type || 'contte'} • {event.createdAt ? `Postado às ${new Date(event.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : 'Recentemente'}
+                    </p>
+                  </div>
+                </div>
+                <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <X size={18} />
+                </button>
+              </div>
 
-          <div style={{ marginBottom: '32px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginBottom: '12px', lineHeight: '1.2' }}>{event.title}</h2>
-            <p style={{ fontSize: '16px', color: '#a1a1aa', lineHeight: '1.7' }}>{event.description}</p>
-          </div>
+              <div style={{ marginBottom: '32px' }}>
+                <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginBottom: '12px', lineHeight: '1.2' }}>{event.title}</h2>
+                <p style={{ fontSize: '16px', color: '#a1a1aa', lineHeight: '1.7' }}>{event.description}</p>
+              </div>
 
-          {event.amount && (
-            <div style={{ 
-              background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', 
-              border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', marginBottom: '32px'
-            }}>
-              <p style={{ fontSize: '12px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Valor Total</p>
-              <p style={{ fontSize: '42px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>{formatCurrency(event.amount)}</p>
-            </div>
+              {event.amount && (
+                <div style={{ 
+                  background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', 
+                  border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', marginBottom: '32px'
+                }}>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Valor Total</p>
+                  <p style={{ fontSize: '42px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>{formatCurrency(event.amount)}</p>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'rgba(204, 255, 0, 0.05)', borderRadius: '16px', border: '1px solid rgba(204, 255, 0, 0.1)' }}>
+                  <Sparkles size={18} color="#ccff00" />
+                  <p style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600 }}>Este evento foi processado pela inteligência do Contte.</p>
+                </div>
+                
+                <button onClick={onClose} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: 'none', background: '#fff', color: '#000', fontWeight: 800, fontSize: '15px', marginTop: '12px', cursor: 'pointer' }}>
+                  Fechar Detalhes
+                </button>
+              </div>
+            </>
           )}
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'rgba(204, 255, 0, 0.05)', borderRadius: '16px', border: '1px solid rgba(204, 255, 0, 0.1)' }}>
-              <Sparkles size={18} color="#ccff00" />
-              <p style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600 }}>Este evento foi processado pela inteligência do Contte.</p>
-            </div>
-            
-            <button onClick={onClose} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: 'none', background: '#fff', color: '#000', fontWeight: 800, fontSize: '15px', marginTop: '12px', cursor: 'pointer' }}>
-              Fechar Detalhes
-            </button>
-          </div>
         </div>
       </div>
     </div>
