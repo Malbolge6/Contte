@@ -5,9 +5,10 @@ import {
   TrendingUp, TrendingDown, AlertCircle, 
   Target, Activity, Clock, DollarSign, 
   ShoppingBag, Utensils, Car, House, 
-  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield
+  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield, X, EyeOff, Info
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/helpers'
+import { createPortal } from 'react-dom'
 
 interface TimelineEvent {
   id: string
@@ -39,6 +40,8 @@ function getEventIcon(type: string, profileType?: string | null) {
 
 export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
+  const [showMenu, setShowMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -158,9 +161,45 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
                     </div>
                     <p style={{ fontSize: '11px', color: '#71717a' }}>@{event.type} • {new Date(event.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                   </div>
-                  <button style={{ background: 'transparent', border: 'none', color: '#52525b' }}>
-                    <MoreHorizontal size={20} />
-                  </button>
+                  <div style={{ position: 'relative' }}>
+                    <button 
+                      onClick={() => setShowMenu(showMenu === event.id ? null : event.id)}
+                      style={{ background: 'transparent', border: 'none', color: '#52525b', cursor: 'pointer', padding: '4px' }}
+                    >
+                      <MoreHorizontal size={20} />
+                    </button>
+                    {showMenu === event.id && (
+                      <div className="fade-in" style={{ 
+                        position: 'absolute', top: '100%', right: 0, width: '180px', 
+                        background: '#16161f', border: '1px solid rgba(255,255,255,0.1)', 
+                        borderRadius: '16px', padding: '8px', zIndex: 100,
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                      }}>
+                        <button 
+                          onClick={() => { alert('Evento ocultado localmente'); setShowMenu(null); }}
+                          style={{ 
+                            width: '100%', padding: '10px', borderRadius: '10px', border: 'none', 
+                            background: 'transparent', color: '#fff', fontSize: '13px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
+                          }}
+                        >
+                          <EyeOff size={14} color="#71717a" />
+                          Ocultar este post
+                        </button>
+                        <button 
+                          onClick={() => { alert('Feedback enviado para a IA'); setShowMenu(null); }}
+                          style={{ 
+                            width: '100%', padding: '10px', borderRadius: '10px', border: 'none', 
+                            background: 'transparent', color: '#fff', fontSize: '13px', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'
+                          }}
+                        >
+                          <Activity size={14} color="#71717a" />
+                          Menos como este
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Main Content Area */}
@@ -198,11 +237,14 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
                   <span style={{ fontSize: '11px', fontWeight: 700, color: '#52525b', textTransform: 'uppercase' }}>
                     {formatDate(event.createdAt)}
                   </span>
-                  <button style={{ 
-                    display: 'flex', alignItems: 'center', gap: '6px', 
-                    background: 'transparent', border: 'none', color: '#ccff00', 
-                    fontSize: '13px', fontWeight: 700, cursor: 'pointer' 
-                  }}>
+                  <button 
+                    onClick={() => setSelectedEvent(event)}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', gap: '6px', 
+                      background: 'transparent', border: 'none', color: '#ccff00', 
+                      fontSize: '13px', fontWeight: 700, cursor: 'pointer' 
+                    }}
+                  >
                     Ver Detalhes
                     <ChevronRight size={16} />
                   </button>
@@ -211,6 +253,68 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
             )
           })
         )}
+      </div>
+      {selectedEvent && (
+        <DetailsModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      )}
+    </div>
+  )
+}
+
+function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () => void }) {
+  const { icon: Icon, color, gradient, label: profileLabel } = getEventIcon(event.type, event.profileType)
+  
+  return createPortal(
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-content" style={{ background: '#0a0a0a' }}>
+        <div style={{ width: '40px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '12px auto 0' }} />
+        
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ 
+                width: '56px', height: '56px', borderRadius: '50%', 
+                background: gradient, display: 'flex', 
+                alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Icon size={24} color="#000" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>{profileLabel}</h3>
+                <p style={{ fontSize: '13px', color: '#71717a' }}>@{event.type} • Postado às {new Date(event.createdAt).toLocaleTimeString('pt-BR')}</p>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <X size={18} />
+            </button>
+          </div>
+
+          <div style={{ marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#fff', marginBottom: '12px', lineHeight: '1.2' }}>{event.title}</h2>
+            <p style={{ fontSize: '16px', color: '#a1a1aa', lineHeight: '1.7' }}>{event.description}</p>
+          </div>
+
+          {event.amount && (
+            <div style={{ 
+              background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', 
+              border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', marginBottom: '32px'
+            }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Valor Total</p>
+              <p style={{ fontSize: '42px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>{formatCurrency(event.amount)}</p>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', background: 'rgba(204, 255, 0, 0.05)', borderRadius: '16px', border: '1px solid rgba(204, 255, 0, 0.1)' }}>
+              <Sparkles size={18} color="#ccff00" />
+              <p style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600 }}>Este evento foi processado pela inteligência do Contte.</p>
+            </div>
+            
+            <button onClick={onClose} style={{ width: '100%', padding: '18px', borderRadius: '20px', border: 'none', background: '#fff', color: '#000', fontWeight: 800, fontSize: '15px', marginTop: '12px', cursor: 'pointer' }}>
+              Fechar Detalhes
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
