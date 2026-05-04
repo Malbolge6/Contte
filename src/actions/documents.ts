@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createTimelineEvent } from './timeline'
 
 export async function saveDocument(data: {
   name: string
@@ -24,7 +25,14 @@ export async function saveDocument(data: {
     },
   })
 
+  await createTimelineEvent({
+    type: 'insight',
+    title: 'Comprovante Armazenado 📂',
+    description: `O documento "${data.name}" foi salvo com sucesso em sua biblioteca de arquivos.`,
+  })
+
   revalidatePath('/documentos')
+  revalidatePath('/timeline')
   return doc
 }
 

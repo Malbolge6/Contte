@@ -63,13 +63,31 @@ export async function addGoalContribution(data: {
 
   // Timeline Event
   const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data.amount)
-  await createTimelineEvent({
-    type: 'goal',
-    title: data.type === 'ADD' ? 'Aporte na Meta! 🎯' : 'Resgate da Meta 💸',
-    description: data.type === 'ADD'
-      ? `Você guardou ${formattedAmount} para a meta "${goal.name}" ${walletName ? `vindo do ${walletName}` : ''}.`
-      : `Você retirou ${formattedAmount} da meta "${goal.name}".`,
-  })
+  
+  let percentText = ''
+  let isJustFinished = false
+  if (goal.targetAmount && goal.targetAmount > 0) {
+    const oldPercent = Math.floor((goal.currentAmount / goal.targetAmount) * 100)
+    const newPercent = Math.floor((newAmount / goal.targetAmount) * 100)
+    percentText = ` Sua meta agora está em ${newPercent}%!`
+    if (oldPercent < 100 && newPercent >= 100) isJustFinished = true
+  }
+
+  if (isJustFinished) {
+    await createTimelineEvent({
+      type: 'goal',
+      title: 'Meta Batida! 🏆🎉',
+      description: `INCRÍVEL! Você atingiu 100% da meta "${goal.name}". Todo o esforço valeu a pena!`,
+    })
+  } else {
+    await createTimelineEvent({
+      type: 'goal',
+      title: data.type === 'ADD' ? 'Aporte na Meta! 🎯' : 'Resgate da Meta 💸',
+      description: data.type === 'ADD'
+        ? `Você guardou ${formattedAmount} para a meta "${goal.name}" ${walletName ? `vindo do ${walletName}` : ''}.${percentText}`
+        : `Você retirou ${formattedAmount} da meta "${goal.name}".`,
+    })
+  }
 
   revalidatePath('/metas')
   revalidatePath('/timeline')

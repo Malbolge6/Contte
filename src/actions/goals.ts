@@ -5,6 +5,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+import { createTimelineEvent } from './timeline'
+
 export async function getGoals() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
@@ -26,14 +28,21 @@ export async function createGoal(data: {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  await prisma.goal.create({
+  const goal = await prisma.goal.create({
     data: {
       ...data,
       userId: session.user.id,
     },
   })
 
+  await createTimelineEvent({
+    type: 'goal',
+    title: 'Nova Meta Definida! 🎯',
+    description: `Você acaba de definir a meta "${data.name}". Vamos trabalhar juntos para conquistar esse objetivo!`,
+  })
+
   revalidatePath('/metas')
+  revalidatePath('/timeline')
 }
 
 export async function updateGoal(id: string, data: Partial<{
