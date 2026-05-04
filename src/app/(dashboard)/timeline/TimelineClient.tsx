@@ -1,4 +1,5 @@
 'use client'
+// Manual redeploy trigger - Stability fix for details modal
 
 import { useState, useEffect } from 'react'
 import { 
