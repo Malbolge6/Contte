@@ -194,7 +194,7 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-export function BillsClient({ bills }: BillsClientProps) {
+export function BillsClient({ bills: rawBills }: BillsClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'PENDING' | 'PAID'>('PENDING')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -208,13 +208,25 @@ export function BillsClient({ bills }: BillsClientProps) {
 
   if (!mounted) return null
 
+  // Mega safety check
+  const bills = Array.isArray(rawBills) ? rawBills.filter(b => b && typeof b === 'object') : []
+
   const filtered = bills.filter(b => {
-    if (activeTab === 'PENDING') return b.status === 'PENDING'
-    return b.status === 'PAID'
+    try {
+      if (activeTab === 'PENDING') return b.status === 'PENDING'
+      return b.status === 'PAID'
+    } catch {
+      return false
+    }
   })
 
-  const totalPending = bills.filter(b => b.status === 'PENDING').reduce((s, b) => s + b.amount, 0)
-  const overdue = bills.filter(b => b.status === 'PENDING' && getDaysUntilDue(b.dueDate) < 0)
+  const totalPending = bills
+    .filter(b => b && b.status === 'PENDING' && typeof b.amount === 'number')
+    .reduce((s, b) => s + (b.amount || 0), 0)
+
+  const overdue = bills.filter(b => 
+    b && b.status === 'PENDING' && getDaysUntilDue(b.dueDate) < 0
+  )
 
   async function handleMarkPaid(id: string) {
     setMarkingPaid(id)

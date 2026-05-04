@@ -1,52 +1,62 @@
 import { cn } from '@/lib/utils'
 
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value)
+export function formatCurrency(value: number | null | undefined): string {
+  const val = typeof value === 'number' ? value : 0
+  if (isNaN(val)) return 'R$ 0,00'
+  
+  try {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(val)
+  } catch {
+    return 'R$ 0,00'
+  }
 }
 
-export function formatDate(date: Date | string | null | undefined): string {
+export function formatDate(date: any): string {
   if (!date) return '—'
   try {
-    const d = typeof date === 'string' ? new Date(date) : date
+    const d = new Date(date)
     if (isNaN(d.getTime())) return '—'
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
     }).format(d)
-  } catch {
+  } catch (err) {
+    console.error('formatDate error:', err)
     return '—'
   }
 }
 
-export function formatDateShort(date: Date | string | null | undefined): string {
+export function formatDateShort(date: any): string {
   if (!date) return '—'
   try {
-    const d = typeof date === 'string' ? new Date(date) : date
+    const d = new Date(date)
     if (isNaN(d.getTime())) return '—'
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: 'short',
     }).format(d)
-  } catch {
+  } catch (err) {
+    console.error('formatDateShort error:', err)
     return '—'
   }
 }
 
-export function getDaysUntilDue(dueDate: Date | string | null | undefined): number {
+export function getDaysUntilDue(dueDate: any): number {
   if (!dueDate) return 0
   try {
-    const d = typeof dueDate === 'string' ? new Date(dueDate) : new Date(dueDate.getTime())
+    const d = new Date(dueDate)
     if (isNaN(d.getTime())) return 0
     const now = new Date()
     now.setHours(0, 0, 0, 0)
     d.setHours(0, 0, 0, 0)
     const diff = d.getTime() - now.getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
-  } catch {
+  } catch (err) {
+    console.error('getDaysUntilDue error:', err)
     return 0
   }
 }
