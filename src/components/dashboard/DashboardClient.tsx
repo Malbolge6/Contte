@@ -56,6 +56,7 @@ export function DashboardClient({ data, userName, userEmail, isPremium = false }
   }
 
   const firstName = userName?.split(' ')[0] || 'Usuário'
+  const isAdmin = userEmail?.toLowerCase() === 'brunosscontatos@gmail.com'
 
   async function handleNotificationSubscription() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -132,7 +133,7 @@ export function DashboardClient({ data, userName, userEmail, isPremium = false }
                 <button onClick={() => router.push('/configuracoes')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#fff', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                   <Settings size={16} /> Configurações
                 </button>
-                {userEmail === 'brunosscontatos@gmail.com' && (
+                {isAdmin && (
                   <button onClick={() => router.push('/admin')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'rgba(204, 255, 0, 0.05)', color: '#ccff00', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
                     <Shield size={16} /> Painel Admin
                   </button>
@@ -212,23 +213,23 @@ export function DashboardClient({ data, userName, userEmail, isPremium = false }
             setShowSimulation(true)
           }}
           style={{
-            width: '100%', padding: '16px', borderRadius: '20px',
-            background: 'linear-gradient(90deg, rgba(204, 255, 0, 0.1) 0%, rgba(204, 255, 0, 0) 100%)',
-            border: '1px solid rgba(204, 255, 0, 0.2)',
+            width: '100%', padding: '20px', borderRadius: '24px',
+            background: 'rgba(204, 255, 0, 0.05)',
+            border: '1px solid rgba(204, 255, 0, 0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             cursor: 'pointer', transition: 'all 0.2s ease'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Activity size={20} color="#ccff00" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Activity size={22} color="#ccff00" />
             </div>
             <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: '#ccff00' }}>Simulação Rápida</p>
-              <p style={{ fontSize: '12px', color: '#a1a1aa' }}>Veja o impacto antes de gastar</p>
+              <p style={{ fontSize: '16px', fontWeight: 800, color: '#ccff00' }}>Simulação Rápida</p>
+              <p style={{ fontSize: '13px', color: '#71717a' }}>Veja o impacto antes de gastar</p>
             </div>
           </div>
-          <ChevronRight size={20} color="#ccff00" />
+          <ChevronRight size={22} color="#ccff00" />
         </button>
       </div>
 
