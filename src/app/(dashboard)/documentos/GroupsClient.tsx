@@ -9,6 +9,7 @@ import {
 import { saveDocument, getDocuments, deleteDocument, createFolder, getFolders } from '@/actions/documents'
 import { createPortal } from 'react-dom'
 import { formatCurrency, formatDate } from '@/lib/helpers'
+import { supabase } from '@/lib/supabase'
 
 interface Document {
   id: string
@@ -35,7 +36,7 @@ export function GroupsClient() {
   
   const [showAddDoc, setShowAddDoc] = useState(false)
   const [fileName, setFileName] = useState('')
-  const [fileUrl, setFileUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [refDate, setRefDate] = useState('')
 
   const [uploading, setUploading] = useState(false)
@@ -73,19 +74,37 @@ export function GroupsClient() {
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
-    if (!selectedFolder || !fileUrl.trim()) return
+    if (!selectedFolder || !selectedFile) return
     setUploading(true)
     try {
+      // 1. Upload to Supabase Storage
+      const fileExt = selectedFile.name.split('.').pop()
+      const fileNamePath = `${Date.now()}.${fileExt}`
+      const filePath = `documents/${fileNamePath}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('contte-docs')
+        .upload(filePath, selectedFile)
+
+      if (uploadError) throw uploadError
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('contte-docs')
+        .getPublicUrl(filePath)
+
+      // 3. Save to Database
       await saveDocument({
-        name: fileName,
-        url: fileUrl,
-        type: fileUrl.toLowerCase().endsWith('.pdf') ? 'pdf' : 'jpg',
-        size: 1024,
+        name: fileName || selectedFile.name,
+        url: publicUrl,
+        type: fileExt || 'file',
+        size: selectedFile.size,
         folderId: selectedFolder.id,
         referenceDate: refDate ? new Date(refDate) : undefined
       })
+
       setFileName('')
-      setFileUrl('')
+      setSelectedFile(null)
       setRefDate('')
       setShowAddDoc(false)
       loadData()
@@ -93,6 +112,9 @@ export function GroupsClient() {
       const updated = await getFolders()
       const found = updated.find(f => f.id === selectedFolder.id)
       if (found) setSelectedFolder(found as any)
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Erro ao fazer upload. Verifique sua conexão.')
     } finally {
       setUploading(false)
     }
@@ -251,20 +273,37 @@ export function GroupsClient() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>URL do Arquivo (Mock)</label>
-                  <input 
-                    type="text" className="input-field" placeholder="https://..." 
-                    value={fileUrl} onChange={e => setFileUrl(e.target.value)} required
-                  />
+                  <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>Arquivo (PDF, JPG, PNG)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="file" 
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                      style={{ 
+                        opacity: 0, position: 'absolute', inset: 0, cursor: 'pointer', zIndex: 2 
+                      }} 
+                    />
+                    <div style={{ 
+                      padding: '20px', borderRadius: '16px', border: '2px dashed rgba(204, 255, 0, 0.3)',
+                      background: 'rgba(204, 255, 0, 0.02)', textAlign: 'center', transition: 'all 0.2s'
+                    }}>
+                      <UploadCloud size={32} color="#ccff00" style={{ marginBottom: '8px' }} />
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
+                        {selectedFile ? selectedFile.name : 'Toque para selecionar'}
+                      </p>
+                      <p style={{ fontSize: '11px', color: '#71717a', marginTop: '4px' }}>Até 5MB</p>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>Referente a (Data)</label>
                   <input 
                     type="date" className="input-field" 
                     value={refDate} onChange={e => setRefDate(e.target.value)}
+                    style={{ colorScheme: 'dark' }}
                   />
                 </div>
-                <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '16px' }} disabled={uploading}>
+                <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '16px' }} disabled={uploading || !selectedFile}>
                   {uploading ? <Loader2 className="animate-spin" /> : 'Salvar Comprovante'}
                 </button>
               </form>
