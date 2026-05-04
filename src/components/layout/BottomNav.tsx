@@ -16,8 +16,8 @@ export function BottomNav() {
   if (!mounted) return null
 
   const navItems = [
-    { href: '/timeline', icon: Activity, label: 'Feed' },
     { href: '/dashboard', icon: Home, label: 'Início' },
+    { href: '/timeline', icon: Activity, label: 'Feed' },
     { href: '/transacoes', icon: Wallet, label: 'Extrato' },
     { href: '/contas', icon: FileText, label: 'Contas' },
     { href: '/carteiras', icon: CreditCard, label: 'Bancos' },
