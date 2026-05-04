@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react'
+import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical, FileDown } from 'lucide-react'
 import { formatCurrency, formatDate, CATEGORIES } from '@/lib/helpers'
 import { deleteTransaction } from '@/actions/transactions'
 import { AddTransactionModal } from './AddTransactionModal'
-import { ImportModal } from './ImportModal'
-import { BrainCircuit } from 'lucide-react'
 
 interface Transaction {
   id: string
@@ -30,7 +28,6 @@ interface TransactionsClientProps {
 export function TransactionsClient({ transactions }: TransactionsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
-  const [showImport, setShowImport] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -47,6 +44,37 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
     } finally {
       setDeletingId(null)
     }
+  }
+
+  function handleExport() {
+    if (transactions.length === 0) {
+      alert('Não há transações para exportar.')
+      return
+    }
+
+    const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']
+    const rows = transactions.map(tx => [
+      new Date(tx.date).toLocaleDateString('pt-BR'),
+      tx.description,
+      CATEGORIES.find(c => c.value === tx.category)?.label || tx.category,
+      tx.type === 'INCOME' ? 'Entrada' : 'Saída',
+      tx.amount.toString().replace('.', ',')
+    ])
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(r => r.join(';'))
+    ].join('\n')
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `extrato_contte_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   // Group by specific day for timeline
@@ -78,17 +106,19 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            onClick={() => setShowImport(true)}
+            onClick={handleExport}
             style={{ 
               height: '40px', paddingLeft: '14px', paddingRight: '14px', 
-              borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', 
-              color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', 
+              borderRadius: '12px', background: 'rgba(255, 255, 255, 0.05)', 
+              color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)', 
               display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-              fontWeight: 700, fontSize: '13px'
+              fontWeight: 700, fontSize: '13px', transition: 'all 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
           >
-            <BrainCircuit size={16} />
-            Importar
+            <FileDown size={16} />
+            Exportar
           </button>
           <button 
             onClick={() => setShowAdd(true)} 
@@ -203,7 +233,6 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
 
 
       {showAdd && <AddTransactionModal onClose={() => setShowAdd(false)} />}
-      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
     </div>
   )
 }
