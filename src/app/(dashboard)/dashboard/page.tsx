@@ -28,5 +28,13 @@ export default async function DashboardPage() {
     data = null
   }
 
-  return <DashboardClient data={data} userName={session?.user?.name || 'Usuário'} userEmail={session?.user?.email || ''} isPremium={user?.plan === 'PREMIUM'} />
+  return (
+    <DashboardClient 
+      data={data} 
+      userName={session?.user?.name || 'Usuário'} 
+      userId={session?.user?.id || ''}
+      userEmail={session?.user?.email || ''} 
+      isPremium={user?.plan === 'PREMIUM'} 
+    />
+  )
 }

@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma'
 import { createTimelineEvent } from './timeline'
 
 const ADMIN_EMAIL = 'brunosscontatos@gmail.com'
+const ADMIN_ID = 'cmoqgewvk000049yzrl4kobzw'
 
 export async function createAdminPost(data: {
   profileType: 'FINANCE' | 'NOTICIAS' | 'ADMIN'
@@ -15,7 +16,9 @@ export async function createAdminPost(data: {
   amount?: number
 }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id || session.user.email !== ADMIN_EMAIL) {
+  const isOwner = session?.user?.email === ADMIN_EMAIL || session?.user?.id === ADMIN_ID
+
+  if (!isOwner) {
     throw new Error('Acesso negado: Somente o administrador pode criar posts globais.')
   }
 

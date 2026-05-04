@@ -22,6 +22,7 @@ const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635'
 interface DashboardClientProps {
   data: any
   userName: string
+  userId: string
   userEmail?: string
   isPremium?: boolean
 }
@@ -33,7 +34,7 @@ function getGreeting() {
   return 'Boa noite'
 }
 
-export function DashboardClient({ data, userName, userEmail, isPremium = false }: DashboardClientProps) {
+export function DashboardClient({ data, userName, userId, userEmail, isPremium = false }: DashboardClientProps) {
   const router = useRouter()
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showSimulation, setShowSimulation] = useState(false)
@@ -56,7 +57,7 @@ export function DashboardClient({ data, userName, userEmail, isPremium = false }
   }
 
   const firstName = userName?.split(' ')[0] || 'Usuário'
-  const isAdmin = userEmail?.toLowerCase() === 'brunosscontatos@gmail.com'
+  const isAdmin = userId === 'cmoqgewvk000049yzrl4kobzw' || userEmail?.toLowerCase() === 'brunosscontatos@gmail.com'
 
   async function handleNotificationSubscription() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
