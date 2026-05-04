@@ -9,13 +9,19 @@ export default async function BillsPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect('/login')
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
-  // Removida restrição para modo produção inicial
+  let user = null
+  try {
+    user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
+  } catch (err) {
+    console.error('Error fetching user:', err)
+  }
 
   let bills: any[] = []
   try {
     bills = await getBills()
-  } catch {}
+  } catch (err) {
+    console.error('Error fetching bills:', err)
+  }
 
-  return <BillsClient bills={bills} />
+  return <BillsClient bills={bills || []} />
 }

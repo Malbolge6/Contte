@@ -7,30 +7,48 @@ export function formatCurrency(value: number): string {
   }).format(value)
 }
 
-export function formatDate(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(d)
+export function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return '—'
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date
+    if (isNaN(d.getTime())) return '—'
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(d)
+  } catch {
+    return '—'
+  }
 }
 
-export function formatDateShort(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-  }).format(d)
+export function formatDateShort(date: Date | string | null | undefined): string {
+  if (!date) return '—'
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date
+    if (isNaN(d.getTime())) return '—'
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+    }).format(d)
+  } catch {
+    return '—'
+  }
 }
 
-export function getDaysUntilDue(dueDate: Date | string): number {
-  const d = typeof dueDate === 'string' ? new Date(dueDate) : dueDate
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  d.setHours(0, 0, 0, 0)
-  const diff = d.getTime() - now.getTime()
-  return Math.ceil(diff / (1000 * 60 * 60 * 24))
+export function getDaysUntilDue(dueDate: Date | string | null | undefined): number {
+  if (!dueDate) return 0
+  try {
+    const d = typeof dueDate === 'string' ? new Date(dueDate) : new Date(dueDate.getTime())
+    if (isNaN(d.getTime())) return 0
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    d.setHours(0, 0, 0, 0)
+    const diff = d.getTime() - now.getTime()
+    return Math.ceil(diff / (1000 * 60 * 60 * 24))
+  } catch {
+    return 0
+  }
 }
 
 export function getBillStatusLabel(daysUntil: number): {

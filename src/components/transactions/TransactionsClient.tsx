@@ -51,10 +51,17 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
 
   // Group by specific day for timeline
   const grouped = transactions.reduce((acc: Record<string, Transaction[]>, tx) => {
-    const d = new Date(tx.date)
-    const key = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
-    if (!acc[key]) acc[key] = []
-    acc[key].push(tx)
+    try {
+      const d = new Date(tx.date)
+      if (isNaN(d.getTime())) throw new Error('Invalid date')
+      const key = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })
+      if (!acc[key]) acc[key] = []
+      acc[key].push(tx)
+    } catch (err) {
+      const key = 'Data Indefinida'
+      if (!acc[key]) acc[key] = []
+      acc[key].push(tx)
+    }
     return acc
   }, {})
 

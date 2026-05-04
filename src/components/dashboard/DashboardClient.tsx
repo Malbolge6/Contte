@@ -4,7 +4,7 @@ import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/h
 import {
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
-  Settings, Shield, LogOut
+  Settings, Shield, LogOut, Loader2
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
 import { useRouter } from 'next/navigation'
