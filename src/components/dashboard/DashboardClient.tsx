@@ -125,23 +125,50 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             👤
           </button>
           {showProfileMenu && (
-            <div className="fade-in" style={{ 
-              position: 'absolute', top: '60px', left: 0, width: '220px', 
-              background: '#16161f', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 100, overflow: 'hidden'
+            <div className="fade-in glass-card" style={{ 
+              position: 'absolute', top: '60px', right: 0, width: '240px', 
+              padding: '12px', zIndex: 1000, 
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.1)'
             }}>
-              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button onClick={() => router.push('/configuracoes')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#fff', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <Settings size={16} /> Configurações
+              <div style={{ padding: '8px 12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{userName}</p>
+                <p style={{ fontSize: '11px', color: '#71717a' }}>{userEmail}</p>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <button 
+                  onClick={() => { router.push('/configuracoes'); setShowProfileMenu(false); }}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#fff', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                >
+                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Settings size={16} color="#a1a1aa" />
+                  </div>
+                  Configurações
                 </button>
+
                 {isAdmin && (
-                  <button onClick={() => router.push('/admin')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'rgba(204, 255, 0, 0.05)', color: '#ccff00', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                    <Shield size={16} /> Painel Admin
+                  <button 
+                    onClick={() => { router.push('/admin'); setShowProfileMenu(false); }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(204, 255, 0, 0.05)', color: '#ccff00', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                  >
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Shield size={16} color="#ccff00" />
+                    </div>
+                    Painel Admin
                   </button>
                 )}
+
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
-                <button onClick={() => router.push('/api/auth/signout')} style={{ padding: '10px 14px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#f87171', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <LogOut size={16} /> Sair
+
+                <button 
+                  onClick={() => router.push('/api/auth/signout')}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#f87171', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+                >
+                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(248, 113, 113, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <LogOut size={16} color="#f87171" />
+                  </div>
+                  Sair da Conta
                 </button>
               </div>
             </div>
@@ -171,34 +198,38 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
       </div>
 
-      {/* Main Balance Card - Premium Fintech Gradient */}
-      <div className="gradient-card-green" style={{ borderRadius: '24px', padding: '28px', marginBottom: '24px', boxShadow: '0 12px 40px rgba(204, 255, 0, 0.15)' }}>
-        <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px', opacity: 0.8 }}>
-          Saldo Disponível
-        </p>
-        <p style={{ fontSize: '42px', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: '24px', textShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
-          {formatCurrency(data.balance)}
-        </p>
-
-        <div style={{ display: 'flex', gap: '20px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', padding: '16px', borderRadius: '16px' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <ArrowUpRight size={16} />
-              <span style={{ fontSize: '13px', fontWeight: 600 }}>Entradas</span>
+      {/* Balance Card - Elite Design */}
+      <div className="scale-in" style={{ marginBottom: '32px' }}>
+        <div className="gradient-card-green" style={{ 
+          padding: '32px', borderRadius: '32px', 
+          boxShadow: '0 20px 40px rgba(204, 255, 0, 0.15)',
+          position: 'relative', overflow: 'hidden'
+        }}>
+          {/* Decorative glass elements */}
+          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }} />
+          
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Saldo Disponível</p>
+            <h2 style={{ fontSize: '48px', fontWeight: 900, color: '#000', letterSpacing: '-2px', marginBottom: '32px' }}>
+              {formatCurrency(data.balance)}
+            </h2>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>
+                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>ENTRADAS</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
+                  <TrendingUp size={14} />
+                  <span style={{ fontSize: '16px' }}>{formatCurrency(data.currentIncome)}</span>
+                </div>
+              </div>
+              <div style={{ padding: '16px', background: 'rgba(0,0,0,0.05)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>
+                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>SAÍDAS</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
+                  <TrendingDown size={14} />
+                  <span style={{ fontSize: '16px' }}>{formatCurrency(data.currentExpense)}</span>
+                </div>
+              </div>
             </div>
-            <p style={{ fontSize: '18px', fontWeight: 800 }}>
-              {formatCurrency(data.currentIncome)}
-            </p>
-          </div>
-          <div style={{ width: '1px', background: 'rgba(0,0,0,0.1)' }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-              <ArrowDownRight size={16} />
-              <span style={{ fontSize: '13px', fontWeight: 600 }}>Saídas</span>
-            </div>
-            <p style={{ fontSize: '18px', fontWeight: 800 }}>
-              {formatCurrency(data.currentExpense)}
-            </p>
           </div>
         </div>
       </div>

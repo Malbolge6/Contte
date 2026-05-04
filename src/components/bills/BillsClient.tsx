@@ -238,54 +238,78 @@ export function BillsClient({ bills }: BillsClientProps) {
   }
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px' }}>
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
+      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#f8f9fa', letterSpacing: '-0.5px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
             Contas a Pagar
           </h1>
-          <p style={{ color: '#6b6b80', fontSize: '13px', marginTop: '4px' }}>
-            Gerencie e pague suas contas rapidamente
+          <p style={{ color: '#71717a', fontSize: '13px', fontWeight: 500 }}>
+            Gerencie e pague suas faturas rapidamente
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             onClick={() => router.push('/documentos')}
             style={{ 
-              height: '40px', padding: '0 16px', borderRadius: '12px', 
+              height: '44px', width: '44px', borderRadius: '14px', 
               background: 'rgba(255, 255, 255, 0.05)', color: '#fff', 
               border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', 
-              alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 700
+              alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            title="Meus Comprovantes"
+          >
+            <FileText size={20} />
+          </button>
+          <button 
+            onClick={() => setShowAddModal(true)} 
+            style={{ 
+              height: '44px', width: '44px', borderRadius: '14px', 
+              background: 'rgba(204, 255, 0, 0.15)', color: '#ccff00', 
+              border: '1px solid rgba(204, 255, 0, 0.3)', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              boxShadow: '0 8px 20px rgba(204, 255, 0, 0.1)'
             }}
           >
-            <FileText size={18} />
-            Comprovantes
-          </button>
-          <button onClick={() => setShowAddModal(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Plus size={20} />
+            <Plus size={24} />
           </button>
         </div>
       </div>
 
-      {/* Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-        <div className="card" style={{ padding: '16px' }}>
-          <p style={{ fontSize: '12px', color: '#6b6b80', marginBottom: '6px' }}>A pagar</p>
-          <p style={{ fontSize: '22px', fontWeight: 800, color: '#ccff00' }}>
+      {/* Summary Cards - Bento Style */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Clock size={12} color="#ccff00" />
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>A PAGAR</span>
+          </div>
+          <p style={{ fontSize: '24px', fontWeight: 900, color: '#fff' }}>
             {formatCurrency(totalPending)}
           </p>
-          <p style={{ fontSize: '11px', color: '#6b6b80', marginTop: '4px' }}>
-            {bills.filter(b => b.status === 'PENDING').length} conta(s)
+          <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
+            {bills.filter(b => b.status === 'PENDING').length} boletos
           </p>
         </div>
-        <div className="card" style={{ padding: '16px', background: overdue.length > 0 ? 'rgba(239,68,68,0.06)' : undefined, borderColor: overdue.length > 0 ? 'rgba(239,68,68,0.15)' : undefined }}>
-          <p style={{ fontSize: '12px', color: '#6b6b80', marginBottom: '6px' }}>Vencidas</p>
-          <p style={{ fontSize: '22px', fontWeight: 800, color: overdue.length > 0 ? '#f87171' : '#4ade80' }}>
+        
+        <div className="glass-card" style={{ 
+          padding: '24px', 
+          background: overdue.length > 0 ? 'rgba(244, 63, 94, 0.05)' : 'rgba(255,255,255,0.02)',
+          border: overdue.length > 0 ? '1px solid rgba(244, 63, 94, 0.15)' : '1px solid rgba(255,255,255,0.05)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: overdue.length > 0 ? 'rgba(244, 63, 94, 0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertCircle size={12} color={overdue.length > 0 ? '#f43f5e' : '#71717a'} />
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>VENCIDOS</span>
+          </div>
+          <p style={{ fontSize: '24px', fontWeight: 900, color: overdue.length > 0 ? '#f43f5e' : '#fff' }}>
             {overdue.length}
           </p>
-          <p style={{ fontSize: '11px', color: '#6b6b80', marginTop: '4px' }}>
-            {overdue.length > 0 ? 'requerem atenção' : 'tudo em dia 🎉'}
+          <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
+            {overdue.length > 0 ? 'Exige atenção' : 'Tudo em dia'}
           </p>
         </div>
       </div>
