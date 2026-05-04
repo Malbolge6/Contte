@@ -72,12 +72,12 @@ export function PremiumClient({ isPremium }: { isPremium: boolean }) {
           </h2>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              'MIA: Sua assistente IA pessoal 🤖',
               'Timeline Social Financeira Ilimitada 📱',
-              'Pastas de Comprovantes com Referência 📂',
+              'Gestão por Pastas de Comprovantes 📂',
+              'Controle de "Referente a" em Recibos 📅',
+              'Cofres: Metas com Vínculo Bancário 🎯',
               'Transações e Extratos Ilimitados 📊',
               'Contas a Pagar e Alertas Antecipados 🔔',
-              'Cofres: Metas com Vínculo Bancário 🎯',
               'Simulação de Impacto Financeiro ⚡'
             ].map((feature, i) => (
               <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#e4e4e7', fontWeight: 500 }}>

@@ -32,6 +32,12 @@ export function GroupsClient() {
   const [loading, setLoading] = useState(true)
   const [showAddFolder, setShowAddFolder] = useState(false)
   const [folderName, setFolderName] = useState('')
+  
+  const [showAddDoc, setShowAddDoc] = useState(false)
+  const [fileName, setFileName] = useState('')
+  const [fileUrl, setFileUrl] = useState('')
+  const [refDate, setRefDate] = useState('')
+
   const [uploading, setUploading] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -62,6 +68,33 @@ export function GroupsClient() {
       loadData()
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleUpload(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedFolder || !fileUrl.trim()) return
+    setUploading(true)
+    try {
+      await saveDocument({
+        name: fileName,
+        url: fileUrl,
+        type: fileUrl.toLowerCase().endsWith('.pdf') ? 'pdf' : 'jpg',
+        size: 1024,
+        folderId: selectedFolder.id,
+        referenceDate: refDate ? new Date(refDate) : undefined
+      })
+      setFileName('')
+      setFileUrl('')
+      setRefDate('')
+      setShowAddDoc(false)
+      loadData()
+      // Update selected folder view
+      const updated = await getFolders()
+      const found = updated.find(f => f.id === selectedFolder.id)
+      if (found) setSelectedFolder(found as any)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -133,7 +166,10 @@ export function GroupsClient() {
               <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>{selectedFolder.name}</h2>
               <p style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600 }}>{selectedFolder.documents.length} Comprovantes</p>
             </div>
-            <button style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#ccff00', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button 
+              onClick={() => setShowAddDoc(true)}
+              style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#ccff00', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            >
               <Plus size={24} color="#000" />
             </button>
           </div>
@@ -153,9 +189,25 @@ export function GroupsClient() {
                       {doc.referenceDate ? `Referente a: ${new Date(doc.referenceDate).toLocaleDateString('pt-BR')}` : 'Sem data de referência'}
                     </p>
                   </div>
-                  <button style={{ background: 'transparent', border: 'none', color: '#71717a' }}>
-                    <Download size={18} />
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button style={{ background: 'transparent', border: 'none', color: '#71717a', cursor: 'pointer' }}>
+                      <Download size={18} />
+                    </button>
+                    <button 
+                      onClick={async () => {
+                        if(confirm('Excluir?')) {
+                          await deleteDocument(doc.id)
+                          const updated = await getFolders()
+                          const found = updated.find(f => f.id === selectedFolder.id)
+                          if (found) setSelectedFolder(found as any)
+                          loadData()
+                        }
+                      }}
+                      style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer' }}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -176,6 +228,44 @@ export function GroupsClient() {
                 />
                 <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '16px' }} disabled={loading}>
                   {loading ? <Loader2 className="animate-spin" /> : 'Criar Pasta'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showAddDoc && createPortal(
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowAddDoc(false)}>
+          <div className="modal-content">
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
+            <div style={{ padding: '24px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '16px' }}>Novo Comprovante</h2>
+              <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>Nome do Arquivo</label>
+                  <input 
+                    type="text" className="input-field" placeholder="Ex: Conta de Luz Maio" 
+                    value={fileName} onChange={e => setFileName(e.target.value)} required
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>URL do Arquivo (Mock)</label>
+                  <input 
+                    type="text" className="input-field" placeholder="https://..." 
+                    value={fileUrl} onChange={e => setFileUrl(e.target.value)} required
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#71717a', marginBottom: '6px' }}>Referente a (Data)</label>
+                  <input 
+                    type="date" className="input-field" 
+                    value={refDate} onChange={e => setRefDate(e.target.value)}
+                  />
+                </div>
+                <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '16px' }} disabled={uploading}>
+                  {uploading ? <Loader2 className="animate-spin" /> : 'Salvar Comprovante'}
                 </button>
               </form>
             </div>

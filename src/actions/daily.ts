@@ -13,12 +13,12 @@ export async function checkAndGenerateDailyUpdate() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Check if already has a daily update for today
+  // Check if already has a daily update for today (strict check)
   const existing = await prisma.timelineEvent.findFirst({
     where: {
       userId,
-      createdAt: { gte: today },
-      title: { contains: 'Resumo Matinal' }
+      title: { contains: 'Resumo Matinal' },
+      createdAt: { gte: today }
     }
   })
 

@@ -44,23 +44,26 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 999px; }
 
-/* Aurora Gradients */
+/* Aurora Gradients - Ultra Smooth */
 .gradient-card-pink {
-  background: linear-gradient(135deg, #f43f5e 0%, #d946ef 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #f43f5e 0%, #fb7185 30%, #d946ef 70%, #8b5cf6 100%);
   color: white;
   position: relative;
   overflow: hidden;
 }
 
 .gradient-card-green {
-  background: linear-gradient(135deg, #a3e635 0%, #bef264 50%, #fde047 100%);
-  color: #111;
+  background: linear-gradient(135deg, #ccff00 0%, #a3e635 100%);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.1) 0%, transparent 50%);
+  color: #050505;
   position: relative;
   overflow: hidden;
 }
 
 .gradient-text-green {
-  background: linear-gradient(135deg, #bef264, #a3e635);
+  background: linear-gradient(135deg, #ccff00, #a3e635);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
