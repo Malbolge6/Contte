@@ -7,7 +7,7 @@ import {
   Trash2, Edit2, ChevronRight, ArrowUpCircle, 
   ArrowDownCircle, Wallet as WalletIcon, History, Sparkles, CheckCircle2
 } from 'lucide-react'
-import { formatCurrency, CATEGORIES } from '@/lib/helpers'
+import { formatCurrency, CATEGORIES, maskCurrency, parseCurrency } from '@/lib/helpers'
 import { createGoal, deleteGoal } from '@/actions/goals'
 import { addGoalContribution, getGoalContributions } from '@/actions/goals_extra'
 import { createPortal } from 'react-dom'
@@ -65,7 +65,7 @@ function GoalDetailsModal({ goal, wallets, onClose }: { goal: Goal; wallets: Wal
     try {
       await addGoalContribution({
         goalId: goal.id,
-        amount: parseFloat(amount),
+        amount: parseCurrency(amount),
         type: addType,
         walletId: selectedWalletId || undefined
       })
@@ -132,8 +132,8 @@ function GoalDetailsModal({ goal, wallets, onClose }: { goal: Goal; wallets: Wal
               </h3>
               <form onSubmit={handleContribution} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <input 
-                  type="number" step="0.01" className="input-field" placeholder="R$ 0,00" autoFocus
-                  value={amount} onChange={e => setAmount(e.target.value)} required
+                  type="text" className="input-field" placeholder="R$ 0,00" autoFocus
+                  value={amount} onChange={e => setAmount(maskCurrency(e.target.value))} required
                 />
                 
                 <label style={{ fontSize: '12px', color: '#71717a', fontWeight: 600 }}>De qual banco/carteira?</label>
@@ -213,8 +213,8 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
         name,
         category,
         type,
-        limitAmount: limitAmount ? parseFloat(limitAmount) : undefined,
-        targetAmount: targetAmount ? parseFloat(targetAmount) : undefined,
+        limitAmount: limitAmount ? parseCurrency(limitAmount) : undefined,
+        targetAmount: targetAmount ? parseCurrency(targetAmount) : undefined,
         period,
       })
       router.refresh()
@@ -264,12 +264,12 @@ function AddGoalModal({ onClose }: { onClose: () => void }) {
             {type === 'LIMIT' ? (
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Limite Mensal (R$)</label>
-                <input type="number" step="0.01" className="input-field" placeholder="Valor máximo" value={limitAmount} onChange={e => setLimitAmount(e.target.value)} />
+                <input type="text" className="input-field" placeholder="Valor máximo" value={limitAmount} onChange={e => setLimitAmount(maskCurrency(e.target.value))} />
               </div>
             ) : (
               <div>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Valor Alvo (R$)</label>
-                <input type="number" step="0.01" className="input-field" placeholder="Quanto quer juntar?" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} />
+                <input type="text" className="input-field" placeholder="Quanto quer juntar?" value={targetAmount} onChange={e => setTargetAmount(maskCurrency(e.target.value))} />
               </div>
             )}
             <button type="submit" className="btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '12px' }}>

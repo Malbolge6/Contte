@@ -14,6 +14,20 @@ export function formatCurrency(value: number | null | undefined): string {
   }
 }
 
+export function maskCurrency(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  const amount = parseFloat(digits) / 100
+  if (isNaN(amount)) return ''
+  return amount.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+export function parseCurrency(value: string): number {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0
+}
+
 export function formatDate(date: any): string {
   if (!date) return '—'
   try {

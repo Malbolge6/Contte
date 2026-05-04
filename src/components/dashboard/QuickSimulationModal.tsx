@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, TrendingUp, AlertTriangle } from 'lucide-react'
-import { formatCurrency, CATEGORIES } from '@/lib/helpers'
+import { formatCurrency, CATEGORIES, maskCurrency, parseCurrency } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
 
 interface Goal {
@@ -36,7 +36,7 @@ export function QuickSimulationModal({
     setMounted(true)
   }, [])
 
-  const simulatedAmount = parseFloat(amount.replace(',', '.')) || 0
+  const simulatedAmount = parseCurrency(amount)
 
   const newTotalExpenses = currentTotalExpenses + simulatedAmount
   const expenseIncreasePercent = currentTotalExpenses > 0 
@@ -95,8 +95,8 @@ export function QuickSimulationModal({
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#a1a1aa', fontSize: '18px', fontWeight: 600 }}>R$</span>
                 <input
-                  type="number" step="0.01" className="input-field" placeholder="0,00"
-                  value={amount} onChange={e => setAmount(e.target.value)}
+                  type="text" className="input-field" placeholder="0,00"
+                  value={amount} onChange={e => setAmount(maskCurrency(e.target.value))}
                   style={{ paddingLeft: '50px', fontSize: '24px', fontWeight: 700, height: '64px', background: 'rgba(255,255,255,0.03)' }}
                   autoFocus
                 />

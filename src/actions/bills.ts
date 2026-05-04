@@ -150,6 +150,34 @@ export async function markBillAsPaid(id: string) {
   revalidatePath('/timeline')
 }
 
+export async function unmarkBillAsPaid(id: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Não autenticado')
+
+  const bill = await prisma.bill.findFirst({
+    where: { id, userId: session.user.id },
+  })
+
+  if (!bill) throw new Error('Conta não encontrada')
+
+  await prisma.$transaction([
+    prisma.bill.update({
+      where: { id },
+      data: {
+        status: 'PENDING',
+        paidAt: null,
+      },
+    }),
+    prisma.transaction.deleteMany({
+      where: { billId: id, userId: session.user.id }
+    })
+  ])
+
+  revalidatePath('/contas')
+  revalidatePath('/dashboard')
+  revalidatePath('/timeline')
+}
+
 export async function deleteBill(id: string) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')

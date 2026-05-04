@@ -7,8 +7,8 @@ import {
   X, ChevronDown, Loader2, Trash2, Edit2,
   QrCode, Barcode, FileText
 } from 'lucide-react'
-import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
-import { markBillAsPaid, deleteBill, createBill } from '@/actions/bills'
+import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES, maskCurrency, parseCurrency } from '@/lib/helpers'
+import { markBillAsPaid, unmarkBillAsPaid, deleteBill, createBill } from '@/actions/bills'
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
 
@@ -93,7 +93,7 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
     try {
       await createBill({
         name,
-        amount: parseFloat(amount.replace(',', '.')),
+        amount: parseCurrency(amount),
         dueDate: new Date(dueDate + 'T12:00:00'),
         description: description || undefined,
         pixKey: pixKey || undefined,
@@ -137,7 +137,14 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Valor *</label>
                 <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6b6b80', fontSize: '14px', fontWeight: 600 }}>R$</span>
-                  <input type="number" step="0.01" min="0" className="input-field" placeholder="0,00" value={amount} onChange={e => setAmount(e.target.value)} style={{ paddingLeft: '36px' }} />
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    placeholder="0,00" 
+                    value={amount} 
+                    onChange={e => setAmount(maskCurrency(e.target.value))} 
+                    style={{ paddingLeft: '36px' }} 
+                  />
                 </div>
               </div>
               <div>
@@ -232,6 +239,17 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
     setMarkingPaid(id)
     try {
       await markBillAsPaid(id)
+      router.refresh()
+    } finally {
+      setMarkingPaid(null)
+    }
+  }
+
+  async function handleUnmarkPaid(id: string) {
+    if (!confirm('Deseja reverter esta conta para pendente? A transação vinculada será excluída.')) return
+    setMarkingPaid(id)
+    try {
+      await unmarkBillAsPaid(id)
       router.refresh()
     } finally {
       setMarkingPaid(null)
@@ -412,47 +430,83 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
                 )}
 
                 {/* Action buttons */}
-                {bill.status === 'PENDING' && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                    {bill.pixKey && (
-                      <CopyButton text={bill.pixKey} label="Copiar PIX" />
-                    )}
-                    {bill.barcode && (
-                      <CopyButton text={bill.barcode} label="Copiar boleto" />
-                    )}
-                    <div style={{ flex: 1 }} />
-                    <button
-                      onClick={() => handleDelete(bill.id)}
-                      disabled={deletingId === bill.id}
-                      style={{
-                        width: '34px', height: '34px', borderRadius: '8px',
-                        background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-                        cursor: 'pointer', color: '#f87171',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      {deletingId === bill.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                    </button>
-                    <button
-                      onClick={() => handleMarkPaid(bill.id)}
-                      disabled={markingPaid === bill.id}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        padding: '8px 16px', borderRadius: '8px',
-                        background: 'linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,197,94,0.15))',
-                        border: '1px solid rgba(74,222,128,0.25)',
-                        cursor: 'pointer', color: '#4ade80',
-                        fontWeight: 600, fontSize: '13px',
-                      }}
-                    >
-                      {markingPaid === bill.id
-                        ? <Loader2 size={14} className="animate-spin" />
-                        : <CheckCircle size={14} />
-                      }
-                      {markingPaid === bill.id ? 'Marcando...' : 'Marcar como pago'}
-                    </button>
-                  </div>
-                )}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                  {bill.status === 'PENDING' ? (
+                    <>
+                      {bill.pixKey && (
+                        <CopyButton text={bill.pixKey} label="Copiar PIX" />
+                      )}
+                      {bill.barcode && (
+                        <CopyButton text={bill.barcode} label="Copiar boleto" />
+                      )}
+                      <div style={{ flex: 1 }} />
+                      <button
+                        onClick={() => handleDelete(bill.id)}
+                        disabled={deletingId === bill.id}
+                        style={{
+                          width: '34px', height: '34px', borderRadius: '8px',
+                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+                          cursor: 'pointer', color: '#f87171',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {deletingId === bill.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                      <button
+                        onClick={() => handleMarkPaid(bill.id)}
+                        disabled={markingPaid === bill.id}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '8px 16px', borderRadius: '8px',
+                          background: 'linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,197,94,0.15))',
+                          border: '1px solid rgba(74,222,128,0.25)',
+                          cursor: 'pointer', color: '#4ade80',
+                          fontWeight: 600, fontSize: '13px',
+                        }}
+                      >
+                        {markingPaid === bill.id
+                          ? <Loader2 size={14} className="animate-spin" />
+                          : <CheckCircle size={14} />
+                        }
+                        {markingPaid === bill.id ? 'Marcando...' : 'Marcar como pago'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ flex: 1 }} />
+                      <button
+                        onClick={() => handleDelete(bill.id)}
+                        disabled={deletingId === bill.id}
+                        style={{
+                          width: '34px', height: '34px', borderRadius: '8px',
+                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
+                          cursor: 'pointer', color: '#f87171',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        {deletingId === bill.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                      <button
+                        onClick={() => handleUnmarkPaid(bill.id)}
+                        disabled={markingPaid === bill.id}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '8px 16px', borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          cursor: 'pointer', color: '#a1a1aa',
+                          fontWeight: 600, fontSize: '13px',
+                        }}
+                      >
+                        {markingPaid === bill.id
+                          ? <Loader2 size={14} className="animate-spin" />
+                          : <Clock size={14} />
+                        }
+                        Reverter para Pendente
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             )
           })}

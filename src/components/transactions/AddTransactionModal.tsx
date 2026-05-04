@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, ChevronDown, Loader2 } from 'lucide-react'
 import { createTransaction } from '@/actions/transactions'
-import { CATEGORIES, PAYMENT_METHODS } from '@/lib/helpers'
+import { CATEGORIES, PAYMENT_METHODS, maskCurrency, parseCurrency } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
 
@@ -46,7 +46,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
 
     try {
       await createTransaction({
-        amount: parseFloat(amount.replace(',', '.')),
+        amount: parseCurrency(amount),
         type,
         category,
         description,
@@ -145,13 +145,11 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
                   color: '#6b6b80', fontSize: '15px', fontWeight: 600,
                 }}>R$</span>
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
                   className="input-field"
                   placeholder="0,00"
                   value={amount}
-                  onChange={e => setAmount(e.target.value)}
+                  onChange={e => setAmount(maskCurrency(e.target.value))}
                   style={{ paddingLeft: '44px', fontSize: '22px', fontWeight: 700, height: '56px' }}
                   autoFocus
                 />
