@@ -13,8 +13,8 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Contte',
   },
-  other: {
-    'mobile-web-app-capable': 'yes',
+  formatDetection: {
+    telephone: false,
   },
   openGraph: {
     title: 'Contte — Controle Financeiro',
@@ -28,7 +28,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#ccff00',
+  themeColor: '#0a0a0a',
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({
