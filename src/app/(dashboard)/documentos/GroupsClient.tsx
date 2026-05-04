@@ -115,9 +115,10 @@ export function GroupsClient() {
       const updated = await getFolders()
       const found = updated.find(f => f.id === selectedFolder.id)
       if (found) setSelectedFolder(found as any)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error)
-      alert('Erro ao fazer upload. Verifique sua conexão.')
+      const msg = error.message || 'Erro desconhecido'
+      alert(`Erro ao fazer upload: ${msg}`)
     } finally {
       setUploading(false)
     }
