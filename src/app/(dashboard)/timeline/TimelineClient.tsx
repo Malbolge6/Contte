@@ -263,6 +263,12 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
 }
 
 function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () => void }) {
+  const [target, setTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setTarget(document.body);
+  }, []);
+
   // Defensive icon check
   let iconData;
   try {
@@ -275,6 +281,8 @@ function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () =>
 
   // Check if event data is "broken" (e.g. deleted bill)
   const isBroken = !event || !event.title || event.title.includes('undefined');
+
+  if (!target) return null;
 
   return createPortal(
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -345,7 +353,8 @@ function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () =>
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    target
   )
 }
 
