@@ -204,38 +204,86 @@ export function GroupsClient() {
             {selectedFolder.documents.length === 0 ? (
               <p style={{ textAlign: 'center', padding: '40px', color: '#52525b', fontSize: '14px' }}>Nenhum comprovante nesta pasta.</p>
             ) : (
-              selectedFolder.documents.map(doc => (
-                <div key={doc.id} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <FileText size={20} color="#71717a" />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{doc.name}</h4>
-                    <p style={{ fontSize: '11px', color: '#52525b' }}>
-                      {doc.referenceDate ? `Referente a: ${new Date(doc.referenceDate).toLocaleDateString('pt-BR')}` : 'Sem data de referência'}
-                    </p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button style={{ background: 'transparent', border: 'none', color: '#71717a', cursor: 'pointer' }}>
-                      <Download size={18} />
-                    </button>
-                    <button 
-                      onClick={async () => {
-                        if(confirm('Excluir?')) {
-                          await deleteDocument(doc.id)
-                          const updated = await getFolders()
-                          const found = updated.find(f => f.id === selectedFolder.id)
-                          if (found) setSelectedFolder(found as any)
-                          loadData()
-                        }
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                {selectedFolder.documents.map(doc => {
+                  const isImage = doc.url.match(/\.(jpg|jpeg|png|gif|webp)/i)
+                  return (
+                    <div 
+                      key={doc.id} 
+                      className="scale-in card"
+                      style={{ 
+                        padding: '20px', 
+                        background: 'rgba(255,255,255,0.02)', 
+                        borderRadius: '28px', 
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        overflow: 'hidden'
                       }}
-                      style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer' }}
                     >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: isImage ? '16px' : '0' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <FileText size={22} color="#ccff00" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#fff' }}>{doc.name}</h4>
+                          <p style={{ fontSize: '12px', color: '#71717a' }}>
+                            {doc.referenceDate ? `Referente a: ${new Date(doc.referenceDate).toLocaleDateString('pt-BR')}` : 'Sem data de referência'}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <a 
+                            href={doc.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            download={doc.name}
+                            style={{ 
+                              width: '40px', height: '40px', borderRadius: '12px', 
+                              background: 'rgba(255,255,255,0.05)', display: 'flex', 
+                              alignItems: 'center', justifyContent: 'center', color: '#fff',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(204, 255, 0, 0.1)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          >
+                            <Download size={18} />
+                          </a>
+                          <button 
+                            onClick={async () => {
+                              if(confirm('Excluir este comprovante permanentemente?')) {
+                                await deleteDocument(doc.id)
+                                const updated = await getFolders()
+                                const found = updated.find(f => f.id === selectedFolder.id)
+                                if (found) setSelectedFolder(found as any)
+                                loadData()
+                              }
+                            }}
+                            style={{ 
+                              width: '40px', height: '40px', borderRadius: '12px', 
+                              background: 'rgba(244, 63, 94, 0.05)', border: 'none',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              color: '#f43f5e', cursor: 'pointer'
+                            }}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {isImage && (
+                        <div style={{ 
+                          marginTop: '12px', borderRadius: '20px', overflow: 'hidden', 
+                          border: '1px solid rgba(255,255,255,0.05)', background: '#000'
+                        }}>
+                          <img 
+                            src={doc.url} 
+                            alt={doc.name} 
+                            style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', display: 'block' }} 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>
