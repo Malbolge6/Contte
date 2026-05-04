@@ -43,6 +43,13 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
 
   useEffect(() => {
     setMounted(true)
+    // Auto-request notifications after 2 seconds if not granted
+    const timer = setTimeout(() => {
+      if (Notification.permission === 'default') {
+        handleNotificationSubscription()
+      }
+    }, 2000)
+    return () => clearTimeout(timer)
   }, [])
 
   if (!mounted) return null
@@ -61,19 +68,25 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
 
   async function handleNotificationSubscription() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      alert('Seu dispositivo não suporta notificações.')
+      console.warn('Este dispositivo não suporta notificações.')
       return
     }
 
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js')
       const permission = await Notification.requestPermission()
       
       if (permission === 'granted') {
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: 'BPaYV_y2p0I6pUfG3Gj6L7v6_p6z_H_h1p_E_T_O_Y_N_p_G_h_E_1_G_g_I_E' // Public VAPID Key (Placeholder)
-        })
+        const registration = await navigator.serviceWorker.ready
+        
+        // Check for existing subscription
+        let subscription = await registration.pushManager.getSubscription()
+        
+        if (!subscription) {
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'BIWJuJgeAXpIOG82po0M7lFNu-2Qa4UndgBXKm_nGM4SQoXjJVw97NNpB2rozBdTrRJmBgisXqOXrIdTQh0pkWA'
+          })
+        }
         
         const subJson = JSON.parse(JSON.stringify(subscription))
         await subscribeToPush({
@@ -83,11 +96,10 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             auth: subJson.keys.auth
           }
         })
-        alert('Notificações ativadas com sucesso! 🔔')
+        console.log('Notificações ativadas com sucesso!')
       }
     } catch (err) {
-      console.error(err)
-      alert('Erro ao ativar notificações.')
+      console.error('Erro ao ativar notificações:', err)
     }
   }
 
