@@ -206,7 +206,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           position: 'relative', overflow: 'hidden'
         }}>
           {/* Decorative glass elements */}
-          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }} />
+          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', transform: 'translateZ(0)' }} />
           
           <div style={{ position: 'relative', zIndex: 1 }}>
             <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Saldo Disponível</p>
@@ -215,14 +215,14 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             </h2>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.2)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.25)', borderRadius: '20px', transform: 'translateZ(0)' }}>
                 <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>ENTRADAS</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
                   <TrendingUp size={14} />
                   <span style={{ fontSize: '16px' }}>{formatCurrency(data.currentIncome)}</span>
                 </div>
               </div>
-              <div style={{ padding: '16px', background: 'rgba(0,0,0,0.05)', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>
+              <div style={{ padding: '16px', background: 'rgba(0,0,0,0.06)', borderRadius: '20px', transform: 'translateZ(0)' }}>
                 <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>SAÍDAS</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
                   <TrendingDown size={14} />
@@ -300,7 +300,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         
         {/* Monthly Evolution */}
         {data.monthlyData && data.monthlyData.length > 0 && (
-          <div className="card" style={{ padding: '24px' }}>
+          <div className="card" style={{ padding: '24px', transform: 'translateZ(0)' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '20px' }}>
               Estatísticas
             </h3>
