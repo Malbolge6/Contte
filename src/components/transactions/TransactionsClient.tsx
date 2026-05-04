@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical, FileDown } from 'lucide-react'
+import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical, FileText, Printer } from 'lucide-react'
 import { formatCurrency, formatDate, CATEGORIES } from '@/lib/helpers'
 import { deleteTransaction } from '@/actions/transactions'
 import { AddTransactionModal } from './AddTransactionModal'
@@ -46,36 +46,16 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
     }
   }
 
-  function handleExport() {
+  function handleExportPDF() {
     if (transactions.length === 0) {
       alert('Não há transações para exportar.')
       return
     }
-
-    const headers = ['Data', 'Descrição', 'Categoria', 'Tipo', 'Valor']
-    const rows = transactions.map(tx => [
-      new Date(tx.date).toLocaleDateString('pt-BR'),
-      tx.description,
-      CATEGORIES.find(c => c.value === tx.category)?.label || tx.category,
-      tx.type === 'INCOME' ? 'Entrada' : 'Saída',
-      tx.amount.toString().replace('.', ',')
-    ])
-
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map(r => r.join(';'))
-    ].join('\n')
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `extrato_contte_${new Date().toISOString().split('T')[0]}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    window.print()
   }
+
+  const totalIn = transactions.filter(t => t.type === 'INCOME').reduce((acc, t) => acc + t.amount, 0)
+  const totalOut = transactions.filter(t => t.type === 'EXPENSE').reduce((acc, t) => acc + t.amount, 0)
 
   // Group by specific day for timeline
   const grouped = transactions.reduce((acc: Record<string, Transaction[]>, tx) => {
@@ -106,7 +86,7 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
-            onClick={handleExport}
+            onClick={handleExportPDF}
             style={{ 
               height: '40px', paddingLeft: '14px', paddingRight: '14px', 
               borderRadius: '12px', background: 'rgba(255, 255, 255, 0.05)', 
@@ -114,11 +94,12 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
               display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
               fontWeight: 700, fontSize: '13px', transition: 'all 0.2s'
             }}
+            className="no-print"
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
             onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
           >
-            <FileDown size={16} />
-            Exportar
+            <Printer size={16} />
+            Gerar PDF
           </button>
           <button 
             onClick={() => setShowAdd(true)} 
@@ -233,6 +214,84 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
 
 
       {showAdd && <AddTransactionModal onClose={() => setShowAdd(false)} />}
+
+      {/* --- Printable PDF Area (Hidden from UI) --- */}
+      <div id="printable-statement" className="print-only" style={{ 
+        display: 'none', 
+        padding: '40px', 
+        background: '#fff', 
+        color: '#000', 
+        fontFamily: 'sans-serif'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #ccff00', paddingBottom: '20px', marginBottom: '30px' }}>
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: 900, margin: 0, color: '#000' }}>CONTTE</h1>
+            <p style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>EXTRATO DE MOVIMENTAÇÃO BANCÁRIA</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '14px', fontWeight: 700 }}>Gerado em: {new Date().toLocaleDateString('pt-BR')}</p>
+            <p style={{ fontSize: '12px', color: '#666' }}>ID: {Math.random().toString(36).substring(7).toUpperCase()}</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '40px', background: '#f8f9fa', padding: '20px', borderRadius: '12px' }}>
+          <div>
+            <p style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>Entradas</p>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: '#22c55e' }}>{formatCurrency(totalIn)}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>Saídas</p>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: '#ef4444' }}>{formatCurrency(totalOut)}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: '11px', color: '#666', textTransform: 'uppercase' }}>Saldo Período</p>
+            <p style={{ fontSize: '18px', fontWeight: 800, color: '#000' }}>{formatCurrency(totalIn - totalOut)}</p>
+          </div>
+        </div>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ textAlign: 'left', borderBottom: '1px solid #eee' }}>
+              <th style={{ padding: '12px', fontSize: '12px', color: '#666' }}>DATA</th>
+              <th style={{ padding: '12px', fontSize: '12px', color: '#666' }}>DESCRIÇÃO</th>
+              <th style={{ padding: '12px', fontSize: '12px', color: '#666' }}>CATEGORIA</th>
+              <th style={{ padding: '12px', fontSize: '12px', color: '#666', textAlign: 'right' }}>VALOR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map(tx => (
+              <tr key={tx.id} style={{ borderBottom: '1px solid #f8f9fa' }}>
+                <td style={{ padding: '12px', fontSize: '13px' }}>{new Date(tx.date).toLocaleDateString('pt-BR')}</td>
+                <td style={{ padding: '12px', fontSize: '13px', fontWeight: 600 }}>{tx.description}</td>
+                <td style={{ padding: '12px', fontSize: '13px', color: '#666' }}>{CATEGORIES.find(c => c.value === tx.category)?.label || tx.category}</td>
+                <td style={{ padding: '12px', fontSize: '14px', fontWeight: 800, textAlign: 'right', color: tx.type === 'INCOME' ? '#22c55e' : '#000' }}>
+                  {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '50px', paddingTop: '20px', borderTop: '1px solid #eee', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#999' }}>ESTE DOCUMENTO FOI GERADO PELA PLATAFORMA CONTTE E NÃO POSSUI VALOR FISCAL.</p>
+        </div>
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          body * { visibility: hidden; }
+          #printable-statement, #printable-statement * { visibility: visible; }
+          #printable-statement { 
+            visibility: visible; 
+            display: block !important; 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%;
+          }
+          .no-print { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
