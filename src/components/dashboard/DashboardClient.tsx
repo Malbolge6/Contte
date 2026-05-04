@@ -46,6 +46,15 @@ export function DashboardClient({ data, userName, userEmail, isPremium = false }
 
   if (!mounted) return null
 
+  if (!data) {
+    return (
+      <div style={{ padding: '24px', textAlign: 'center', color: '#fff' }}>
+        <Loader2 className="animate-spin" size={48} style={{ margin: '40px auto' }} />
+        <p>Carregando seus dados financeiros...</p>
+      </div>
+    )
+  }
+
   const firstName = userName?.split(' ')[0] || 'Usuário'
 
   async function handleNotificationSubscription() {

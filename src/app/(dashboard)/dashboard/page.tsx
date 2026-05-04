@@ -11,15 +11,20 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect('/login')
 
-  // Trigger daily summary on timeline if it's a new day
-  await checkAndGenerateDailyUpdate()
+  // Trigger daily summary on timeline if it's a new day (background task, don't crash the page)
+  try {
+    await checkAndGenerateDailyUpdate()
+  } catch (err) {
+    console.error('Failed to generate daily update:', err)
+  }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
   
   let data
   try {
     data = await getDashboardData()
-  } catch {
+  } catch (err) {
+    console.error('Failed to fetch dashboard data:', err)
     data = null
   }
 

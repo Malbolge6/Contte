@@ -35,13 +35,15 @@ export async function processImportedData(transactions: any[]) {
   let skippedCount = 0
 
   for (const tx of transactions) {
+    const txDate = new Date(tx.date)
+    
     // Check for duplicates (date + amount + description)
     const existing = await prisma.transaction.findFirst({
       where: {
         userId: session.user.id,
         amount: tx.amount,
         description: tx.description,
-        date: tx.date,
+        date: txDate,
       }
     })
 
@@ -59,7 +61,7 @@ export async function processImportedData(transactions: any[]) {
         type: tx.amount > 0 ? 'INCOME' : 'EXPENSE',
         category,
         description: tx.description,
-        date: new Date(tx.date),
+        date: txDate,
         userId: session.user.id
       }
     })

@@ -37,7 +37,7 @@ function getEventIcon(type: string, profileType?: string | null) {
   }
 }
 
-export function TimelineClient({ initialEvents }: TimelineClientProps) {
+export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 

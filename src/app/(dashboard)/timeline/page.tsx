@@ -8,10 +8,19 @@ export default async function TimelinePage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
-  // Run backfill once if feed is empty
-  await backfillTimeline()
+  // Run backfill once if feed is empty (don't crash the page if it fails)
+  try {
+    await backfillTimeline()
+  } catch (err) {
+    console.error('Failed to backfill timeline:', err)
+  }
   
-  const events = await getTimelineEvents(50) 
+  let events = []
+  try {
+    events = await getTimelineEvents(50) 
+  } catch (err) {
+    console.error('Failed to fetch timeline events:', err)
+  }
 
-  return <TimelineClient initialEvents={events} />
+  return <TimelineClient initialEvents={events as any} />
 }
