@@ -4,10 +4,12 @@ import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/h
 import { 
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
-  Settings, Shield, LogOut, Loader2, Sparkles, Info, CheckCircle2
+  Settings, Shield, LogOut, Loader2, Sparkles, Info, CheckCircle2,
+  Calendar, Eye
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
 import { getMentorInsight } from '@/actions/mentor'
+import { getBalancePrediction } from '@/actions/prediction'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -42,15 +44,19 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [mentorInsight, setMentorInsight] = useState<any>(null)
+  const [predictionData, setPredictionData] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
-    // Fetch AI Mentor Insight
-    async function loadMentor() {
-      const insight = await getMentorInsight()
+    async function loadData() {
+      const [insight, prediction] = await Promise.all([
+        getMentorInsight(),
+        getBalancePrediction()
+      ])
       setMentorInsight(insight)
+      setPredictionData(prediction)
     }
-    loadMentor()
+    loadData()
 
     // Auto-request notifications after 2 seconds if not granted
     const timer = setTimeout(() => {
@@ -359,6 +365,67 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           <ChevronRight size={22} color="#ccff00" />
         </button>
       </div>
+
+      {/* Prediction Area */}
+      {predictionData && (
+        <div className="fade-in glass-card" style={{ padding: '24px', borderRadius: '32px', marginBottom: '32px', border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.01)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div>
+              <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Eye size={20} color="#ccff00" />
+                Sua Bola de Cristal
+              </h3>
+              <p style={{ fontSize: '12px', color: '#71717a' }}>Previsão baseada no seu histórico</p>
+            </div>
+            <div style={{ background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '99px' }}>PRÓXIMOS 30 DIAS</div>
+          </div>
+
+          <div style={{ height: '180px', width: '100%', marginBottom: '20px' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={predictionData.slice(0, 30)}>
+                <defs>
+                  <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ccff00" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#ccff00" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                <XAxis dataKey="date" hide />
+                <YAxis hide domain={['auto', 'auto']} />
+                <Tooltip 
+                  contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                  itemStyle={{ color: '#ccff00', fontWeight: 800 }}
+                  labelStyle={{ display: 'none' }}
+                  formatter={(val: number) => formatCurrency(val)}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="balance" 
+                  stroke="#ccff00" 
+                  strokeWidth={3} 
+                  dot={false}
+                  animationDuration={2000}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ flex: 1, padding: '16px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <p style={{ fontSize: '10px', color: '#71717a', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Saldo Previsto</p>
+              <p style={{ fontSize: '18px', fontWeight: 900, color: predictionData[30]?.balance >= 0 ? '#fff' : '#ef4444' }}>
+                {formatCurrency(predictionData[30]?.balance || 0)}
+              </p>
+            </div>
+            <div style={{ flex: 1, padding: '16px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <p style={{ fontSize: '10px', color: '#71717a', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Contas a Vencer</p>
+              <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff' }}>
+                {formatCurrency(predictionData.slice(0, 30).reduce((acc: number, d: any) => acc + d.bills, 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alerts */}
       {alerts.length > 0 && (
