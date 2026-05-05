@@ -69,8 +69,32 @@ export function TopBar({ user }: TopBarProps) {
         </span>
       </div>
 
-      {/* Right side Profile Pill */}
+      {/* Right side Profile Pill & Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+        {/* Install App Button — only shows when app is installable */}
+        {installPrompt && !isInstalled && (
+          <button
+            onClick={handleInstall}
+            title="Instalar App"
+            style={{
+              height: '38px',
+              paddingLeft: '12px', paddingRight: '12px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              borderRadius: '20px',
+              background: '#ccff00',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#050505',
+              fontWeight: 800,
+              fontSize: '12px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Download size={14} />
+            Instalar
+          </button>
+        )}
+
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
