@@ -5,7 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { 
   Sun, Moon, Palette, Shield, 
   Smartphone, Bell, Lock, LogOut, 
-  Check, ChevronRight, User, Sparkles, CreditCard, ExternalLink, Loader2, XCircle
+  Check, ChevronRight, User, Sparkles, CreditCard, ExternalLink, Loader2, XCircle, Clock
 } from 'lucide-react'
 import { cancelSubscription } from '@/actions/subscriptions'
 import { updateHourlyRate } from '@/actions/user'

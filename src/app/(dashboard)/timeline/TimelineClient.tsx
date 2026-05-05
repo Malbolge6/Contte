@@ -6,7 +6,7 @@ import {
   TrendingUp, TrendingDown, AlertCircle, 
   Target, Activity, Clock, DollarSign, 
   ShoppingBag, Utensils, Car, House, 
-  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield, X, EyeOff, Info, Globe, ExternalLink, Loader2
+  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield, X, EyeOff, Info, Globe, ExternalLink, Loader2, Eye
 } from 'lucide-react'
 import { getFinancialNews } from '@/actions/news'
 import { formatCurrency, formatDate } from '@/lib/helpers'
