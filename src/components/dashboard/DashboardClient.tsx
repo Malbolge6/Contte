@@ -186,7 +186,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         <div className="fade-in" style={{ marginBottom: '16px', background: '#a78bfa', borderRadius: '24px', padding: '24px', color: '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ flex: 1, paddingRight: '16px' }}>
             <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{mentorInsight.title}</h3>
-            <p style={{ fontSize: '13px', fontWeight: 500, opacity: 0.8, lineHeight: 1.4 }}>{mentorInsight.message?.substring(0, 60)}...</p>
+            <p style={{ fontSize: '13px', fontWeight: 500, opacity: 0.9, lineHeight: 1.5 }}>{mentorInsight.message}</p>
           </div>
           <div style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Sparkles size={28} color="#fff" />
@@ -195,7 +195,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
       )}
 
       {/* Monthly Spent / Limited Balance (Green Card) */}
-      <div className="scale-in" style={{ marginBottom: '32px' }}>
+      <div className="scale-in" style={{ marginBottom: '16px' }}>
         <div style={{ background: '#ccff00', borderRadius: '24px', padding: '24px', color: '#000', position: 'relative', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <p style={{ fontSize: '14px', fontWeight: 600, opacity: 0.7 }}>Gasto Mensal</p>
@@ -223,6 +223,62 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               <div key={i} style={{ flex: 1, background: i < 12 ? '#000' : 'rgba(0,0,0,0.1)', borderRadius: '4px' }} />
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Ideia 3: Respiro Fiscal (New Bento Card) */}
+      <div className="scale-in" style={{ marginBottom: '32px' }}>
+        <div style={{ 
+          background: 'rgba(255,255,255,0.03)', 
+          border: '1px solid rgba(255,255,255,0.08)', 
+          borderRadius: '24px', 
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Shield size={18} color="#ccff00" />
+              <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: 700 }}>Respiro Fiscal</h4>
+            </div>
+            <div style={{ padding: '4px 10px', borderRadius: '20px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '11px', fontWeight: 700 }}>
+              ESTIMATIVA IR
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
+              <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Imposto Estimado</p>
+              <p style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>
+                {formatCurrency((() => {
+                  const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
+                  if (income <= 2112) return 0
+                  if (income <= 2826.65) return (income * 0.075) - 158.40
+                  if (income <= 3751.05) return (income * 0.15) - 370.40
+                  if (income <= 4664.68) return (income * 0.225) - 651.73
+                  return (income * 0.275) - 884.96
+                })())}
+              </p>
+            </div>
+            <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
+              <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>O que reservar</p>
+              <p style={{ color: '#ccff00', fontSize: '18px', fontWeight: 800 }}>
+                {formatCurrency((() => {
+                  const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
+                  if (income <= 2112) return 0
+                  const tax = income <= 2826.65 ? (income * 0.075) - 158.40 :
+                              income <= 3751.05 ? (income * 0.15) - 370.40 :
+                              income <= 4664.68 ? (income * 0.225) - 651.73 :
+                              (income * 0.275) - 884.96
+                  return tax * 1.05
+                })())}
+              </p>
+            </div>
+          </div>
+          <p style={{ fontSize: '11px', color: '#71717a', fontStyle: 'italic' }}>
+            *Cálculo baseado na Tabela Progressiva mensal da Receita Federal.
+          </p>
         </div>
       </div>
 
