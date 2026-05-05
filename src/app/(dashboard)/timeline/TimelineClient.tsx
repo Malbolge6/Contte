@@ -60,7 +60,7 @@ export function TimelineClient({ initialEvents = [], hourlyRate = 0 }: TimelineC
   }, [])
 
   useEffect(() => {
-    if (activeFilter === 'Mercado') {
+    if (activeFilter === 'Notícias') {
       loadNews()
     }
   }, [activeFilter])

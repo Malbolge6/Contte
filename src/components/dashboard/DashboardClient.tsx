@@ -390,7 +390,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           </div>
 
           <div style={{ height: '180px', width: '100%', marginBottom: '20px' }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1}>
               <LineChart data={predictionData.slice(0, 30)}>
                 <defs>
                   <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
@@ -475,7 +475,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '20px' }}>
               Estatísticas
             </h3>
-            <ResponsiveContainer width="100%" height={160}>
+            <ResponsiveContainer width="100%" height={160} minWidth={1}>
               <LineChart data={data.monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
@@ -499,7 +499,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               Onde você gastou
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <ResponsiveContainer width={120} height={120}>
+              <ResponsiveContainer width={120} height={120} minWidth={1}>
                 <PieChart>
                   <Pie data={categoryData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
                     {categoryData.map((_, index) => (
