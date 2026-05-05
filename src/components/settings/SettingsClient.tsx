@@ -46,11 +46,10 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
             <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)' }}>Visual da Plataforma</h2>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {[
-              { id: 'ORIGINAL', label: 'Contte', color: '#ccff00', bg: '#0a0a0a', border: '#ccff00' },
-              { id: 'DARK', label: 'Dark Mode', color: '#3b82f6', bg: '#000000', border: '#3b82f6' },
-              { id: 'LIGHT', label: 'Light', color: '#0f172a', bg: '#ffffff', border: '#0f172a' },
+              { id: 'ORIGINAL', label: 'Contte (Dark)', color: '#ccff00', bg: '#0a0a0a', border: '#ccff00' },
+              { id: 'LIGHT', label: 'Light Mode', color: '#0f172a', bg: '#ffffff', border: '#0f172a' },
             ].map((t) => (
               <button 
                 key={t.id}
@@ -128,60 +127,47 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
           </div>
         </section>
 
-        {/* Security & Preferences */}
+        {/* Preferences */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Shield size={18} color="#38bdf8" />
+              <Bell size={18} color="#38bdf8" />
             </div>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)' }}>Preferências</h2>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)' }}>Notificações</h2>
           </div>
 
-          {[
-            { icon: Bell, label: 'Notificações Push', desc: 'Alertas críticos no celular', action: () => setNotifications(!notifications), active: notifications, color: '#f43f5e' },
-            { icon: Lock, label: 'Segurança', desc: 'Gerenciar senha e sessões', action: () => {}, active: null, color: '#a855f7' },
-            { icon: Smartphone, label: 'Modo Aplicativo', desc: 'Instalar na tela de início', action: () => {}, active: null, color: '#34d399' },
-          ].map((item, i) => (
-            <div 
-              key={i} 
-              onClick={item.action}
-              style={{ 
-                padding: '20px', background: 'var(--card-bg)', 
-                borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                cursor: 'pointer', transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'var(--card-bg)'}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: `${item.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <item.icon size={22} color={item.color} />
-                </div>
-                <div>
-                  <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>{item.label}</p>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>{item.desc}</p>
-                </div>
+          <div 
+            onClick={() => setNotifications(!notifications)}
+            style={{ 
+              padding: '20px', background: 'var(--card-bg)', 
+              borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              cursor: 'pointer', transition: 'all 0.2s ease'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: `rgba(244, 63, 94, 0.1)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Bell size={22} color="#f43f5e" />
               </div>
-              {item.active !== null ? (
-                <div style={{ 
-                  width: '52px', height: '28px', borderRadius: '20px', 
-                  background: item.active ? '#ccff00' : 'rgba(255,255,255,0.1)', 
-                  position: 'relative', transition: 'all 0.3s' 
-                }}>
-                  <div style={{ 
-                    width: '22px', height: '22px', borderRadius: '50%', 
-                    background: item.active ? '#000' : '#71717a', 
-                    position: 'absolute', top: '3px', 
-                    left: item.active ? '27px' : '3px', 
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
-                  }} />
-                </div>
-              ) : (
-                <ChevronRight size={20} color="var(--text-muted)" />
-              )}
+              <div>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)' }}>Alertas Push</p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>Receber lembretes no celular</p>
+              </div>
             </div>
-          ))}
+            <div style={{ 
+              width: '52px', height: '28px', borderRadius: '20px', 
+              background: notifications ? '#ccff00' : 'rgba(255,255,255,0.1)', 
+              position: 'relative', transition: 'all 0.3s' 
+            }}>
+              <div style={{ 
+                width: '22px', height: '22px', borderRadius: '50%', 
+                background: notifications ? '#000' : '#71717a', 
+                position: 'absolute', top: '3px', 
+                left: notifications ? '27px' : '3px', 
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' 
+              }} />
+            </div>
+          </div>
         </section>
 
         <button 

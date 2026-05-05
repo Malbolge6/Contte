@@ -12,17 +12,24 @@ export async function POST() {
       return new NextResponse('Não autorizado', { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { stripeCustomerId: true }
-    })
+    let stripeCustomerId = user?.stripeCustomerId
 
-    if (!user?.stripeCustomerId) {
-      return new NextResponse('Cliente Stripe não encontrado', { status: 404 })
+    if (!stripeCustomerId) {
+      // Cria o cliente no Stripe se não existir
+      const customer = await stripe.customers.create({
+        email: session.user.email!,
+        name: session.user.name!,
+        metadata: { userId: session.user.id }
+      })
+      stripeCustomerId = customer.id
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { stripeCustomerId }
+      })
     }
 
     const portalSession = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
+      customer: stripeCustomerId,
       return_url: `${process.env.NEXTAUTH_URL}/configuracoes`
     })
 
