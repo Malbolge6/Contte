@@ -6,8 +6,9 @@ import {
   TrendingUp, TrendingDown, AlertCircle, 
   Target, Activity, Clock, DollarSign, 
   ShoppingBag, Utensils, Car, House, 
-  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield, X, EyeOff, Info
+  Smartphone, Zap, Coffee, Heart, MessageCircle, Share2, MoreHorizontal, Sparkles, ChevronRight, Shield, X, EyeOff, Info, Globe, ExternalLink, Loader2
 } from 'lucide-react'
+import { getFinancialNews } from '@/actions/news'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
 
@@ -44,10 +45,30 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
   const [showMenu, setShowMenu] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [news, setNews] = useState<any[]>([])
+  const [loadingNews, setLoadingNews] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (activeFilter === 'Mercado') {
+      loadNews()
+    }
+  }, [activeFilter])
+
+  async function loadNews() {
+    setLoadingNews(true)
+    try {
+      const data = await getFinancialNews()
+      setNews(data)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingNews(false)
+    }
+  }
 
   if (!mounted) return null
 
@@ -70,6 +91,7 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
           { label: 'Meu Dia', icon: '☀️', color: '#ccff00' },
           { label: 'Dicas', icon: '💡', color: '#38bdf8' },
           { label: 'Economia', icon: '💰', color: '#4ade80' },
+          { label: 'Mercado', icon: '📈', color: '#ccff00' },
           { label: 'Alertas', icon: '⚠️', color: '#facc15' },
           { label: 'Metas', icon: '🎯', color: '#c084fc' },
         ].map((story, i) => (
@@ -113,7 +135,41 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {filteredEvents.length === 0 ? (
+        {activeFilter === 'Mercado' ? (
+          loadingNews ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <Loader2 className="animate-spin" size={32} color="#ccff00" style={{ margin: '0 auto 16px' }} />
+              <p style={{ color: '#71717a', fontSize: '14px' }}>Sintonizando rádio mercado...</p>
+            </div>
+          ) : (
+            news.map((item, i) => (
+              <div key={i} className="scale-in" style={{ 
+                background: 'rgba(255,255,255,0.03)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.06)',
+                padding: '20px', animationDelay: `${i * 0.05}s`
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Globe size={14} color="#ccff00" />
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#ccff00', textTransform: 'uppercase' }}>{item.source}</span>
+                </div>
+                <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#fff', marginBottom: '12px', lineHeight: '1.4' }}>{item.title}</h2>
+                <p style={{ fontSize: '14px', color: '#a1a1aa', lineHeight: '1.5', marginBottom: '20px' }}>{item.contentSnippet?.slice(0, 150)}...</p>
+                <button 
+                  onClick={() => window.open(item.link, '_blank')}
+                  style={{ 
+                    width: '100%', padding: '14px', borderRadius: '16px', border: 'none',
+                    background: '#fff', color: '#000', fontWeight: 800, fontSize: '14px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer'
+                  }}
+                >
+                  Ler Notícia Completa
+                  <ExternalLink size={16} />
+                </button>
+              </div>
+            ))
+          )
+        ) : filteredEvents.length === 0 ? (
           <div className="card" style={{ padding: '60px 24px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '30px' }}>
             <Activity size={48} color="#ccff00" style={{ margin: '0 auto 16px', opacity: 0.5 }} />
             <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>
