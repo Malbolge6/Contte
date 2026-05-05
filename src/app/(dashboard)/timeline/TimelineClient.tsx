@@ -11,6 +11,7 @@ import {
 import { getFinancialNews } from '@/actions/news'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TimelineEvent {
   id: string
@@ -40,7 +41,13 @@ function getEventIcon(type: string, profileType?: string | null) {
   }
 }
 
-export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
+interface TimelineClientProps {
+  initialEvents: TimelineEvent[]
+  hourlyRate?: number
+}
+
+export function TimelineClient({ initialEvents = [], hourlyRate = 0 }: TimelineClientProps) {
+  const { privacyMode, setPrivacyMode } = useTheme()
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null)
   const [showMenu, setShowMenu] = useState<string | null>(null)
@@ -132,6 +139,17 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
           <Sparkles size={14} />
           Personalizado
         </div>
+        <button 
+          onClick={() => setPrivacyMode(!privacyMode)}
+          style={{ 
+            width: '40px', height: '40px', borderRadius: '12px', 
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', cursor: 'pointer', marginLeft: '10px'
+          }}
+        >
+          {privacyMode ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -278,9 +296,15 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
                       <p style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
                         Valor da Movimentação
                       </p>
-                      <p style={{ fontSize: '36px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
+                      <p style={{ fontSize: '36px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }} className="blur-amount">
                         {formatCurrency(event.amount)}
                       </p>
+                      {hourlyRate > 0 && event.type === 'expense' && (
+                        <div style={{ marginTop: '8px', fontSize: '11px', color: '#ccff00', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                          <Clock size={12} />
+                          Isso custou {(event.amount / hourlyRate).toFixed(1)} horas de trabalho
+                        </div>
+                      )}
                       <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', fontSize: '11px', color: '#a1a1aa' }}>
                         <Activity size={12} />
                         Analisado por IA
@@ -391,7 +415,12 @@ function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () =>
                   border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center', marginBottom: '32px'
                 }}>
                   <p style={{ fontSize: '12px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Valor Total</p>
-                  <p style={{ fontSize: '42px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>{formatCurrency(event.amount)}</p>
+                  <p style={{ fontSize: '42px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }} className="blur-amount">{formatCurrency(event.amount)}</p>
+                  {hourlyRate > 0 && event.type === 'expense' && (
+                    <p style={{ color: '#ccff00', fontSize: '14px', fontWeight: 700, marginTop: '12px' }}>
+                       ⏱️ {(event.amount / hourlyRate).toFixed(1)} horas de vida dedicadas
+                    </p>
+                  )}
                 </div>
               )}
 

@@ -28,6 +28,7 @@ model User {
   stripePriceId          String?
   stripeCurrentPeriodEnd DateTime?
   plan                   String    @default("FREE")
+  hourlyRate             Float?    @default(0)
 
   accounts     Account[]
   sessions     Session[]

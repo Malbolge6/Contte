@@ -5,7 +5,7 @@ import {
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
   Settings, Shield, LogOut, Loader2, Sparkles, Info, CheckCircle2,
-  Calendar, Eye
+  Calendar, Eye, EyeOff
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
 import { getMentorInsight } from '@/actions/mentor'
@@ -28,6 +28,7 @@ interface DashboardClientProps {
   userId: string
   userEmail?: string
   isPremium?: boolean
+  hourlyRate?: number
 }
 
 function getGreeting() {
@@ -37,7 +38,8 @@ function getGreeting() {
   return 'Boa noite'
 }
 
-export function DashboardClient({ data, userName, userId, userEmail, isPremium = false }: DashboardClientProps) {
+export function DashboardClient({ data, userName, userId, userEmail, isPremium = false, hourlyRate = 0 }: DashboardClientProps) {
+  const { privacyMode, setPrivacyMode } = useTheme()
   const router = useRouter()
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showSimulation, setShowSimulation] = useState(false)
@@ -209,7 +211,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
-            onClick={handleNotificationSubscription}
+            onClick={() => setPrivacyMode(!privacyMode)}
             style={{ 
               width: '40px', height: '40px', borderRadius: '12px', 
               background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -217,7 +219,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               color: '#fff', cursor: 'pointer'
             }}
           >
-            <Bell size={18} />
+            {privacyMode ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
           <button onClick={() => setShowAddTransaction(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Plus size={20} />
@@ -311,7 +313,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           
           <div style={{ position: 'relative', zIndex: 1 }}>
             <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Saldo Disponível</p>
-            <h2 style={{ fontSize: '48px', fontWeight: 900, color: '#000', letterSpacing: '-2px', marginBottom: '32px' }}>
+            <h2 className="blur-amount" style={{ fontSize: '48px', fontWeight: 900, color: '#000', letterSpacing: '-2px', marginBottom: '32px' }}>
               {formatCurrency(data.balance)}
             </h2>
             
@@ -320,15 +322,21 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                 <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>ENTRADAS</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
                   <TrendingUp size={14} />
-                  <span style={{ fontSize: '16px' }}>{formatCurrency(data.currentIncome)}</span>
+                  <span className="blur-amount" style={{ fontSize: '16px' }}>{formatCurrency(data.currentIncome)}</span>
                 </div>
               </div>
               <div style={{ padding: '16px', background: 'rgba(0,0,0,0.06)', borderRadius: '20px', transform: 'translateZ(0)' }}>
                 <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>SAÍDAS</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
                   <TrendingDown size={14} />
-                  <span style={{ fontSize: '16px' }}>{formatCurrency(data.currentExpense)}</span>
+                  <span className="blur-amount" style={{ fontSize: '16px' }}>{formatCurrency(data.currentExpense)}</span>
                 </div>
+                {hourlyRate > 0 && (
+                  <p style={{ fontSize: '9px', color: 'rgba(0,0,0,0.4)', fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <Clock size={8} />
+                    {(data.currentExpense / hourlyRate).toFixed(1)}H DE VIDA
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -10,8 +10,8 @@ export default async function SettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { plan: true }
+    select: { plan: true, hourlyRate: true }
   })
 
-  return <SettingsClient currentPlan={user?.plan || 'FREE'} />
+  return <SettingsClient currentPlan={user?.plan || 'FREE'} initialHourlyRate={user?.hourlyRate || 0} />
 }

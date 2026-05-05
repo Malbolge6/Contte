@@ -18,7 +18,10 @@ export default async function DashboardPage() {
     console.error('Failed to generate daily update:', err)
   }
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { plan: true } })
+  const user = await prisma.user.findUnique({ 
+    where: { id: session.user.id }, 
+    select: { plan: true, hourlyRate: true } 
+  })
   
   let data
   try {
@@ -35,6 +38,7 @@ export default async function DashboardPage() {
       userId={session?.user?.id || ''}
       userEmail={session?.user?.email || ''} 
       isPremium={user?.plan === 'PREMIUM'} 
+      hourlyRate={user?.hourlyRate || 0}
     />
   )
 }

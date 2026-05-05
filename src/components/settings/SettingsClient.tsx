@@ -8,12 +8,15 @@ import {
   Check, ChevronRight, User, Sparkles, CreditCard, ExternalLink, Loader2, XCircle
 } from 'lucide-react'
 import { cancelSubscription } from '@/actions/subscriptions'
+import { updateHourlyRate } from '@/actions/user'
 
-export function SettingsClient({ currentPlan }: { currentPlan: string }) {
+export function SettingsClient({ currentPlan, initialHourlyRate }: { currentPlan: string, initialHourlyRate: number }) {
   const { theme, setTheme } = useTheme()
   const [notifications, setNotifications] = useState(true)
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [loadingCancel, setLoadingCancel] = useState(false)
+  const [hourlyRate, setHourlyRate] = useState(initialHourlyRate)
+  const [savingRate, setSavingRate] = useState(false)
 
   async function handleManageSubscription() {
     setLoadingPortal(true)
@@ -50,6 +53,23 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
       alert('Erro ao processar o cancelamento.')
     } finally {
       setLoadingCancel(false)
+    }
+  }
+
+  async function handleSaveHourlyRate() {
+    setSavingRate(true)
+    try {
+      const res = await updateHourlyRate(hourlyRate)
+      if (res.success) {
+        alert('Valor da hora atualizado com sucesso!')
+      } else {
+        alert('Erro ao atualizar: ' + res.error)
+      }
+    } catch (error) {
+      console.error(error)
+      alert('Erro ao salvar valor da hora.')
+    } finally {
+      setSavingRate(false)
     }
   }
 
@@ -97,6 +117,52 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
                 <span style={{ fontSize: '11px', fontWeight: 800, color: t.id === 'LIGHT' ? '#000' : '#fff', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.label}</span>
               </button>
             ))}
+          </div>
+        </section>
+
+        {/* Life Hours Calculator Settings */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Clock size={18} color="#ccff00" />
+            </div>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)' }}>Seu Valor-Hora</h2>
+          </div>
+
+          <div style={{ 
+            padding: '24px', background: 'var(--card-bg)', 
+            borderRadius: '28px', border: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex', flexDirection: 'column', gap: '16px'
+          }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              Quanto vale 1 hora do seu trabalho? Isso nos ajuda a calcular o "Custo de Vida" dos seus gastos.
+            </p>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 700 }}>R$</span>
+              <input 
+                type="number" 
+                value={hourlyRate}
+                onChange={(e) => setHourlyRate(Number(e.target.value))}
+                style={{ 
+                  width: '100%', padding: '16px 16px 16px 45px', borderRadius: '16px', 
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#fff', fontSize: '18px', fontWeight: 800, outline: 'none'
+                }}
+                placeholder="0,00"
+              />
+            </div>
+            <button 
+              onClick={handleSaveHourlyRate}
+              disabled={savingRate}
+              style={{ 
+                width: '100%', padding: '14px', borderRadius: '16px', 
+                background: '#ccff00', color: '#000', border: 'none', fontWeight: 800, 
+                cursor: 'pointer', transition: 'all 0.2s', fontSize: '14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              {savingRate ? <Loader2 className="animate-spin" size={18} /> : 'Salvar Valor-Hora'}
+            </button>
           </div>
         </section>
 
