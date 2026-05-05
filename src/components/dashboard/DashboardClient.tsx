@@ -52,6 +52,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [mentorInsight, setMentorInsight] = useState<any>(null)
   const [predictionData, setPredictionData] = useState<any>(null)
   const [taxProfile, setTaxProfile] = useState<any>(null)
+  const [showBalanceDetails, setShowBalanceDetails] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -126,8 +127,6 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
       console.error('Erro ao ativar notificações:', err)
     }
   }
-
-  const [showBalanceDetails, setShowBalanceDetails] = useState(false)
 
   if (!data) {
     return (
