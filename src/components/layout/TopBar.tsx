@@ -56,86 +56,51 @@ export function TopBar({ user }: TopBarProps) {
         padding: '16px 16px 12px',
         position: 'sticky',
         top: 0,
-        zIndex: 40,
-        background: 'rgba(10, 10, 15, 0.95)',
+        zIndex: 50,
+        background: 'rgba(10, 10, 10, 0.9)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
       }}
     >
       {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div
-            style={{
-              width: '36px', height: '36px',
-              background: '#ccff00',
-              borderRadius: '10px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <span style={{ color: '#050505', fontSize: '22px', fontWeight: 900, fontFamily: 'system-ui, sans-serif' }}>
-              C
-            </span>
-          </div>
-        <span style={{ fontSize: '18px', fontWeight: 800, color: '#f8f9fa', letterSpacing: '-0.5px' }}>
-          contte
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '24px', fontWeight: 900, color: '#ccff00', letterSpacing: '-1px' }}>
+          CONTTE
         </span>
       </div>
 
-      {/* Right side actions */}
+      {/* Right side Profile Pill */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-        <Link
-          href="/alertas"
-          style={{
-            width: '38px', height: '38px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '10px',
-            background: 'rgba(255,255,255,0.05)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            textDecoration: 'none', color: '#a0a0b0',
-            transition: 'all 0.2s',
-          }}
-        >
-          <Bell size={18} />
-        </Link>
-
-        {/* Install App Button — only shows when app is installable */}
-        {installPrompt && !isInstalled && (
-          <button
-            onClick={handleInstall}
-            title="Instalar App"
-            style={{
-              height: '38px',
-              paddingLeft: '12px', paddingRight: '12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              borderRadius: '10px',
-              background: '#ccff00',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#050505',
-              fontWeight: 700,
-              fontSize: '12px',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <Download size={14} />
-            Instalar
-          </button>
-        )}
-
         <button
           onClick={() => setShowMenu(!showMenu)}
           style={{
-            width: '38px', height: '38px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '10px',
-            background: 'rgba(204, 255, 0, 0.1)',
-            border: '1px solid rgba(204, 255, 0, 0.2)',
-            cursor: 'pointer',
-            color: '#ccff00',
+            display: 'flex', alignItems: 'center', gap: '10px',
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            padding: '6px 6px 6px 12px',
+            borderRadius: '30px',
+            cursor: 'pointer'
           }}
         >
-          <User size={18} />
+          <div style={{ position: 'relative' }}>
+            <Bell size={16} color="#a1a1aa" />
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '6px', height: '6px', background: '#f43f5e', borderRadius: '50%' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+              {user.name?.split(' ')[0] || 'Usuário'}
+            </span>
+            <span style={{ fontSize: '10px', color: '#71717a', lineHeight: 1, marginTop: '2px' }}>
+              @contte
+            </span>
+          </div>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ccff00', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginLeft: '4px' }}>
+            {user.image ? (
+              <img src={user.image} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <User size={16} color="#000" />
+            )}
+          </div>
         </button>
 
         {showMenu && (

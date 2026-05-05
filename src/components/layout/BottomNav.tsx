@@ -26,15 +26,15 @@ export function BottomNav() {
 
   return (
     <nav style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0,
-      background: 'rgba(10, 10, 10, 0.85)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-      padding: '12px 16px',
-      paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
-      display: 'flex', justifyContent: 'space-around', alignItems: 'center',
+      position: 'fixed', bottom: 'calc(24px + env(safe-area-inset-bottom))', 
+      left: '50%', transform: 'translateX(-50%)',
+      background: '#161618',
+      borderRadius: '40px',
+      padding: '8px 12px',
+      display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '4px',
       zIndex: 50,
+      boxShadow: '0 20px 40px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05)',
+      width: 'max-content',
     }}>
       {navItems.map((item) => {
         const isActive = pathname === item.href
@@ -43,23 +43,18 @@ export function BottomNav() {
             key={item.href}
             href={item.href}
             style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-              color: isActive ? '#ccff00' : '#71717a',
-              textDecoration: 'none', transition: 'all 0.2s ease',
-              width: '58px',
+              width: '48px', height: '48px', borderRadius: '24px',
+              background: isActive ? '#ccff00' : 'transparent',
+              color: isActive ? '#000' : '#52525b',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textDecoration: 'none', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative'
             }}
           >
-            <div style={{
-              padding: '6px 12px', borderRadius: '12px',
-              background: isActive ? 'rgba(204, 255, 0, 0.1)' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.3s ease',
-            }}>
-              <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-            </div>
-            <span style={{ fontSize: '10px', fontWeight: isActive ? 700 : 500, opacity: isActive ? 1 : 0.8 }}>
-              {item.label}
-            </span>
+            {isActive && (
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '60px', height: '60px', background: '#ccff00', filter: 'blur(20px)', opacity: 0.2, borderRadius: '50%', zIndex: -1 }} />
+            )}
+            <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
           </Link>
         )
       })}

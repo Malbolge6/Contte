@@ -146,200 +146,79 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   return (
     <div className="fade-in" style={{ paddingTop: '8px' }}>
       {/* Greeting Area */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', position: 'relative' }}>
-          <button 
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', border: 'none', cursor: 'pointer' }}
-          >
-            👤
-          </button>
-          {showProfileMenu && (
-            <div className="fade-in glass-card" style={{ 
-              position: 'absolute', top: '60px', right: 0, width: '240px', 
-              padding: '12px', zIndex: 1000, 
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}>
-              <div style={{ padding: '8px 12px 16px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-                <p style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{userName}</p>
-                <p style={{ fontSize: '11px', color: '#71717a' }}>{userEmail}</p>
-              </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <button 
-                  onClick={() => { router.push('/configuracoes'); setShowProfileMenu(false); }}
-                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#fff', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                >
-                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Settings size={16} color="#a1a1aa" />
-                  </div>
-                  Configurações
-                </button>
-
-                {isAdmin && (
-                  <button 
-                    onClick={() => { router.push('/admin'); setShowProfileMenu(false); }}
-                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'rgba(204, 255, 0, 0.05)', color: '#ccff00', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                  >
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Shield size={16} color="#ccff00" />
-                    </div>
-                    Painel Admin
-                  </button>
-                )}
-
-                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }} />
-
-                <button 
-                  onClick={() => router.push('/api/auth/signout')}
-                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', background: 'transparent', color: '#f87171', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-                >
-                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(248, 113, 113, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <LogOut size={16} color="#f87171" />
-                  </div>
-                  Sair da Conta
-                </button>
-              </div>
-            </div>
-          )}
+      {/* Total Balance Area */}
+      <div style={{ marginBottom: '32px', padding: '0 8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', letterSpacing: '-0.5px' }}>
-              {getGreeting()}, {firstName}
-            </h1>
-            <p style={{ color: '#71717a', fontSize: '12px', fontWeight: 500 }}>Resumo de hoje</p>
+            <p style={{ color: '#a0a0b0', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Saldo Total</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h2 className="blur-amount" style={{ fontSize: '42px', fontWeight: 700, color: '#fff', letterSpacing: '-1px' }}>
+                {formatCurrency(data.balance)}
+              </h2>
+              <button 
+                onClick={() => setPrivacyMode(!privacyMode)}
+                style={{ background: 'transparent', border: 'none', color: '#71717a', cursor: 'pointer', marginTop: '6px' }}
+              >
+                {privacyMode ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={() => setPrivacyMode(!privacyMode)}
-            style={{ 
-              width: '40px', height: '40px', borderRadius: '12px', 
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', cursor: 'pointer'
-            }}
-          >
-            {privacyMode ? <EyeOff size={18} /> : <Eye size={18} />}
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>
+          <button onClick={() => setShowAddTransaction(true)} style={{ flex: 1, height: '56px', background: 'rgba(255,255,255,0.05)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={14} color="#fff" /></div>
+            Adicionar
           </button>
-          <button onClick={() => setShowAddTransaction(true)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Plus size={20} />
+          <button onClick={() => router.push('/timeline')} style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#a78bfa', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}>
+            <Activity size={24} color="#000" />
+          </button>
+          <button onClick={() => setShowSimulation(true)} style={{ flex: 1, height: '56px', background: 'rgba(255,255,255,0.05)', borderRadius: '28px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#fff', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+            Simular
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ArrowUpRight size={14} color="#fff" /></div>
           </button>
         </div>
       </div>
 
-      {/* AI Mentor Section */}
+      {/* AI Mentor Insight (Purple Card) */}
       {mentorInsight && (
-        <div 
-          className="fade-in"
-          style={{ 
-            marginBottom: '24px', 
-            padding: '20px', 
-            borderRadius: '24px', 
-            background: mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.1)' :
-                       mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.1)' :
-                       mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.1)' : 
-                       'rgba(255, 255, 255, 0.03)',
-            border: `1px solid ${
-              mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.2)' :
-              mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.2)' :
-              mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.2)' : 
-              'rgba(255, 255, 255, 0.08)'
-            }`,
-            display: 'flex',
-            gap: '16px',
-            alignItems: 'flex-start',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          <div style={{ 
-            width: '44px', height: '44px', borderRadius: '12px', 
-            background: mentorInsight.mood === 'danger' ? '#ef4444' :
-                       mentorInsight.mood === 'warning' ? '#f59e0b' :
-                       mentorInsight.mood === 'happy' ? '#ccff00' : '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            boxShadow: `0 0 20px ${
-              mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.3)' :
-              mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.3)' :
-              mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)'
-            }`
-          }}>
-            {mentorInsight.mood === 'danger' ? <AlertCircle color="#fff" size={24} /> :
-             mentorInsight.mood === 'warning' ? <Info color="#fff" size={24} /> :
-             mentorInsight.mood === 'happy' ? <Sparkles color="#000" size={24} /> : 
-             <Sparkles color="#000" size={24} />}
+        <div className="fade-in" style={{ marginBottom: '16px', background: '#a78bfa', borderRadius: '24px', padding: '24px', color: '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ flex: 1, paddingRight: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{mentorInsight.title}</h3>
+            <p style={{ fontSize: '13px', fontWeight: 500, opacity: 0.8, lineHeight: 1.4 }}>{mentorInsight.message?.substring(0, 60)}...</p>
           </div>
-          <div>
-            <h3 style={{ 
-              fontSize: '15px', 
-              fontWeight: 800, 
-              color: 'var(--text-main)',
-              marginBottom: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}>
-              {mentorInsight.title}
-              <span style={{ 
-                fontSize: '10px', 
-                background: 'rgba(255,255,255,0.05)', 
-                padding: '2px 8px', 
-                borderRadius: '99px',
-                color: 'var(--text-muted)',
-                fontWeight: 600
-              }}>MENTOR IA</span>
-            </h3>
-            <p style={{ 
-              fontSize: '13px', 
-              color: 'var(--text-muted)', 
-              lineHeight: '1.5',
-              fontWeight: 500
-            }}>
-              {mentorInsight.message}
-            </p>
+          <div style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Sparkles size={28} color="#fff" />
           </div>
         </div>
       )}
 
-      {/* Balance Card - Elite Design */}
+      {/* Monthly Spent / Limited Balance (Green Card) */}
       <div className="scale-in" style={{ marginBottom: '32px' }}>
-        <div className="gradient-card-green" style={{ 
-          padding: '32px', borderRadius: '32px', 
-          boxShadow: '0 20px 40px rgba(204, 255, 0, 0.15)',
-          position: 'relative', overflow: 'hidden'
-        }}>
-          {/* Decorative glass elements */}
-          <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', transform: 'translateZ(0)' }} />
-          
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <p style={{ fontSize: '13px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Saldo Disponível</p>
-            <h2 className="blur-amount" style={{ fontSize: '48px', fontWeight: 900, color: '#000', letterSpacing: '-2px', marginBottom: '32px' }}>
-              {formatCurrency(data.balance)}
-            </h2>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div style={{ padding: '16px', background: 'rgba(255,255,255,0.25)', borderRadius: '20px', transform: 'translateZ(0)' }}>
-                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>ENTRADAS</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
-                  <TrendingUp size={14} />
-                  <span className="blur-amount" style={{ fontSize: '16px' }}>{formatCurrency(data.currentIncome)}</span>
-                </div>
-              </div>
-              <div style={{ padding: '16px', background: 'rgba(0,0,0,0.06)', borderRadius: '20px', transform: 'translateZ(0)' }}>
-                <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(0,0,0,0.4)', marginBottom: '4px' }}>SAÍDAS</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#000', fontWeight: 900 }}>
-                  <TrendingDown size={14} />
-                  <span className="blur-amount" style={{ fontSize: '16px' }}>{formatCurrency(data.currentExpense)}</span>
-                </div>
-                {hourlyRate > 0 && (
-                  <p style={{ fontSize: '9px', color: 'rgba(0,0,0,0.4)', fontWeight: 800, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                    <Clock size={8} />
-                    {(data.currentExpense / hourlyRate).toFixed(1)}H DE VIDA
-                  </p>
-                )}
-              </div>
+        <div style={{ background: '#ccff00', borderRadius: '24px', padding: '24px', color: '#000', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, opacity: 0.7 }}>Gasto Mensal</p>
+            <div style={{ background: 'rgba(0,0,0,0.05)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              Mensal <ChevronRight size={14} />
             </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', marginBottom: '24px' }}>
+            <h2 className="blur-amount" style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1 }}>
+              {formatCurrency(data.currentExpense)}
+            </h2>
+            {hourlyRate > 0 && (
+              <span style={{ background: '#000', color: '#ccff00', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800, marginBottom: '4px' }}>
+                {(data.currentExpense / hourlyRate).toFixed(1)}h vida
+              </span>
+            )}
+          </div>
+          
+          {/* Simple progress bar representation */}
+          <div style={{ display: 'flex', gap: '4px', height: '20px' }}>
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} style={{ flex: 1, background: i < 12 ? '#000' : 'rgba(0,0,0,0.1)', borderRadius: '4px' }} />
+            ))}
           </div>
         </div>
       </div>
@@ -466,96 +345,40 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
       )}
 
-      {/* Grid for Charts & Data */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '24px' }}>
-        
-        {/* Monthly Evolution */}
-        {data.monthlyData && data.monthlyData.length > 0 && (
-          <div className="card" style={{ padding: '24px', transform: 'translateZ(0)' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '20px' }}>
-              Estatísticas
-            </h3>
-            <ResponsiveContainer width="100%" height={160} minWidth={1}>
-              <LineChart data={data.monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#71717a', fontSize: 12 }} axisLine={false} tickLine={false} dy={10} />
-                <YAxis hide />
-                <Tooltip
-                  contentStyle={{ background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '13px' }}
-                  formatter={(val: number) => formatCurrency(val)}
-                  labelStyle={{ color: '#a1a1aa', marginBottom: '4px' }}
-                />
-                <Line type="monotone" dataKey="income" stroke="#ccff00" strokeWidth={3} dot={false} />
-                <Line type="monotone" dataKey="expense" stroke="#f43f5e" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
-        {/* Categories */}
-        {categoryData.length > 0 && (
-          <div className="card" style={{ padding: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', marginBottom: '20px' }}>
-              Onde você gastou
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <ResponsiveContainer width={120} height={120} minWidth={1}>
-                <PieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" strokeWidth={0}>
-                    {categoryData.map((_, index) => (
-                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {categoryData.slice(0, 3).map((item, index) => (
-                  <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: COLORS[index % COLORS.length], flexShrink: 0 }} />
-                      <span style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 500 }}>{item.name}</span>
-                    </div>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff' }}>
-                      {formatCurrency(item.value)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Recent Transactions */}
+      {/* Payment History / Operations */}
       {data.recentTransactions && data.recentTransactions.length > 0 && (
-        <div className="card" style={{ padding: '20px', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>
-              Transações Recentes
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 8px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#fff' }}>
+              Histórico
             </h3>
-            <Link href="/transacoes" style={{ fontSize: '13px', color: '#ccff00', fontWeight: 600, textDecoration: 'none' }}>
-              Ver todas
+            <Link href="/transacoes" style={{ fontSize: '12px', color: '#a0a0b0', fontWeight: 600, textDecoration: 'none' }}>
+              Ver Todos
             </Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {data.recentTransactions.slice(0, 5).map((tx: any) => {
               const cat = CATEGORIES.find(c => c.value === tx.category)
               return (
-                <div key={tx.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+                <div key={tx.id} style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  background: '#161618', padding: '16px', borderRadius: '24px',
+                  border: '1px solid rgba(255,255,255,0.02)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
                       {cat?.icon || '💸'}
                     </div>
                     <div>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#f8f9fa' }}>
+                      <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
                         {tx.description}
                       </p>
-                      <p style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
+                      <p style={{ fontSize: '12px', color: '#71717a', fontWeight: 500 }}>
                         {formatDate(tx.date)}
                       </p>
                     </div>
                   </div>
-                  <p style={{ fontSize: '15px', fontWeight: 800, color: tx.type === 'INCOME' ? '#4ade80' : '#f87171', flexShrink: 0 }}>
+                  <p style={{ fontSize: '15px', fontWeight: 800, color: tx.type === 'INCOME' ? '#ccff00' : '#fff', flexShrink: 0 }}>
                     {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
                   </p>
                 </div>
