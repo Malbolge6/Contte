@@ -15,6 +15,22 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
   const [loadingPortal, setLoadingPortal] = useState(false)
   const [loadingCancel, setLoadingCancel] = useState(false)
 
+  async function handleManageSubscription() {
+    setLoadingPortal(true)
+    try {
+      const res = await fetch('/api/portal', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error(error)
+      alert('Erro ao carregar o portal de assinatura.')
+    } finally {
+      setLoadingPortal(false)
+    }
+  }
+
   async function handleCancelSubscription() {
     if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você continuará sendo Premium até o fim do período atual.')) {
       return
