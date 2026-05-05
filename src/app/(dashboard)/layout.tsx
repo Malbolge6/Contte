@@ -3,6 +3,8 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { TopBar } from '@/components/layout/TopBar'
+import { prisma } from '@/lib/prisma'
+import { headers } from 'next/headers'
 
 export default async function DashboardLayout({
   children,
@@ -11,6 +13,22 @@ export default async function DashboardLayout({
 }) {
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true }
+  })
+
+  const headerList = headers()
+  const pathname = headerList.get('x-invoke-path') || ''
+  
+  // Se não for premium e não estiver nas páginas de liberação/pagamento, bloqueia.
+  const isPremium = user?.plan === 'PREMIUM'
+  const isPublicDashboardPage = pathname.includes('/premium') || pathname.includes('/checkout') || pathname.includes('/sucesso')
+
+  if (!isPremium && !isPublicDashboardPage) {
+    redirect('/premium')
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

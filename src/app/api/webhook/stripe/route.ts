@@ -68,7 +68,7 @@ export async function POST(req: Request) {
           data: {
             stripePriceId: updatedSub.items.data[0].price.id,
             stripeCurrentPeriodEnd: new Date(updatedSub.current_period_end * 1000),
-            plan: updatedSub.status === 'active' || updatedSub.status === 'trialing' || updatedSub.status === 'past_due' ? 'PREMIUM' : 'FREE'
+            plan: (updatedSub.status === 'active' || updatedSub.status === 'trialing') ? 'PREMIUM' : 'FREE'
           }
         })
         break
