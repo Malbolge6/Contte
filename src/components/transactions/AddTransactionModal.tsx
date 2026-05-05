@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, ChevronDown, Loader2 } from 'lucide-react'
 import { createTransaction } from '@/actions/transactions'
-import { CATEGORIES, PAYMENT_METHODS, maskCurrency, parseCurrency } from '@/lib/helpers'
+import { CATEGORIES, PAYMENT_METHODS, maskCurrency, parseCurrency, formatCurrency } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
 
@@ -20,6 +20,8 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
 
+  const [walletId, setWalletId] = useState('')
+  const [wallets, setWallets] = useState<any[]>([])
   const [paymentMethod, setPaymentMethod] = useState('')
   const [installments, setInstallments] = useState('1')
   const [notes, setNotes] = useState('')
@@ -30,14 +32,22 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
 
   useEffect(() => {
     setMounted(true)
+    async function load() {
+      const res = await fetch('/api/wallets').then(r => r.json())
+      if (res.success) {
+        setWallets(res.data)
+        if (res.data.length > 0) setWalletId(res.data[0].id)
+      }
+    }
+    load()
   }, [])
 
   if (!mounted) return null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!amount || !category || !description) {
-      setError('Preencha todos os campos obrigatórios')
+    if (!amount || !category || !description || !walletId) {
+      setError('Preencha todos os campos obrigatórios (incluindo a carteira)')
       return
     }
 
@@ -51,7 +61,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
         category,
         description,
         date: new Date(date + 'T12:00:00'),
-
+        walletId,
         paymentMethod: paymentMethod || undefined,
         installments: parseInt(installments) || 1,
         notes: notes || undefined,
@@ -154,6 +164,35 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
                   autoFocus
                 />
               </div>
+            </div>
+
+            {/* Wallet Selection */}
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '8px' }}>
+                Carteira / Banco *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <select
+                  className="input-field"
+                  value={walletId}
+                  onChange={e => setWalletId(e.target.value)}
+                  style={{ appearance: 'none', paddingRight: '40px' }}
+                  required
+                >
+                  <option value="" disabled>Selecione uma carteira</option>
+                  {wallets.map((w: any) => (
+                    <option key={w.id} value={w.id} style={{ background: '#16161f' }}>
+                      {w.name} ({formatCurrency(w.balance)})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={16} style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: '#71717a', pointerEvents: 'none' }} />
+              </div>
+              {wallets.length === 0 && (
+                <p style={{ fontSize: '11px', color: '#f87171', marginTop: '6px' }}>
+                  Você precisa cadastrar uma carteira primeiro.
+                </p>
+              )}
             </div>
 
             {/* Description */}

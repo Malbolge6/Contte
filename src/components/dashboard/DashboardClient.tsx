@@ -127,6 +127,8 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
     }
   }
 
+  const [showBalanceDetails, setShowBalanceDetails] = useState(false)
+
   if (!data) {
     return (
       <div className="fade-in" style={{ padding: '20px 0' }}>
@@ -151,25 +153,66 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
 
   return (
     <div className="fade-in" style={{ paddingTop: '8px' }}>
-      {/* Greeting Area */}
       {/* Total Balance Area */}
       <div style={{ marginBottom: '32px', padding: '0 8px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <p style={{ color: '#a0a0b0', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}>Saldo Total</p>
+            <p style={{ color: '#a0a0b0', fontSize: '13px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Saldo Total</p>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <h2 className="blur-amount" style={{ fontSize: '42px', fontWeight: 700, color: '#fff', letterSpacing: '-1px' }}>
+              <h2 className="blur-amount" style={{ fontSize: '42px', fontWeight: 800, color: '#fff', letterSpacing: '-1.5px' }}>
                 {formatCurrency(data.balance)}
               </h2>
-              <button 
-                onClick={() => setPrivacyMode(!privacyMode)}
-                style={{ background: 'transparent', border: 'none', color: '#71717a', cursor: 'pointer', marginTop: '6px' }}
-              >
-                {privacyMode ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setPrivacyMode(!privacyMode)}
+                  style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#71717a', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  {privacyMode ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                <button 
+                  onClick={() => setShowBalanceDetails(true)}
+                  style={{ background: 'rgba(204, 255, 0, 0.1)', border: '1px solid rgba(204, 255, 0, 0.2)', color: '#ccff00', fontSize: '11px', fontWeight: 700, padding: '0 12px', borderRadius: '20px', cursor: 'pointer', height: '32px' }}
+                >
+                  Detalhes
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Balance Details Modal */}
+        {showBalanceDetails && (
+          <div className="modal-overlay" onClick={() => setShowBalanceDetails(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ paddingBottom: '30px' }}>
+              <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
+                <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Composição do Saldo</h2>
+                <button onClick={() => setShowBalanceDetails(false)} style={{ background: 'none', border: 'none', color: '#71717a' }}><X size={20} /></button>
+              </div>
+              
+              <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Seu saldo é a soma de todas as suas carteiras ativas.</p>
+                
+                {(data.wallets || []).map((w: any) => (
+                  <div key={w.id} style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${w.color || '#ccff00'}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                        {w.type === 'bank' ? '🏦' : w.type === 'digital' ? '📱' : '💳'}
+                      </div>
+                      <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>{w.name}</span>
+                    </div>
+                    <span style={{ color: w.balance >= 0 ? '#ccff00' : '#f87171', fontWeight: 800 }}>{formatCurrency(w.balance)}</span>
+                  </div>
+                ))}
+
+                <div style={{ marginTop: '12px', padding: '20px', borderRadius: '20px', background: '#ccff00', color: '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 800, fontSize: '14px' }}>SALDO TOTAL</span>
+                  <span style={{ fontWeight: 900, fontSize: '20px' }}>{formatCurrency(data.balance)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', gap: '8px', marginTop: '24px' }}>

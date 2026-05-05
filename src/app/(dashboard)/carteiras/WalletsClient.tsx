@@ -53,6 +53,11 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
   const [balance, setBalance] = useState('')
   const [color, setColor] = useState('#ccff00')
 
+  // Adjustment state
+  const [adjustingWallet, setAdjustingWallet] = useState<WalletItem | null>(null)
+  const [adjustAmount, setAdjustAmount] = useState('')
+  const [adjustType, setAdjustType] = useState<'ADD' | 'SUB'>('ADD')
+
   useEffect(() => { setMounted(true) }, [])
 
   function openAdd() {
@@ -68,6 +73,12 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
     setColor(w.color || '#ccff00')
     setEditingWallet(w)
     setShowAdd(true)
+  }
+
+  function openAdjust(w: WalletItem, type: 'ADD' | 'SUB') {
+    setAdjustingWallet(w)
+    setAdjustType(type)
+    setAdjustAmount('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -87,8 +98,26 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
     }
   }
 
+  async function handleAdjust(e: React.FormEvent) {
+    e.preventDefault()
+    if (!adjustingWallet) return
+    setLoading(true)
+    try {
+      const amount = parseFloat(adjustAmount.replace(',', '.')) || 0
+      const newBalance = adjustType === 'ADD' 
+        ? adjustingWallet.balance + amount 
+        : adjustingWallet.balance - amount
+      
+      await updateWallet(adjustingWallet.id, { balance: newBalance })
+      setAdjustingWallet(null)
+      router.refresh()
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleDelete(id: string) {
-    if (!confirm('Excluir esta carteira?')) return
+    if (!confirm('Excluir esta carteira? Todos os registros vinculados a ela serão mantidos, mas a carteira sumirá. Continuar?')) return
     setDeletingId(id)
     try {
       await deleteWallet(id)
@@ -124,25 +153,6 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
         </button>
       </div>
 
-      {/* Total Balance Card */}
-      {initialWallets.length > 0 && (
-        <div style={{
-          background: 'linear-gradient(135deg, #a3e635 0%, #bef264 50%, #fde047 100%)',
-          borderRadius: '24px', padding: '24px', marginBottom: '24px',
-          boxShadow: '0 12px 40px rgba(204, 255, 0, 0.15)',
-        }}>
-          <p style={{ fontSize: '14px', fontWeight: 600, color: '#111', opacity: 0.7, marginBottom: '6px' }}>
-            Saldo Total em Carteiras
-          </p>
-          <p style={{ fontSize: '38px', fontWeight: 900, color: '#111', letterSpacing: '-1px' }}>
-            {formatCurrency(totalBalance)}
-          </p>
-          <p style={{ fontSize: '13px', color: '#333', marginTop: '8px', opacity: 0.7 }}>
-            {initialWallets.length} carteira(s) cadastrada(s)
-          </p>
-        </div>
-      )}
-
       {/* Wallets List */}
       {initialWallets.length === 0 ? (
         <div className="card" style={{ padding: '48px 24px', textAlign: 'center' }}>
@@ -160,55 +170,96 @@ export function WalletsClient({ wallets: initialWallets }: WalletsClientProps) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {initialWallets.map((wallet) => (
-            <div key={wallet.id} className="card" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div key={wallet.id} className="card" style={{ padding: '18px', display: 'flex', alignItems: 'center', gap: '12px' }}>
               {/* Icon */}
               <div style={{
-                width: '52px', height: '52px', borderRadius: '16px',
+                width: '48px', height: '48px', borderRadius: '16px',
                 background: `${wallet.color || '#ccff00'}20`,
                 border: `1.5px solid ${wallet.color || '#ccff00'}40`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '24px', flexShrink: 0,
+                fontSize: '22px', flexShrink: 0,
               }}>
                 {getWalletIcon(wallet.type)}
               </div>
 
               {/* Info */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '16px', fontWeight: 700, color: '#f8f9fa' }}>{wallet.name}</p>
-                <p style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>
-                  {WALLET_TYPES.find(t => t.value === wallet.type)?.label || wallet.type}
-                </p>
-              </div>
-
-              {/* Balance */}
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{
-                  fontSize: '18px', fontWeight: 800,
-                  color: wallet.balance >= 0 ? (wallet.color || '#ccff00') : '#f87171',
-                }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#f8f9fa' }}>{wallet.name}</p>
+                <p style={{ fontSize: '18px', fontWeight: 800, color: wallet.balance >= 0 ? (wallet.color || '#ccff00') : '#f87171', marginTop: '2px' }}>
                   {formatCurrency(wallet.balance)}
                 </p>
               </div>
 
-              {/* Actions */}
+              {/* Quick Actions */}
               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                 <button
-                  onClick={() => openEdit(wallet)}
-                  style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#a1a1aa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={() => openAdjust(wallet, 'ADD')}
+                  title="Somar ao saldo"
+                  style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(204, 255, 0, 0.1)', border: 'none', color: '#ccff00', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  <Pencil size={14} />
+                  <Plus size={18} />
+                </button>
+                <button
+                  onClick={() => openEdit(wallet)}
+                  style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#a1a1aa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Pencil size={16} />
                 </button>
                 <button
                   onClick={() => handleDelete(wallet.id)}
                   disabled={deletingId === wallet.id}
-                  style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(239,68,68,0.08)', border: 'none', color: '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  {deletingId === wallet.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  {deletingId === wallet.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                 </button>
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Adjustment Modal */}
+      {adjustingWallet && mounted && createPortal(
+        <div className="modal-overlay" onClick={() => setAdjustingWallet(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f8f9fa' }}>
+                Ajustar Saldo
+              </h2>
+              <button onClick={() => setAdjustingWallet(null)} style={{ background: 'none', border: 'none', color: '#71717a' }}><X size={20} /></button>
+            </div>
+            
+            <form onSubmit={handleAdjust} style={{ padding: '0 20px 30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <p style={{ fontSize: '14px', color: '#a1a1aa' }}>
+                Carteira: <strong>{adjustingWallet.name}</strong> (Atual: {formatCurrency(adjustingWallet.balance)})
+              </p>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => setAdjustType('ADD')} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: adjustType === 'ADD' ? 'rgba(204, 255, 0, 0.1)' : 'rgba(255,255,255,0.02)', border: adjustType === 'ADD' ? '1px solid #ccff00' : '1px solid rgba(255,255,255,0.05)', color: adjustType === 'ADD' ? '#ccff00' : '#71717a', fontSize: '13px', fontWeight: 700 }}>SOMAR (+)</button>
+                <button type="button" onClick={() => setAdjustType('SUB')} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: adjustType === 'SUB' ? 'rgba(248, 113, 113, 0.1)' : 'rgba(255,255,255,0.02)', border: adjustType === 'SUB' ? '1px solid #f87171' : '1px solid rgba(255,255,255,0.05)', color: adjustType === 'SUB' ? '#f87171' : '#71717a', fontSize: '13px', fontWeight: 700 }}>SUBTRAIR (-)</button>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#71717a', fontWeight: 700 }}>R$</span>
+                <input 
+                  type="number" step="0.01" autoFocus required
+                  placeholder="0,00"
+                  value={adjustAmount}
+                  onChange={e => setAdjustAmount(e.target.value)}
+                  style={{ width: '100%', padding: '16px 16px 16px 44px', borderRadius: '16px', background: '#000', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: '24px', fontWeight: 800 }}
+                />
+              </div>
+
+              <button 
+                type="submit" disabled={loading}
+                style={{ height: '56px', borderRadius: '16px', background: '#ccff00', color: '#000', fontSize: '16px', fontWeight: 800, border: 'none', cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.7 : 1 }}
+              >
+                {loading ? 'Processando...' : 'Confirmar Ajuste'}
+              </button>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Add/Edit Modal */}

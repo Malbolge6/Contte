@@ -42,6 +42,7 @@ export async function createTransaction(data: {
   category: string
   description: string
   date: Date
+  walletId: string
   paymentMethod?: string
   installments?: number
   notes?: string
@@ -75,6 +76,17 @@ export async function createTransaction(data: {
         })
       )
     }
+
+    // Update Wallet Balance
+    await prisma.wallet.update({
+      where: { id: data.walletId },
+      data: {
+        balance: {
+          increment: data.type === 'INCOME' ? data.amount : -data.amount
+        }
+      }
+    })
+
     await prisma.$transaction(transactions)
     
     await createTimelineEvent({
@@ -85,12 +97,23 @@ export async function createTransaction(data: {
       category: data.category
     })
   } else {
-    await prisma.transaction.create({
-      data: {
-        ...data,
-        userId: session.user.id,
-      },
-    })
+    // Single Transaction
+    await prisma.$transaction([
+      prisma.transaction.create({
+        data: {
+          ...data,
+          userId: session.user.id,
+        },
+      }),
+      prisma.wallet.update({
+        where: { id: data.walletId },
+        data: {
+          balance: {
+            increment: data.type === 'INCOME' ? data.amount : -data.amount
+          }
+        }
+      })
+    ])
 
     // Create Timeline Event
     await createTimelineEvent({
@@ -151,6 +174,7 @@ export async function createTransaction(data: {
   revalidatePath('/dashboard')
   revalidatePath('/transacoes')
   revalidatePath('/timeline')
+  revalidatePath('/carteiras')
 }
 
 export async function deleteTransaction(id: string) {
@@ -163,6 +187,7 @@ export async function deleteTransaction(id: string) {
 
   revalidatePath('/dashboard')
   revalidatePath('/transacoes')
+  revalidatePath('/carteiras')
 }
 
 export async function getDashboardData() {
