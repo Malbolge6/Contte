@@ -199,9 +199,12 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         <div style={{ background: '#ccff00', borderRadius: '24px', padding: '24px', color: '#000', position: 'relative', overflow: 'hidden' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <p style={{ fontSize: '14px', fontWeight: 600, opacity: 0.7 }}>Gasto Mensal</p>
-            <div style={{ background: 'rgba(0,0,0,0.05)', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <button 
+              onClick={() => router.push('/transacoes')}
+              style={{ background: 'rgba(0,0,0,0.05)', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#000' }}
+            >
               Mensal <ChevronRight size={14} />
-            </div>
+            </button>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', marginBottom: '24px' }}>
             <h2 className="blur-amount" style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1 }}>
