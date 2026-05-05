@@ -22,6 +22,7 @@ import { TaxConfigModal } from './TaxConfigModal'
 import { useState, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
 import { getTaxProfile } from '@/actions/tax'
+import { createPortal } from 'react-dom'
 
 const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635', '#fde047', '#818cf8']
 
@@ -180,16 +181,46 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
 
         {/* Balance Details Modal */}
-        {showBalanceDetails && (
-          <div className="modal-overlay" onClick={() => setShowBalanceDetails(false)}>
-            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ paddingBottom: '30px' }}>
+        {showBalanceDetails && createPortal(
+          <div 
+            style={{ 
+              position: 'fixed', inset: 0, 
+              background: 'rgba(0,0,0,0.85)', 
+              backdropFilter: 'blur(10px)', 
+              zIndex: 9999, 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              padding: '16px' 
+            }} 
+            onClick={() => setShowBalanceDetails(false)}
+          >
+            <div 
+              onClick={e => e.stopPropagation()}
+              style={{ 
+                width: '100%', 
+                maxWidth: '440px', 
+                maxHeight: 'calc(100vh - 32px)',
+                background: '#0a0a0a', 
+                border: '1px solid rgba(255,255,255,0.1)', 
+                borderRadius: '28px', 
+                overflowY: 'auto',
+                position: 'relative', 
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
               <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>Composição do Saldo</h2>
-                <button onClick={() => setShowBalanceDetails(false)} style={{ background: 'none', border: 'none', color: '#71717a' }}><X size={20} /></button>
+                <button 
+                  onClick={() => setShowBalanceDetails(false)} 
+                  style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer' }}
+                >
+                  <X size={20} />
+                </button>
               </div>
               
-              <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ padding: '0 20px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <p style={{ fontSize: '13px', color: '#a1a1aa', marginBottom: '8px' }}>Seu saldo é a soma de todas as suas carteiras ativas.</p>
                 
                 {(data.wallets || []).map((w: any) => (
@@ -210,7 +241,8 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                 </div>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Action Buttons */}
