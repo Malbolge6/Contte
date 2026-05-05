@@ -1,12 +1,13 @@
 'use client'
 
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES } from '@/lib/helpers'
-import {
+import { 
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
-  Settings, Shield, LogOut, Loader2
+  Settings, Shield, LogOut, Loader2, Sparkles, Info, CheckCircle2
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
+import { getMentorInsight } from '@/actions/mentor'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -40,9 +41,17 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [showSimulation, setShowSimulation] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [mentorInsight, setMentorInsight] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
+    // Fetch AI Mentor Insight
+    async function loadMentor() {
+      const insight = await getMentorInsight()
+      setMentorInsight(insight)
+    }
+    loadMentor()
+
     // Auto-request notifications after 2 seconds if not granted
     const timer = setTimeout(() => {
       if (Notification.permission === 'default') {
@@ -209,6 +218,80 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           </button>
         </div>
       </div>
+
+      {/* AI Mentor Section */}
+      {mentorInsight && (
+        <div 
+          className="fade-in"
+          style={{ 
+            marginBottom: '24px', 
+            padding: '20px', 
+            borderRadius: '24px', 
+            background: mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.1)' :
+                       mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.1)' :
+                       mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.1)' : 
+                       'rgba(255, 255, 255, 0.03)',
+            border: `1px solid ${
+              mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.2)' :
+              mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.2)' :
+              mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.2)' : 
+              'rgba(255, 255, 255, 0.08)'
+            }`,
+            display: 'flex',
+            gap: '16px',
+            alignItems: 'flex-start',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ 
+            width: '44px', height: '44px', borderRadius: '12px', 
+            background: mentorInsight.mood === 'danger' ? '#ef4444' :
+                       mentorInsight.mood === 'warning' ? '#f59e0b' :
+                       mentorInsight.mood === 'happy' ? '#ccff00' : '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            boxShadow: `0 0 20px ${
+              mentorInsight.mood === 'danger' ? 'rgba(239, 68, 68, 0.3)' :
+              mentorInsight.mood === 'warning' ? 'rgba(245, 158, 11, 0.3)' :
+              mentorInsight.mood === 'happy' ? 'rgba(204, 255, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)'
+            }`
+          }}>
+            {mentorInsight.mood === 'danger' ? <AlertCircle color="#fff" size={24} /> :
+             mentorInsight.mood === 'warning' ? <Info color="#fff" size={24} /> :
+             mentorInsight.mood === 'happy' ? <Sparkles color="#000" size={24} /> : 
+             <Sparkles color="#000" size={24} />}
+          </div>
+          <div>
+            <h3 style={{ 
+              fontSize: '15px', 
+              fontWeight: 800, 
+              color: 'var(--text-main)',
+              marginBottom: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              {mentorInsight.title}
+              <span style={{ 
+                fontSize: '10px', 
+                background: 'rgba(255,255,255,0.05)', 
+                padding: '2px 8px', 
+                borderRadius: '99px',
+                color: 'var(--text-muted)',
+                fontWeight: 600
+              }}>MENTOR IA</span>
+            </h3>
+            <p style={{ 
+              fontSize: '13px', 
+              color: 'var(--text-muted)', 
+              lineHeight: '1.5',
+              fontWeight: 500
+            }}>
+              {mentorInsight.message}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Balance Card - Elite Design */}
       <div className="scale-in" style={{ marginBottom: '32px' }}>

@@ -26,7 +26,7 @@ export async function cancelSubscription() {
     })
 
     // Opcional: Atualizar algo no banco, mas o Webhook do Stripe cuidará disso de forma mais segura
-    
+
     revalidatePath('/configuracoes')
     return { success: true }
   } catch (error: any) {
