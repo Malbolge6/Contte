@@ -105,7 +105,7 @@ export async function updateBill(id: string, data: Partial<{
   revalidatePath('/timeline')
 }
 
-export async function markBillAsPaid(id: string) {
+export async function markBillAsPaid(id: string, walletId?: string) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
@@ -115,26 +115,40 @@ export async function markBillAsPaid(id: string) {
 
   if (!bill) throw new Error('Conta não encontrada')
 
-  await prisma.bill.update({
-    where: { id },
-    data: {
-      status: 'PAID',
-      paidAt: new Date(),
-    },
-  })
+  await prisma.$transaction(async (tx) => {
+    // 1. Mark bill as paid
+    await tx.bill.update({
+      where: { id },
+      data: {
+        status: 'PAID',
+        paidAt: new Date(),
+      },
+    })
 
-  // Auto-create a transaction for this payment
-  await prisma.transaction.create({
-    data: {
-      amount: bill.amount,
-      type: 'EXPENSE',
-      category: bill.category || 'outros',
-      description: `Pagamento: ${bill.name}`,
-      date: new Date(),
-      paymentMethod: bill.pixKey ? 'pix' : bill.barcode ? 'boleto' : undefined,
-      userId: session.user.id,
-      billId: id,
-    },
+    // 2. Create Transaction
+    await tx.transaction.create({
+      data: {
+        amount: bill.amount,
+        type: 'EXPENSE',
+        category: bill.category || 'outros',
+        description: `Pagamento: ${bill.name}`,
+        date: new Date(),
+        paymentMethod: bill.pixKey ? 'pix' : bill.barcode ? 'boleto' : undefined,
+        userId: session.user.id,
+        billId: id,
+        walletId: walletId || undefined,
+      },
+    })
+
+    // 3. Update Wallet Balance if walletId provided
+    if (walletId) {
+      await tx.wallet.update({
+        where: { id: walletId },
+        data: {
+          balance: { decrement: bill.amount }
+        }
+      })
+    }
   })
 
   await createTimelineEvent({
@@ -148,6 +162,7 @@ export async function markBillAsPaid(id: string) {
   revalidatePath('/contas')
   revalidatePath('/dashboard')
   revalidatePath('/timeline')
+  revalidatePath('/carteiras')
 }
 
 export async function unmarkBillAsPaid(id: string) {

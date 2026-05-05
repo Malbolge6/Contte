@@ -1,16 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Plus, Copy, CheckCircle, Clock, AlertCircle,
   X, ChevronDown, Loader2, Trash2, Edit2,
-  QrCode, Barcode, FileText
+  QrCode, Barcode, FileText, Wallet, ChevronRight, Check
 } from 'lucide-react'
 import { formatCurrency, formatDate, getDaysUntilDue, CATEGORIES, maskCurrency, parseCurrency } from '@/lib/helpers'
 import { markBillAsPaid, unmarkBillAsPaid, deleteBill, createBill } from '@/actions/bills'
+import { getWallets } from '@/actions/wallets'
 import { createPortal } from 'react-dom'
-import { useEffect } from 'react'
 
 interface Bill {
   id: string
@@ -21,7 +21,6 @@ interface Bill {
   pixKey?: string | null
   barcode?: string | null
   status: string
-
   category?: string | null
   recurrent: boolean
   paidAt?: string | Date | null
@@ -71,16 +70,13 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
   const [description, setDescription] = useState('')
   const [pixKey, setPixKey] = useState('')
   const [barcode, setBarcode] = useState('')
-
   const [category, setCategory] = useState('')
   const [recurrent, setRecurrent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -89,7 +85,6 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
       return
     }
     setLoading(true)
-    setError('')
     try {
       await createBill({
         name,
@@ -98,7 +93,6 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
         description: description || undefined,
         pixKey: pixKey || undefined,
         barcode: barcode || undefined,
-
         category: category || undefined,
         recurrent,
       })
@@ -112,89 +106,39 @@ function AddBillModal({ onClose }: { onClose: () => void }) {
 
   if (!mounted) return null
   return createPortal(
-    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-content">
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '440px', maxHeight: 'calc(100vh - 32px)', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', overflowY: 'auto', position: 'relative', display: 'flex', flexDirection: 'column' }}>
         <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f8f9fa' }}>Nova Conta</h2>
-          <button onClick={onClose} style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#6b6b80', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={16} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#fff' }}>Nova Conta</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: '#fff', cursor: 'pointer' }}><X size={18} /></button>
+        </div>
+        <form onSubmit={handleSubmit} style={{ padding: '0 24px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px', textTransform: 'uppercase' }}>NOME DA CONTA</label>
+            <input type="text" className="input-field" placeholder="Ex: Aluguel, Internet..." value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px', textTransform: 'uppercase' }}>VALOR</label>
+              <input type="text" className="input-field" placeholder="R$ 0,00" value={amount} onChange={e => setAmount(maskCurrency(e.target.value))} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px', textTransform: 'uppercase' }}>VENCIMENTO</label>
+              <input type="date" className="input-field" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ colorScheme: 'dark' }} />
+            </div>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px', textTransform: 'uppercase' }}>CATEGORIA</label>
+            <select className="input-field" value={category} onChange={e => setCategory(e.target.value)}>
+              <option value="">Selecionar</option>
+              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.icon} {c.label}</option>)}
+            </select>
+          </div>
+          <button type="submit" className="btn-primary" disabled={loading} style={{ height: '56px', marginTop: '16px' }}>
+            {loading ? <Loader2 size={20} className="animate-spin" /> : 'Criar Conta'}
           </button>
-        </div>
-        <div style={{ padding: '0 20px 80px' }}>
-          {error && (
-            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', color: '#f87171', fontSize: '13px' }}>
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Nome da conta *</label>
-              <input type="text" className="input-field" placeholder="Ex: Aluguel, Internet..." value={name} onChange={e => setName(e.target.value)} autoFocus />
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Valor *</label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#6b6b80', fontSize: '14px', fontWeight: 600 }}>R$</span>
-                  <input 
-                    type="text" 
-                    className="input-field" 
-                    placeholder="0,00" 
-                    value={amount} 
-                    onChange={e => setAmount(maskCurrency(e.target.value))} 
-                    style={{ paddingLeft: '36px' }} 
-                  />
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Vencimento *</label>
-                <input type="date" className="input-field" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ colorScheme: 'dark' }} />
-              </div>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Categoria</label>
-              <select className="input-field" value={category} onChange={e => setCategory(e.target.value)} style={{ appearance: 'none' }}>
-                <option value="">Selecionar</option>
-                {CATEGORIES.map(c => <option key={c.value} value={c.value} style={{ background: '#16161f' }}>{c.icon} {c.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><QrCode size={13} /> Chave PIX</span>
-              </label>
-              <input type="text" className="input-field" placeholder="Chave PIX (opcional)" value={pixKey} onChange={e => setPixKey(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Barcode size={13} /> Código de barras</span>
-              </label>
-              <input type="text" className="input-field" placeholder="Código de barras (opcional)" value={barcode} onChange={e => setBarcode(e.target.value)} />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#a0a0b0', marginBottom: '6px' }}>Descrição</label>
-              <input type="text" className="input-field" placeholder="Observação (opcional)" value={description} onChange={e => setDescription(e.target.value)} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <span style={{ fontSize: '14px', color: '#a0a0b0', fontWeight: 500 }}>Recorrente (mensal)</span>
-              <button type="button" onClick={() => setRecurrent(!recurrent)} style={{
-                width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer', transition: 'all 0.2s',
-                background: recurrent ? 'linear-gradient(135deg, #ccff00, #99cc00)' : 'rgba(255,255,255,0.1)',
-                position: 'relative',
-              }}>
-                <div style={{
-                  position: 'absolute', top: '3px', width: '18px', height: '18px', borderRadius: '50%', background: 'white',
-                  transition: 'left 0.2s', left: recurrent ? '23px' : '3px',
-                }} />
-              </button>
-            </div>
-            <button type="submit" className="btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px', opacity: loading ? 0.8 : 1 }}>
-              {loading && <Loader2 size={18} className="animate-spin" />}
-              {loading ? 'Salvando...' : 'Criar conta'}
-            </button>
-          </form>
-        </div>
+        </form>
       </div>
     </div>,
     document.body
@@ -206,47 +150,38 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
   const [activeTab, setActiveTab] = useState<'PENDING' | 'PAID'>('PENDING')
   const [showAddModal, setShowAddModal] = useState(false)
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
+  const [wallets, setWallets] = useState<any[]>([])
+  const [showWalletSelector, setShowWalletSelector] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    getWallets().then(setWallets).catch(console.error)
   }, [])
 
   if (!mounted) return null
 
-  // Mega safety check
   const bills = Array.isArray(rawBills) ? rawBills.filter(b => b && typeof b === 'object') : []
-
-  const filtered = bills.filter(b => {
-    try {
-      if (activeTab === 'PENDING') return b.status === 'PENDING'
-      return b.status === 'PAID'
-    } catch {
-      return false
-    }
-  })
+  const filtered = bills.filter(b => activeTab === 'PENDING' ? b.status === 'PENDING' : b.status === 'PAID')
 
   const totalPending = bills
-    .filter(b => b && b.status === 'PENDING' && typeof b.amount === 'number')
+    .filter(b => b.status === 'PENDING')
     .reduce((s, b) => s + (b.amount || 0), 0)
 
-  const overdue = bills.filter(b => 
-    b && b.status === 'PENDING' && getDaysUntilDue(b.dueDate) < 0
-  )
-
-  async function handleMarkPaid(id: string) {
+  async function handleMarkPaid(id: string, walletId?: string) {
     setMarkingPaid(id)
     try {
-      await markBillAsPaid(id)
+      await markBillAsPaid(id, walletId)
       router.refresh()
+      setShowWalletSelector(null)
     } finally {
       setMarkingPaid(null)
     }
   }
 
   async function handleUnmarkPaid(id: string) {
-    if (!confirm('Deseja reverter esta conta para pendente? A transação vinculada será excluída.')) return
+    if (!confirm('Reverter para pendente?')) return
     setMarkingPaid(id)
     try {
       await unmarkBillAsPaid(id)
@@ -269,251 +204,136 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
 
   return (
     <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
         <div>
-          <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
-            Contas a Pagar
-          </h1>
-          <p style={{ color: '#71717a', fontSize: '13px', fontWeight: 500 }}>
-            Gerencie e pague suas faturas rapidamente
-          </p>
+          <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>Compromissos</h1>
+          <p style={{ color: '#71717a', fontSize: '14px', fontWeight: 500 }}>Controle suas saídas e mantenha o fluxo</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={() => router.push('/documentos')}
-            style={{ 
-              height: '44px', width: '44px', borderRadius: '14px', 
-              background: 'rgba(255, 255, 255, 0.05)', color: '#fff', 
-              border: '1px solid rgba(255, 255, 255, 0.1)', display: 'flex', 
-              alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            title="Meus Comprovantes"
-          >
-            <FileText size={20} />
+          <button onClick={() => router.push('/carteiras')} style={{ height: '48px', padding: '0 16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+            <Wallet size={18} /> Carteiras
           </button>
-          <button 
-            onClick={() => setShowAddModal(true)} 
-            style={{ 
-              height: '44px', width: '44px', borderRadius: '14px', 
-              background: 'rgba(204, 255, 0, 0.15)', color: '#ccff00', 
-              border: '1px solid rgba(204, 255, 0, 0.3)', display: 'flex', 
-              alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              boxShadow: '0 8px 20px rgba(204, 255, 0, 0.1)'
-            }}
-          >
+          <button onClick={() => setShowAddModal(true)} style={{ height: '48px', width: '48px', borderRadius: '16px', background: '#ccff00', color: '#000', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <Plus size={24} />
           </button>
         </div>
       </div>
 
-      {/* Summary Cards - Bento Style */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
-        <div className="glass-card" style={{ padding: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clock size={12} color="#ccff00" />
-            </div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>A PAGAR</span>
-          </div>
-          <p style={{ fontSize: '24px', fontWeight: 900, color: '#fff' }}>
-            {formatCurrency(totalPending)}
-          </p>
-          <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
-            {bills.filter(b => b.status === 'PENDING').length} boletos
-          </p>
-        </div>
-        
-        <div className="glass-card" style={{ 
-          padding: '24px', 
-          background: overdue.length > 0 ? 'rgba(244, 63, 94, 0.05)' : 'rgba(255,255,255,0.02)',
-          border: overdue.length > 0 ? '1px solid rgba(244, 63, 94, 0.15)' : '1px solid rgba(255,255,255,0.05)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: overdue.length > 0 ? 'rgba(244, 63, 94, 0.1)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <AlertCircle size={12} color={overdue.length > 0 ? '#f43f5e' : '#71717a'} />
-            </div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>VENCIDOS</span>
-          </div>
-          <p style={{ fontSize: '24px', fontWeight: 900, color: overdue.length > 0 ? '#f43f5e' : '#fff' }}>
-            {overdue.length}
-          </p>
-          <p style={{ fontSize: '12px', color: '#52525b', marginTop: '4px' }}>
-            {overdue.length > 0 ? 'Exige atenção' : 'Tudo em dia'}
-          </p>
-        </div>
-      </div>
-
       {/* Tabs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '4px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', padding: '0 8px' }}>
         {(['PENDING', 'PAID'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: '10px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-              fontWeight: 600, fontSize: '14px', transition: 'all 0.2s',
-              background: activeTab === tab ? 'rgba(204, 255, 0, 0.15)' : 'transparent',
-              color: activeTab === tab ? '#ccff00' : '#6b6b80',
+              padding: '12px 20px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+              fontWeight: 800, fontSize: '13px', transition: 'all 0.2s',
+              background: activeTab === tab ? '#ccff00' : 'rgba(255,255,255,0.05)',
+              color: activeTab === tab ? '#000' : '#71717a',
             }}
           >
-            {tab === 'PENDING' ? '⏳ Pendentes' : '✅ Pagas'}
+            {tab === 'PENDING' ? 'Pendentes' : 'Pagas'}
           </button>
         ))}
       </div>
 
       {/* Bills list */}
-      {filtered.length === 0 ? (
-        <div className="card" style={{ padding: '40px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: '32px', marginBottom: '12px' }}>
-            {activeTab === 'PENDING' ? '🎉' : '📋'}
-          </p>
-          <p style={{ fontSize: '16px', fontWeight: 600, color: '#f8f9fa', marginBottom: '8px' }}>
-            {activeTab === 'PENDING' ? 'Nenhuma conta pendente!' : 'Nenhuma conta paga ainda'}
-          </p>
-          <p style={{ fontSize: '13px', color: '#6b6b80' }}>
-            {activeTab === 'PENDING' ? 'Tudo em dia 🎉' : 'As contas pagas aparecerão aqui'}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {filtered.map(bill => {
-            const days = getDaysUntilDue(bill.dueDate)
-            const isOverdue = days < 0 && bill.status === 'PENDING'
-            const isUrgent = days >= 0 && days <= 3 && bill.status === 'PENDING'
-            const cat = CATEGORIES.find(c => c.value === bill.category)
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {filtered.map(bill => {
+          const days = getDaysUntilDue(bill.dueDate)
+          const isOverdue = days < 0 && bill.status === 'PENDING'
+          const cat = CATEGORIES.find(c => c.value === bill.category)
 
-            return (
-              <div
-                key={bill.id}
-                className="card"
-                style={{
-                  padding: '16px',
-                  borderColor: isOverdue ? 'rgba(239,68,68,0.2)' : isUrgent ? 'rgba(204, 255, 0, 0.2)' : undefined,
-                  background: isOverdue ? 'rgba(239,68,68,0.04)' : isUrgent ? 'rgba(204, 255, 0, 0.04)' : undefined,
-                }}
-              >
-                {/* Bill header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '16px' }}>{cat?.icon || '💳'}</span>
-                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f8f9fa' }}>{bill.name}</h3>
-                      {isOverdue && <span className="badge-overdue">Vencida</span>}
-                      {isUrgent && !isOverdue && <span className="badge-pending">Urgente</span>}
-                      {bill.status === 'PAID' && <span className="badge-paid">Paga</span>}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '12px', color: isOverdue ? '#f87171' : isUrgent ? '#ccff00' : '#6b6b80' }}>
-                        <Clock size={11} style={{ display: 'inline', marginRight: '4px' }} />
-                        {bill.status === 'PAID'
-                          ? `Pago em ${formatDate(bill.paidAt!)}`
-                          : isOverdue
-                            ? `Vencida há ${Math.abs(days)} dia(s)`
-                            : days === 0
-                              ? 'Vence hoje!'
-                              : `Vence ${formatDate(bill.dueDate)}`
-                        }
-                      </span>
-
-                    </div>
+          return (
+            <div
+              key={bill.id}
+              style={{
+                padding: '20px', borderRadius: '24px',
+                background: '#111111',
+                border: '1px solid rgba(255,255,255,0.04)',
+                position: 'relative', overflow: 'hidden'
+              }}
+            >
+              {isOverdue && <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#f43f5e' }} />}
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                    {cat?.icon || '📦'}
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '20px', fontWeight: 800, color: '#f8f9fa' }}>
-                      {formatCurrency(bill.amount)}
+                  <div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>{bill.name}</h3>
+                    <p style={{ fontSize: '13px', color: isOverdue ? '#f43f5e' : '#71717a', fontWeight: 600 }}>
+                      {bill.status === 'PAID' ? `Pago em ${formatDate(bill.paidAt!)}` : isOverdue ? `Vencido há ${Math.abs(days)} dias` : `Vence em ${days} dias (${formatDate(bill.dueDate)})`}
                     </p>
                   </div>
                 </div>
-
-                {bill.description && (
-                  <p style={{ fontSize: '13px', color: '#6b6b80', marginBottom: '12px' }}>{bill.description}</p>
-                )}
-
-                {/* Action buttons */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                  {bill.status === 'PENDING' ? (
-                    <>
-                      {bill.pixKey && (
-                        <CopyButton text={bill.pixKey} label="Copiar PIX" />
-                      )}
-                      {bill.barcode && (
-                        <CopyButton text={bill.barcode} label="Copiar boleto" />
-                      )}
-                      <div style={{ flex: 1 }} />
-                      <button
-                        onClick={() => handleDelete(bill.id)}
-                        disabled={deletingId === bill.id}
-                        style={{
-                          width: '34px', height: '34px', borderRadius: '8px',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-                          cursor: 'pointer', color: '#f87171',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        {deletingId === bill.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                      </button>
-                      <button
-                        onClick={() => handleMarkPaid(bill.id)}
-                        disabled={markingPaid === bill.id}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '8px 16px', borderRadius: '8px',
-                          background: 'linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,197,94,0.15))',
-                          border: '1px solid rgba(74,222,128,0.25)',
-                          cursor: 'pointer', color: '#4ade80',
-                          fontWeight: 600, fontSize: '13px',
-                        }}
-                      >
-                        {markingPaid === bill.id
-                          ? <Loader2 size={14} className="animate-spin" />
-                          : <CheckCircle size={14} />
-                        }
-                        {markingPaid === bill.id ? 'Marcando...' : 'Marcar como pago'}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ flex: 1 }} />
-                      <button
-                        onClick={() => handleDelete(bill.id)}
-                        disabled={deletingId === bill.id}
-                        style={{
-                          width: '34px', height: '34px', borderRadius: '8px',
-                          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-                          cursor: 'pointer', color: '#f87171',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}
-                      >
-                        {deletingId === bill.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                      </button>
-                      <button
-                        onClick={() => handleUnmarkPaid(bill.id)}
-                        disabled={markingPaid === bill.id}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '8px 16px', borderRadius: '8px',
-                          background: 'rgba(255,255,255,0.05)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          cursor: 'pointer', color: '#a1a1aa',
-                          fontWeight: 600, fontSize: '13px',
-                        }}
-                      >
-                        {markingPaid === bill.id
-                          ? <Loader2 size={14} className="animate-spin" />
-                          : <Clock size={14} />
-                        }
-                        Reverter para Pendente
-                      </button>
-                    </>
-                  )}
-                </div>
+                <p style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>{formatCurrency(bill.amount)}</p>
               </div>
-            )
-          })}
-        </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                {bill.status === 'PENDING' ? (
+                  <>
+                    <div style={{ flex: 1, display: 'flex', gap: '8px' }}>
+                      {bill.pixKey && <CopyButton text={bill.pixKey} label="PIX" />}
+                      {bill.barcode && <CopyButton text={bill.barcode} label="Boleto" />}
+                    </div>
+                    <button onClick={() => handleDelete(bill.id)} style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(244, 63, 94, 0.1)', border: 'none', color: '#f43f5e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={18} /></button>
+                    <button 
+                      onClick={() => setShowWalletSelector(bill.id)} 
+                      style={{ height: '44px', padding: '0 20px', borderRadius: '12px', background: 'rgba(74, 222, 128, 0.1)', border: '1px solid rgba(74, 222, 128, 0.2)', color: '#4ade80', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                      <CheckCircle size={18} /> Pagar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ flex: 1 }} />
+                    <button onClick={() => handleDelete(bill.id)} style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#71717a', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={18} /></button>
+                    <button onClick={() => handleUnmarkPaid(bill.id)} style={{ height: '44px', padding: '0 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#71717a', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Reverter</button>
+                  </>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Wallet Selector Modal */}
+      {showWalletSelector && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setShowWalletSelector(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', padding: '24px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>De onde sairá o dinheiro?</h3>
+            <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '24px' }}>Selecione a carteira para realizar o pagamento.</p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {wallets.map(w => (
+                <button
+                  key={w.id}
+                  onClick={() => handleMarkPaid(showWalletSelector, w.id)}
+                  style={{
+                    padding: '16px', borderRadius: '18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${w.color || '#ccff00'}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>{w.type === 'bank' ? '🏦' : '📱'}</div>
+                    <span style={{ color: '#fff', fontWeight: 600 }}>{w.name}</span>
+                  </div>
+                  <span style={{ color: '#ccff00', fontWeight: 800 }}>{formatCurrency(w.balance)}</span>
+                </button>
+              ))}
+              <button
+                onClick={() => handleMarkPaid(showWalletSelector)}
+                style={{ padding: '16px', borderRadius: '18px', background: 'transparent', border: '1px dashed rgba(255,255,255,0.1)', color: '#71717a', fontSize: '13px', cursor: 'pointer' }}
+              >
+                Pagar sem descontar de carteira
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
-
-
 
       {showAddModal && <AddBillModal onClose={() => setShowAddModal(false)} />}
     </div>
