@@ -270,20 +270,29 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           ) : (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
-                  <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Imposto Estimado</p>
-                  <p style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>
+                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <p style={{ color: '#71717a', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Base de Cálculo</p>
+                  <p style={{ color: '#fff', fontSize: '18px', fontWeight: 900 }}>
                     {formatCurrency((() => {
                       const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
-                      if (taxProfile.taxProfile === 'PJ') return 0 // PJ usually handles tax outside this personal context
-                      
-                      // Base calculation
                       const dependentsDeduction = (taxProfile.taxDependents || 0) * 189.59
                       const pension = taxProfile.taxPensionAmount || 0
                       const businessExp = taxProfile.taxProfile === 'AUTONOMO' ? (taxProfile.taxBusinessExpenses || 0) : 0
+                      return Math.max(0, income - dependentsDeduction - pension - businessExp)
+                    })())}
+                  </p>
+                </div>
+                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <p style={{ color: '#71717a', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>Imposto Estimado</p>
+                  <p style={{ color: '#ccff00', fontSize: '18px', fontWeight: 900 }}>
+                    {formatCurrency((() => {
+                      const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
+                      const dependentsDeduction = (taxProfile.taxDependents || 0) * 189.59
+                      const pension = taxProfile.taxPensionAmount || 0
+                      const businessExp = taxProfile.taxProfile === 'AUTONOMO' ? (taxProfile.taxBusinessExpenses || 0) : 0
+                      const base = Math.max(0, income - dependentsDeduction - pension - businessExp)
                       
-                      const base = income - dependentsDeduction - pension - businessExp
-                      
+                      if (taxProfile.taxProfile === 'PJ') return 0
                       if (base <= 2259.20) return 0
                       if (base <= 2828.65) return (base * 0.075) - 169.44
                       if (base <= 3751.05) return (base * 0.15) - 381.44
@@ -292,23 +301,21 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                     })())}
                   </p>
                 </div>
-                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
-                  <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Status Atual</p>
-                  <p style={{ color: '#ccff00', fontSize: '14px', fontWeight: 800 }}>
-                    {taxProfile.taxProfile === 'CLT' ? 'Retido na Fonte' : 
-                     taxProfile.taxProfile === 'AUTONOMO' ? 'Pagar Carnê-Leão' : 
-                     taxProfile.taxProfile === 'PJ' ? 'Pendente via PJ' : 'Configurado'}
-                  </p>
-                </div>
               </div>
-              <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px' }}>
-                <Info size={16} color="#ccff00" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <p style={{ fontSize: '11px', color: '#a1a1aa', lineHeight: 1.4 }}>
-                  {taxProfile.taxProfile === 'CLT' 
-                    ? 'Como CLT, seu imposto é descontado direto na folha. O valor acima é o que a Receita retém mensalmente. No ajuste anual você poderá ter restituição.' 
-                    : taxProfile.taxProfile === 'AUTONOMO'
-                    ? 'Como Autônomo, você é responsável por emitir o DARF mensal (Carnê-Leão) se suas entradas superarem o limite de isenção.'
-                    : 'Consulte seu contador para detalhamento de impostos sobre dividendos e faturamento de empresa.'}
+
+              <div style={{ background: 'rgba(204, 255, 0, 0.03)', border: '1px solid rgba(204, 255, 0, 0.1)', padding: '16px', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Calculator size={14} color="#ccff00" />
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#ccff00' }}>Por que esse valor?</p>
+                </div>
+                <p style={{ fontSize: '12px', color: '#a1a1aa', lineHeight: 1.5 }}>
+                  {(() => {
+                    const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
+                    if (income <= 2259.20) return 'Suas entradas este mês estão abaixo do limite de isenção da Receita Federal (R$ 2.259,20). Você não deve pagar imposto agora.'
+                    if (taxProfile.taxProfile === 'CLT') return `Sendo CLT, sua empresa retém aproximadamente ${formatCurrency(150)} na fonte. O valor mostrado é o ajuste mensal para te ajudar a conferir seu holerite.`
+                    if (taxProfile.taxProfile === 'AUTONOMO') return `Como Autônomo, sua base de cálculo é de ${formatCurrency(income - (taxProfile.taxDependents * 189.59))} após as deduções. Lembre-se de emitir o DARF até o último dia útil do mês.`
+                    return 'Consulte os detalhes de dividendos e retiradas PJ com seu contador para um cálculo fora da base pessoal.'
+                  })()}
                 </p>
               </div>
             </>
