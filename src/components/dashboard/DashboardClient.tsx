@@ -5,7 +5,7 @@ import {
   TrendingUp, TrendingDown, AlertCircle, ChevronRight,
   ArrowUpRight, ArrowDownRight, Clock, Plus, Activity, Bell,
   Settings, Shield, LogOut, Loader2, Sparkles, Info, CheckCircle2,
-  Calendar, Eye, EyeOff, X
+  Calendar, Eye, EyeOff, X, Calculator
 } from 'lucide-react'
 import { subscribeToPush } from '@/actions/push'
 import { getMentorInsight } from '@/actions/mentor'
