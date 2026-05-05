@@ -36,7 +36,10 @@ export function TopBar({ user }: TopBarProps) {
   }, [])
 
   async function handleInstall() {
-    if (!installPrompt) return
+    if (!installPrompt) {
+      alert('Para instalar o App do Contte, toque no menu do seu navegador (três pontinhos ou ícone de compartilhar) e selecione "Adicionar à Tela Inicial".')
+      return
+    }
     installPrompt.prompt()
     const result = await installPrompt.userChoice
     if (result.outcome === 'accepted') {
@@ -71,8 +74,8 @@ export function TopBar({ user }: TopBarProps) {
 
       {/* Right side Profile Pill & Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-        {/* Install App Button — only shows when app is installable */}
-        {installPrompt && !isInstalled && (
+        {/* Install App Button — only shows when app is not running in standalone mode */}
+        {!isInstalled && (
           <button
             onClick={handleInstall}
             title="Instalar App"
