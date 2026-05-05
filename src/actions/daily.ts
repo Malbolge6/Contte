@@ -12,19 +12,30 @@ export async function checkAndGenerateDailyUpdate() {
   const userId = session.user.id
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const currentHour = new Date().getHours()
+  let timeGreeting = 'Bom dia'
+  let summaryTitle = 'Resumo Matinal ☕'
+  
+  if (currentHour >= 12 && currentHour < 18) {
+    timeGreeting = 'Boa tarde'
+    summaryTitle = 'Resumo da Tarde ☀️'
+  } else if (currentHour >= 18) {
+    timeGreeting = 'Boa noite'
+    summaryTitle = 'Resumo da Noite 🌙'
+  }
 
-  // Check if already has a daily update for today (strict check)
+  // Check if already has any summary for today
   const existing = await prisma.timelineEvent.findFirst({
     where: {
       userId,
-      title: { contains: 'Resumo Matinal' },
+      title: { contains: 'Resumo' },
       createdAt: { gte: today }
     }
   })
 
   if (existing) return
 
-  // Generate a morning update
+  // Generate an update
   const overdueCount = await prisma.bill.count({
     where: { userId, status: 'PENDING', dueDate: { lt: new Date() } }
   })
@@ -43,14 +54,14 @@ export async function checkAndGenerateDailyUpdate() {
   if (billsToday > 0 || overdueCount > 0) {
     await createTimelineEvent({
       type: 'alert',
-      title: 'Resumo Matinal ☕',
-      description: `Bom dia! Hoje você tem ${billsToday} conta(s) vencendo ${overdueCount > 0 ? `e ${overdueCount} já atrasada(s)` : ''}. Vamos organizar isso?`,
+      title: summaryTitle,
+      description: `${timeGreeting}! Hoje você tem ${billsToday} conta(s) vencendo ${overdueCount > 0 ? `e ${overdueCount} já atrasada(s)` : ''}. Vamos organizar isso?`,
     })
   } else {
     await createTimelineEvent({
       type: 'insight',
-      title: 'Resumo Matinal ☕',
-      description: 'Bom dia! Nenhuma conta vencendo hoje. Dia perfeito para focar nas suas metas de economia!',
+      title: summaryTitle,
+      description: `${timeGreeting}! Nenhuma conta vencendo hoje. Dia perfeito para focar nas suas metas de economia!`,
     })
   }
 }

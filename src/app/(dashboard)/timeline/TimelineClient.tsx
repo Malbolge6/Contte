@@ -88,10 +88,10 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
       <div style={{ marginBottom: '32px', overflowX: 'auto', display: 'flex', gap: '12px', padding: '0 4px', scrollbarWidth: 'none' }} className="no-scrollbar">
         {[
           { label: 'Tudo', icon: '📱', color: '#fff' },
+          { label: 'Notícias', icon: '📈', color: '#ccff00' },
           { label: 'Meu Dia', icon: '☀️', color: '#ccff00' },
           { label: 'Dicas', icon: '💡', color: '#38bdf8' },
           { label: 'Economia', icon: '💰', color: '#4ade80' },
-          { label: 'Mercado', icon: '📈', color: '#ccff00' },
           { label: 'Alertas', icon: '⚠️', color: '#facc15' },
           { label: 'Metas', icon: '🎯', color: '#c084fc' },
         ].map((story, i) => (
@@ -135,7 +135,7 @@ export function TimelineClient({ initialEvents = [] }: TimelineClientProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {activeFilter === 'Mercado' ? (
+        {activeFilter === 'Notícias' ? (
           loadingNews ? (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <Loader2 className="animate-spin" size={32} color="#ccff00" style={{ margin: '0 auto 16px' }} />
