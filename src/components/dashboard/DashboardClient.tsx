@@ -19,6 +19,7 @@ import {
 import { AddTransactionModal } from '@/components/transactions/AddTransactionModal'
 import { QuickSimulationModal } from './QuickSimulationModal'
 import { useState, useEffect } from 'react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635', '#fde047', '#818cf8']
 
