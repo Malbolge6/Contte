@@ -18,8 +18,10 @@ import {
 } from 'recharts'
 import { AddTransactionModal } from '@/components/transactions/AddTransactionModal'
 import { QuickSimulationModal } from './QuickSimulationModal'
+import { TaxConfigModal } from './TaxConfigModal'
 import { useState, useEffect } from 'react'
 import { useTheme } from '@/contexts/ThemeContext'
+import { getTaxProfile } from '@/actions/tax'
 
 const COLORS = ['#ccff00', '#f472b6', '#c084fc', '#38bdf8', '#34d399', '#a3e635', '#fde047', '#818cf8']
 
@@ -44,20 +46,24 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const router = useRouter()
   const [showAddTransaction, setShowAddTransaction] = useState(false)
   const [showSimulation, setShowSimulation] = useState(false)
+  const [showTaxConfig, setShowTaxConfig] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [mentorInsight, setMentorInsight] = useState<any>(null)
   const [predictionData, setPredictionData] = useState<any>(null)
+  const [taxProfile, setTaxProfile] = useState<any>(null)
 
   useEffect(() => {
     setMounted(true)
     async function loadData() {
-      const [insight, prediction] = await Promise.all([
+      const [insight, prediction, tax] = await Promise.all([
         getMentorInsight(),
-        getBalancePrediction()
+        getBalancePrediction(),
+        getTaxProfile()
       ])
       setMentorInsight(insight)
       setPredictionData(prediction)
+      if (tax.success) setTaxProfile(tax.data)
     }
     loadData()
 
@@ -226,7 +232,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
       </div>
 
-      {/* Ideia 3: Respiro Fiscal (New Bento Card) */}
+      {/* Ideia 3: Respiro Fiscal (Advanced Bento Card) */}
       <div className="scale-in" style={{ marginBottom: '32px' }}>
         <div style={{ 
           background: 'rgba(255,255,255,0.03)', 
@@ -242,43 +248,71 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               <Shield size={18} color="#ccff00" />
               <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: 700 }}>Respiro Fiscal</h4>
             </div>
-            <div style={{ padding: '4px 10px', borderRadius: '20px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '11px', fontWeight: 700 }}>
-              ESTIMATIVA IR
-            </div>
+            <button 
+              onClick={() => setShowTaxConfig(true)}
+              style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: '#ccff00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            >
+              <Settings size={12} />
+              Configurar
+            </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
-              <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Imposto Estimado</p>
-              <p style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>
-                {formatCurrency((() => {
-                  const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
-                  if (income <= 2112) return 0
-                  if (income <= 2826.65) return (income * 0.075) - 158.40
-                  if (income <= 3751.05) return (income * 0.15) - 370.40
-                  if (income <= 4664.68) return (income * 0.225) - 651.73
-                  return (income * 0.275) - 884.96
-                })())}
-              </p>
+          {!taxProfile || taxProfile.taxProfile === 'NONE' ? (
+            <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+              <p style={{ color: '#71717a', fontSize: '13px', marginBottom: '12px' }}>Configure seu perfil fiscal para ver o cálculo real de impostos.</p>
+              <button 
+                onClick={() => setShowTaxConfig(true)}
+                style={{ color: '#ccff00', fontSize: '13px', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                Configurar agora
+              </button>
             </div>
-            <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
-              <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>O que reservar</p>
-              <p style={{ color: '#ccff00', fontSize: '18px', fontWeight: 800 }}>
-                {formatCurrency((() => {
-                  const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
-                  if (income <= 2112) return 0
-                  const tax = income <= 2826.65 ? (income * 0.075) - 158.40 :
-                              income <= 3751.05 ? (income * 0.15) - 370.40 :
-                              income <= 4664.68 ? (income * 0.225) - 651.73 :
-                              (income * 0.275) - 884.96
-                  return tax * 1.05
-                })())}
-              </p>
-            </div>
-          </div>
-          <p style={{ fontSize: '11px', color: '#71717a', fontStyle: 'italic' }}>
-            *Cálculo baseado na Tabela Progressiva mensal da Receita Federal.
-          </p>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
+                  <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Imposto Estimado</p>
+                  <p style={{ color: '#fff', fontSize: '18px', fontWeight: 800 }}>
+                    {formatCurrency((() => {
+                      const income = (data.recentTransactions || []).filter((t:any) => t.type === 'ENTRADA').reduce((acc:number, t:any) => acc + t.amount, 0)
+                      if (taxProfile.taxProfile === 'PJ') return 0 // PJ usually handles tax outside this personal context
+                      
+                      // Base calculation
+                      const dependentsDeduction = (taxProfile.taxDependents || 0) * 189.59
+                      const pension = taxProfile.taxPensionAmount || 0
+                      const businessExp = taxProfile.taxProfile === 'AUTONOMO' ? (taxProfile.taxBusinessExpenses || 0) : 0
+                      
+                      const base = income - dependentsDeduction - pension - businessExp
+                      
+                      if (base <= 2259.20) return 0
+                      if (base <= 2828.65) return (base * 0.075) - 169.44
+                      if (base <= 3751.05) return (base * 0.15) - 381.44
+                      if (base <= 4664.68) return (base * 0.225) - 662.77
+                      return (base * 0.275) - 896.00
+                    })())}
+                  </p>
+                </div>
+                <div style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.02)' }}>
+                  <p style={{ color: '#71717a', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', marginBottom: '4px' }}>Status Atual</p>
+                  <p style={{ color: '#ccff00', fontSize: '14px', fontWeight: 800 }}>
+                    {taxProfile.taxProfile === 'CLT' ? 'Retido na Fonte' : 
+                     taxProfile.taxProfile === 'AUTONOMO' ? 'Pagar Carnê-Leão' : 
+                     taxProfile.taxProfile === 'PJ' ? 'Pendente via PJ' : 'Configurado'}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '12px' }}>
+                <Info size={16} color="#ccff00" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontSize: '11px', color: '#a1a1aa', lineHeight: 1.4 }}>
+                  {taxProfile.taxProfile === 'CLT' 
+                    ? 'Como CLT, seu imposto é descontado direto na folha. O valor acima é o que a Receita retém mensalmente. No ajuste anual você poderá ter restituição.' 
+                    : taxProfile.taxProfile === 'AUTONOMO'
+                    ? 'Como Autônomo, você é responsável por emitir o DARF mensal (Carnê-Leão) se suas entradas superarem o limite de isenção.'
+                    : 'Consulte seu contador para detalhamento de impostos sobre dividendos e faturamento de empresa.'}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -447,7 +481,15 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
         </div>
       )}
 
-
+      {showTaxConfig && (
+        <TaxConfigModal 
+          onClose={() => setShowTaxConfig(false)} 
+          onSuccess={async () => {
+            const tax = await getTaxProfile()
+            if (tax.success) setTaxProfile(tax.data)
+          }} 
+        />
+      )}
 
       {showAddTransaction && <AddTransactionModal onClose={() => setShowAddTransaction(false)} />}
       {showSimulation && (

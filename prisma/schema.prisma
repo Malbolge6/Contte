@@ -30,6 +30,13 @@ model User {
   plan                   String    @default("FREE")
   hourlyRate             Float?    @default(0)
 
+  // Fiscal / Tax Profile (Ideia 3: Respiro Fiscal)
+  taxProfile           String?   @default("NONE") // CLT, AUTONOMO, SERVIDOR, PJ, NONE
+  taxDependents        Int?      @default(0)
+  taxPensionAmount     Float?    @default(0)
+  taxPgblContribution  Boolean?  @default(false)
+  taxBusinessExpenses  Float?    @default(0)
+
   accounts     Account[]
   sessions     Session[]
   transactions Transaction[]
