@@ -5,27 +5,35 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { 
   Sun, Moon, Palette, Shield, 
   Smartphone, Bell, Lock, LogOut, 
-  Check, ChevronRight, User, Sparkles, CreditCard, ExternalLink, Loader2
+  Check, ChevronRight, User, Sparkles, CreditCard, ExternalLink, Loader2, XCircle
 } from 'lucide-react'
+import { cancelSubscription } from '@/actions/subscriptions'
 
 export function SettingsClient({ currentPlan }: { currentPlan: string }) {
   const { theme, setTheme } = useTheme()
   const [notifications, setNotifications] = useState(true)
   const [loadingPortal, setLoadingPortal] = useState(false)
+  const [loadingCancel, setLoadingCancel] = useState(false)
 
-  async function handleManageSubscription() {
-    setLoadingPortal(true)
+  async function handleCancelSubscription() {
+    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você continuará sendo Premium até o fim do período atual.')) {
+      return
+    }
+
+    setLoadingCancel(true)
     try {
-      const res = await fetch('/api/portal', { method: 'POST' })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
+      const res = await cancelSubscription()
+      if (res.success) {
+        alert('Assinatura cancelada! Você terá acesso até o fim do período pago.')
+        window.location.reload()
+      } else {
+        alert('Erro ao cancelar: ' + res.error)
       }
     } catch (error) {
       console.error(error)
-      alert('Erro ao carregar o portal de assinatura.')
+      alert('Erro ao processar o cancelamento.')
     } finally {
-      setLoadingPortal(false)
+      setLoadingCancel(false)
     }
   }
 
@@ -106,24 +114,45 @@ export function SettingsClient({ currentPlan }: { currentPlan: string }) {
               <Sparkles size={24} color="#ccff00" />
             </div>
 
-            <button 
-              onClick={handleManageSubscription}
-              disabled={loadingPortal || currentPlan !== 'PREMIUM'}
-              style={{ 
-                width: '100%', padding: '16px', borderRadius: '16px', 
-                background: currentPlan === 'PREMIUM' ? '#fff' : 'rgba(255,255,255,0.05)', 
-                color: '#000', border: 'none', fontWeight: 800, cursor: currentPlan === 'PREMIUM' ? 'pointer' : 'not-allowed',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                transition: 'all 0.2s', fontSize: '14px', opacity: currentPlan === 'PREMIUM' ? 1 : 0.5
-              }}
-            >
-              {loadingPortal ? <Loader2 className="animate-spin" size={18} /> : (
-                <>
-                  <ExternalLink size={18} />
-                  {currentPlan === 'PREMIUM' ? 'Gerenciar ou Cancelar' : 'Assinatura Inativa'}
-                </>
-              )}
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={handleManageSubscription}
+                disabled={loadingPortal || currentPlan !== 'PREMIUM'}
+                style={{ 
+                  flex: 1, padding: '14px', borderRadius: '16px', 
+                  background: currentPlan === 'PREMIUM' ? '#fff' : 'rgba(255,255,255,0.05)', 
+                  color: '#000', border: 'none', fontWeight: 800, cursor: currentPlan === 'PREMIUM' ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  transition: 'all 0.2s', fontSize: '13px', opacity: currentPlan === 'PREMIUM' ? 1 : 0.5
+                }}
+              >
+                {loadingPortal ? <Loader2 className="animate-spin" size={18} /> : (
+                  <>
+                    <CreditCard size={18} />
+                    Cartão
+                  </>
+                )}
+              </button>
+
+              <button 
+                onClick={handleCancelSubscription}
+                disabled={loadingCancel || currentPlan !== 'PREMIUM'}
+                style={{ 
+                  flex: 1, padding: '14px', borderRadius: '16px', 
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.2)', fontWeight: 800, cursor: currentPlan === 'PREMIUM' ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  transition: 'all 0.2s', fontSize: '13px', opacity: currentPlan === 'PREMIUM' ? 1 : 0.5
+                }}
+              >
+                {loadingCancel ? <Loader2 className="animate-spin" size={18} /> : (
+                  <>
+                    <XCircle size={18} />
+                    Cancelar
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </section>
 
