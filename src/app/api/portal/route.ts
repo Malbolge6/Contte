@@ -12,13 +12,19 @@ export async function POST() {
       return new NextResponse('Não autorizado', { status: 401 })
     }
 
+    // Busca o usuário para pegar o stripeCustomerId
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeCustomerId: true, email: true, name: true }
+    })
+
     let stripeCustomerId = user?.stripeCustomerId
 
     if (!stripeCustomerId) {
       // Cria o cliente no Stripe se não existir
       const customer = await stripe.customers.create({
-        email: session.user.email!,
-        name: session.user.name!,
+        email: user?.email || session.user.email!,
+        name: user?.name || session.user.name!,
         metadata: { userId: session.user.id }
       })
       stripeCustomerId = customer.id
@@ -30,7 +36,7 @@ export async function POST() {
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${process.env.NEXTAUTH_URL}/configuracoes`
+      return_url: `${process.env.NEXTAUTH_URL || 'https://contte-delta.vercel.app'}/configuracoes`
     })
 
     return NextResponse.json({ url: portalSession.url })
