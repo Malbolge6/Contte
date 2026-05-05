@@ -230,22 +230,37 @@ export function GroupsClient() {
                           </p>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>
-                          <a 
-                            href={doc.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            download={doc.name}
+                          <button 
+                            onClick={async (e) => {
+                              e.preventDefault()
+                              try {
+                                const response = await fetch(doc.url)
+                                const blob = await response.blob()
+                                const blobUrl = window.URL.createObjectURL(blob)
+                                const a = document.createElement('a')
+                                a.href = blobUrl
+                                a.download = doc.name || 'comprovante'
+                                document.body.appendChild(a)
+                                a.click()
+                                a.remove()
+                                window.URL.revokeObjectURL(blobUrl)
+                              } catch (err) {
+                                console.error("Error downloading file:", err)
+                                window.open(doc.url, '_blank')
+                              }
+                            }}
+                            title="Baixar Comprovante"
                             style={{ 
                               width: '40px', height: '40px', borderRadius: '12px', 
                               background: 'rgba(255,255,255,0.05)', display: 'flex', 
                               alignItems: 'center', justifyContent: 'center', color: '#fff',
-                              transition: 'all 0.2s'
+                              transition: 'all 0.2s', border: 'none', cursor: 'pointer'
                             }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(204, 255, 0, 0.1)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                           >
                             <Download size={18} />
-                          </a>
+                          </button>
                           <button 
                             onClick={async () => {
                               if(confirm('Excluir este comprovante permanentemente?')) {
