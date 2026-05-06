@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Target, Wallet, CreditCard, Activity, FileText, Settings } from 'lucide-react'
+import { Home, Target, Wallet, CreditCard, Activity, FileText, Settings, Bot } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
 export function BottomNav() {
@@ -21,6 +21,7 @@ export function BottomNav() {
     { href: '/transacoes', icon: Wallet, label: 'Extrato' },
     { href: '/contas', icon: FileText, label: 'Contas' },
     { href: '/metas', icon: Target, label: 'Metas' },
+    { href: '/agentes', icon: Bot, label: 'Agentes' },
     { href: '/configuracoes', icon: Settings, label: 'Ajustes' },
   ]
 
