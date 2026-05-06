@@ -63,37 +63,39 @@ export async function POST(req: Request) {
       userInstruction = `Você é um Agente Especial customizado. A ordem primordial do usuário é: "${customPrompt}". Cumpra a ordem analisando rigorosamente o contexto financeiro fornecido.`
     }
 
-    // 3. Conexão com o Google Gemini (Gratuito)
+    // 3. Conexão com a Inteligência (Simulação vs API Real)
     const apiKey = process.env.GEMINI_API_KEY
     
     if (!apiKey) {
       return NextResponse.json({ 
-        response: `🤖 **MODO OFFLINE**\n\nPara que eu, seu Agente Customizado, consiga pensar livremente e executar a ordem "${customPrompt}", eu preciso de um cérebro.\n\nPor favor, vá no Google AI Studio, gere sua chave gratuita e adicione no arquivo .env como GEMINI_API_KEY.` 
+        response: `🤖 **MODO OFFLINE [V4]**\n\nConfigure a GEMINI_API_KEY nas variáveis de ambiente da Vercel para ativar o cérebro da IA.` 
       })
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
     
-    // O modelo gemini-1.5-flash é o padrão. Se der erro 404, tentamos o gemini-1.5-flash-latest
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: systemPrompt 
-    })
-
-    const prompt = `${contextStr}\n\n${userInstruction}`
-    const result = await model.generateContent(prompt)
-    const responseText = result.response.text()
-
-    return NextResponse.json({ response: responseText })
-
-  } catch (error: any) {
-    console.error("AI_AGENT_ERROR:", error)
-    // Se o erro for de modelo não encontrado, avisamos o usuário
-    if (error.message?.includes('404') || error.message?.includes('not found')) {
-      return NextResponse.json({ 
-        response: "🤖 **ERRO DE CONEXÃO**\n\nO Google não encontrou o modelo 'gemini-1.5-flash' na sua região ou com essa chave. Tente atualizar a página ou verificar sua conta no Google AI Studio."
-      })
+    try {
+      // TENTATIVA 1: Gemini 1.5 Flash (O mais moderno)
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+      const fullPrompt = `SISTEMA: ${systemPrompt}\n\n${contextStr}\n\nUSUÁRIO: ${userInstruction}`
+      const result = await model.generateContent(fullPrompt)
+      return NextResponse.json({ response: result.response.text() })
+    } catch (error) {
+      console.error("ERRO NO FLASH, TENTANDO PRO:", error)
+      try {
+        // TENTATIVA 2: Gemini Pro (O mais estável/antigo)
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+        const fullPrompt = `SISTEMA: ${systemPrompt}\n\n${contextStr}\n\nUSUÁRIO: ${userInstruction}`
+        const result = await model.generateContent(fullPrompt)
+        return NextResponse.json({ response: result.response.text() })
+      } catch (innerError: any) {
+        console.error("ERRO TOTAL NA IA:", innerError)
+        return NextResponse.json({ 
+          response: `🤖 **ERRO DE INTELIGÊNCIA [V4]**\n\nO Google retornou o seguinte erro: ${innerError.message || 'Erro desconhecido'}. Verifique se sua chave de API no Google AI Studio está ativa.` 
+        })
+      }
     }
-    return NextResponse.json({ error: error.message || 'Erro interno no servidor da IA.' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Erro crítico no servidor [V4]' }, { status: 500 })
   }
 }
