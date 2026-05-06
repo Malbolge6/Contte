@@ -6,10 +6,10 @@ import { createPortal } from 'react-dom'
 
 const AGENTS = [
   {
-    id: 'jubileu',
-    name: 'Jubileu',
+    id: 'antonio',
+    name: 'Antonio',
     tagline: 'Analisa seu caixa e organiza sua vida financeira',
-    icon: '👔',
+    image: '/images/antonio.png',
     color: '#FF6B00',
     status: 'active',
   },
@@ -17,15 +17,15 @@ const AGENTS = [
     id: 'detetive',
     name: 'Detetive Duplicatas',
     tagline: 'Encontra cobranças duplicadas no seu extrato',
-    icon: '🕵️',
+    image: '/images/detetive.png',
     color: '#FF8A00',
     status: 'active',
   },
   {
     id: 'megamen',
-    name: 'Megamen',
-    tagline: 'Alerta quando seus gastos do dia passarem de R$100',
-    icon: '🚀',
+    name: 'PC Gamer',
+    tagline: 'Te ajuda a juntar R$6.000 pra montar seu setup',
+    image: '/images/pcgamer.png',
     color: '#FF4500',
     status: 'active',
   },
@@ -33,23 +33,15 @@ const AGENTS = [
     id: 'tiopatinhas',
     name: 'Tio Patinhas',
     tagline: 'Analisa e sugere onde você pode economizar mais',
-    icon: '💰',
+    image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=400',
     color: '#E65100',
     status: 'active',
   },
-  {
-    id: 'santos',
-    name: 'Santos Dumont',
-    tagline: 'Caçador de passagens baratas saindo da sua cidade',
-    icon: '✈️',
-    color: '#ccff00',
-    status: 'locked',
-  }
 ]
 
 export function AgentsClient() {
   const [activeTab, setActiveTab] = useState<'chat' | 'agentes'>('agentes')
-  const [activeAgents, setActiveAgents] = useState<string[]>(['jubileu'])
+  const [activeAgents, setActiveAgents] = useState<string[]>(['antonio'])
   
   // Custom Agent Creation
   const [showCreate, setShowCreate] = useState(false)
@@ -190,61 +182,62 @@ export function AgentsClient() {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
             {AGENTS.map((agent) => {
               const isActive = activeAgents.includes(agent.id)
               const isLocked = agent.status === 'locked'
               const isLoading = loadingAgentId === agent.id
 
               return (
-                <div key={agent.id} className="scale-in" style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${isActive ? agent.color : 'rgba(255,255,255,0.05)'}`,
-                  borderRadius: '24px', padding: '20px', position: 'relative',
-                  overflow: 'hidden', transition: 'all 0.3s',
-                  boxShadow: isActive ? `0 0 20px ${agent.color}15` : 'none',
-                  opacity: isLocked ? 0.5 : 1
-                }}>
-                  {isActive && (
-                    <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: `radial-gradient(circle at top right, ${agent.color}30, transparent)`, zIndex: 0 }} />
-                  )}
-                  
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
-                    <div style={{
-                      width: '48px', height: '48px', borderRadius: '16px',
-                      background: `${agent.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '24px', border: `1px solid ${agent.color}30`
-                    }}>
-                      {agent.icon}
-                    </div>
-                    {isLocked ? (
-                      <span style={{ fontSize: '10px', color: '#71717a', fontWeight: 800, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>EM BREVE</span>
+                <div 
+                  key={agent.id}
+                  className="hover-card"
+                  onClick={() => !isLocked && handleRunAgent(agent)}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)', borderRadius: '24px', padding: '12px',
+                    border: '1px solid rgba(255,255,255,0.05)', cursor: !isLocked ? 'pointer' : 'default',
+                    transition: 'all 0.3s ease', opacity: isLocked ? 0.6 : 1
+                  }}
+                >
+                  {/* Agent Image */}
+                  <div style={{ 
+                    width: '100%', aspectRatio: '1/1', borderRadius: '16px', overflow: 'hidden', 
+                    marginBottom: '16px', position: 'relative', background: '#121212'
+                  }}>
+                    {agent.image ? (
+                      <img 
+                        src={agent.image} 
+                        alt={agent.name} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
                     ) : (
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        {isActive && (
-                          <button onClick={() => handleRunAgent(agent)} disabled={isLoading} style={{
-                            height: '36px', padding: '0 12px', borderRadius: '10px', border: 'none',
-                            background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px'
-                          }}>
-                            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />} Executar
-                          </button>
-                        )}
-                        <button onClick={() => toggleAgent(agent.id)} style={{
-                          width: '36px', height: '36px', borderRadius: '10px', border: 'none',
-                          background: isActive ? agent.color : 'rgba(255,255,255,0.05)',
-                          color: isActive ? '#000' : '#fff', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}>
-                          {isActive ? <Zap size={16} fill="#000" /> : <PlayCircle size={18} />}
-                        </button>
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
+                        {agent.icon || '🤖'}
+                      </div>
+                    )}
+                    {isLocked && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                        <div style={{ background: '#000', padding: '12px', borderRadius: '50%' }}>
+                          <ShieldCheck size={24} color="#71717a" />
+                        </div>
+                      </div>
+                    )}
+                    {isLoading && (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Loader2 size={32} className="animate-spin" color="#FF6B00" />
                       </div>
                     )}
                   </div>
 
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>{agent.name}</h3>
-                    <p style={{ fontSize: '13px', color: '#a1a1aa', lineHeight: 1.4 }}>{agent.tagline}</p>
+                  {/* Agent Info */}
+                  <div style={{ padding: '0 8px 8px 8px' }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {agent.name}
+                      {isActive && <Zap size={14} fill="#FF6B00" color="#FF6B00" />}
+                    </h3>
+                    <p style={{ fontSize: '14px', color: '#71717a', lineHeight: 1.5, fontWeight: 500 }}>
+                      {agent.tagline}
+                    </p>
                   </div>
                 </div>
               )

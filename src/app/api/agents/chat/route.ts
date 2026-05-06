@@ -83,12 +83,10 @@ export async function POST(req: Request) {
 
     // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
     const mockResponses: Record<string, string> = {
-      'jubileu': `👔 **RELATÓRIO DO JUBILEU (MODO SIMULAÇÃO)**\n\nSua saúde financeira está estável. Analisando as últimas 30 transações, notei que você está mantendo um bom equilíbrio. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Dica:** Continue monitorando suas contas pendentes.`,
-      'detetive': `🕵️ **RELATÓRIO DO DETETIVE (MODO SIMULAÇÃO)**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia. A área está segura por enquanto!`,
-      'megamen': `🚀 **RELATÓRIO DO MEGAMEN (MODO SIMULAÇÃO)**\n\nProtocolo de contenção ativo. Seus gastos de hoje estão sob controle. Mantenha o foco abaixo dos R$ 100 para ganhar o bônus de disciplina!`,
-      'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS (MODO SIMULAÇÃO)**\n\nQuá-quá! Pare de gastar com bobagens. Vi uns gastos estranhos em categorias não essenciais. Guarde esse dinheiro no cofre!`,
-      'chat': `🤖 **CONTTE AI (MODO MANUTENÇÃO)**\n\nOlá! Estamos calibrando meus circuitos cerebrais para os novos modelos Gemini de 2026. Por enquanto, posso apenas processar comandos básicos via Robôs Agentes. Volte em breve para conversarmos livremente!`,
-      'custom': `🛠️ **AGENTE CUSTOMIZADO**\n\nRecebi sua ordem: "${customPrompt}". Estou processando os dados e retornarei com uma análise completa assim que a conexão com o núcleo for restabelecida.`
+      'antonio': `👔 **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
+      'detetive': `🕵️ **RELATÓRIO DO DETETIVE**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
+      'megamen': `🚀 **RELATÓRIO DO PC GAMER**\n\nFoco no setup! Você já poupou o suficiente para o teclado mecânico. Faltam R$ 5.400 para a RTX 5090!`,
+      'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
     }
 
     const response = mockResponses[agentId] || mockResponses['chat']
