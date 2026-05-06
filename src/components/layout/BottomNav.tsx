@@ -54,7 +54,7 @@ export function BottomNav() {
             }}
           >
             {isActive && (
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '60px', height: '60px', background: '#ccff00', filter: 'blur(20px)', opacity: 0.2, borderRadius: '50%', zIndex: -1 }} />
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '56px', height: '56px', background: '#ccff00', opacity: 0.15, borderRadius: '50%', zIndex: -1 }} />
             )}
             <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
           </Link>

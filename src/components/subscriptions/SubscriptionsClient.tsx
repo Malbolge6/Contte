@@ -159,18 +159,16 @@ export function SubscriptionsClient({ initialSubscriptions }: { initialSubscript
         </p>
 
         <div style={{ 
-          background: 'rgba(255, 255, 255, 0.02)', padding: '32px', borderRadius: '32px',
+          background: 'rgba(255, 255, 255, 0.03)', padding: '32px', borderRadius: '32px',
           border: '1px solid rgba(255, 255, 255, 0.05)', display: 'inline-flex',
           flexDirection: 'column', alignItems: 'center', gap: '8px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4)', position: 'relative', overflow: 'hidden'
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)', position: 'relative'
         }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'radial-gradient(circle at center, rgba(248, 113, 113, 0.1), transparent)', zIndex: 0 }}></div>
-          
-          <p style={{ fontSize: '12px', fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '1.5px', position: 'relative', zIndex: 1 }}>Custo Mensal Total</p>
-          <p style={{ fontSize: '48px', fontWeight: 900, color: '#fff', letterSpacing: '-2px', position: 'relative', zIndex: 1 }}>
+          <p style={{ fontSize: '12px', fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Custo Mensal Total</p>
+          <p style={{ fontSize: '48px', fontWeight: 900, color: '#fff', letterSpacing: '-2px' }}>
             -{formatCurrency(totalMonthly)}
           </p>
-          <div style={{ padding: '6px 12px', background: 'rgba(248, 113, 113, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', position: 'relative', zIndex: 1 }}>
+          <div style={{ padding: '6px 12px', background: 'rgba(248, 113, 113, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <TrendingDown size={14} color="#f87171" />
             <span style={{ fontSize: '12px', fontWeight: 700, color: '#f87171' }}>{subscriptions.length} assinaturas ativas</span>
           </div>
