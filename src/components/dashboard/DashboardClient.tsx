@@ -331,13 +331,16 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             <div 
               onClick={() => setShowAntonioBio(!showAntonioBio)}
               style={{ 
-                width: '60px', height: '60px', borderRadius: '16px', 
-                background: 'rgba(0,0,0,0.1)', overflow: 'hidden', 
-                position: 'relative', border: '1px solid rgba(0,0,0,0.1)'
+                width: '70px', height: '70px', borderRadius: '18px', 
+                background: 'rgba(0,0,0,0.1)', flexShrink: 0, 
+                position: 'relative', border: '1px solid rgba(0,0,0,0.1)',
+                cursor: 'pointer'
               }}
             >
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>ANTONIO</div>
-              <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>ANTONIO</div>
+              <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+                <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
             </div>
           </div>
           
@@ -513,13 +516,16 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                 setShowLamarBio(!showLamarBio);
               }}
               style={{ 
-                width: '60px', height: '60px', borderRadius: '16px', 
-                background: 'rgba(204, 255, 0, 0.1)', overflow: 'hidden', 
-                position: 'relative', border: '1px solid rgba(204, 255, 0, 0.2)'
+                width: '70px', height: '70px', borderRadius: '18px', 
+                background: 'rgba(204, 255, 0, 0.1)', flexShrink: 0, 
+                position: 'relative', border: '1px solid rgba(204, 255, 0, 0.2)',
+                cursor: 'pointer'
               }}
             >
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>LAMAR</div>
-              <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>LAMAR</div>
+              <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+                <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
             </div>
             <div style={{ textAlign: 'left' }}>
               <p style={{ fontSize: '16px', fontWeight: 800, color: '#ccff00' }}>Simulação Rápida</p>
@@ -625,14 +631,16 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             <div 
               onClick={() => setShowAntonioBio(!showAntonioBio)}
               style={{ 
-                width: '50px', height: '50px', borderRadius: '12px', 
-                background: 'rgba(244, 63, 94, 0.15)', overflow: 'hidden', 
+                width: '70px', height: '70px', borderRadius: '18px', 
+                background: 'rgba(244, 63, 94, 0.15)', flexShrink: 0, 
                 position: 'relative', border: '1px solid rgba(244, 63, 94, 0.2)',
                 cursor: 'pointer'
               }}
             >
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '8px', fontWeight: 900, padding: '2px 5px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>ANTONIO</div>
-              <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>ANTONIO</div>
+              <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+                <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
             </div>
           </div>
 
