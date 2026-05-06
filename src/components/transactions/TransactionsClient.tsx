@@ -28,6 +28,7 @@ interface TransactionsClientProps {
 export function TransactionsClient({ transactions }: TransactionsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
+  const [showClaudiaBio, setShowClaudiaBio] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -88,30 +89,66 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
           <button
             onClick={handleExportPDF}
             style={{ 
-              height: '40px', paddingLeft: '14px', paddingRight: '14px', 
-              borderRadius: '12px', background: 'rgba(255, 255, 255, 0.05)', 
+              height: '48px', paddingLeft: '16px', paddingRight: '16px', 
+              borderRadius: '16px', background: 'rgba(255, 255, 255, 0.05)', 
               color: '#fff', border: '1px solid rgba(255, 255, 255, 0.1)', 
               display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-              fontWeight: 700, fontSize: '13px', transition: 'all 0.2s'
+              fontWeight: 700, fontSize: '14px', transition: 'all 0.2s'
             }}
             className="no-print"
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
           >
-            <Printer size={16} />
+            <Printer size={18} />
             Gerar PDF
           </button>
+
           <button 
             onClick={() => setShowAdd(true)} 
             style={{ 
-              width: '40px', height: '40px', borderRadius: '12px', 
-              background: '#ccff00', color: '#050505', border: 'none', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              cursor: 'pointer', boxShadow: '0 8px 20px rgba(204, 255, 0, 0.2)' 
+              height: '48px', paddingLeft: '20px', paddingRight: '20px', 
+              borderRadius: '16px', background: '#ccff00', color: '#050505', 
+              border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
+              cursor: 'pointer', fontWeight: 800, fontSize: '14px',
+              boxShadow: '0 8px 20px rgba(204, 255, 0, 0.2)' 
             }}
           >
-            <Plus size={22} />
+            <Plus size={20} />
+            Adicionar
           </button>
+
+          <div style={{ position: 'relative' }}>
+            <div 
+              onClick={() => setShowClaudiaBio(!showClaudiaBio)}
+              style={{ 
+                width: '64px', height: '64px', borderRadius: '16px', 
+                background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', 
+                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.1)',
+                position: 'relative', boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>CLAUDIA</div>
+              <img src="/images/claudia.png" alt="Claudia" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            {showClaudiaBio && (
+              <div className="scale-in" style={{
+                position: 'absolute', top: '100%', right: '0', width: '240px',
+                background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+                marginTop: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                zIndex: 100, border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+                  <strong>Olá, eu sou a Claudia!</strong> 🦉🔍<br/><br/>
+                  Sou a especialista em auditoria da Contte. Minha missão é vasculhar seu extrato em busca de cobranças duplicadas ou erros, garantindo que você não pague um centavo a mais!
+                </p>
+                <div style={{ 
+                  position: 'absolute', bottom: '100%', right: '20px', 
+                  width: '0', height: '0', 
+                  borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+                  borderBottom: '10px solid #000' 
+                }} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
