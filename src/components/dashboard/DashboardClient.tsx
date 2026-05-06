@@ -273,15 +273,17 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           <div 
             onClick={() => setShowManuelBio(!showManuelBio)}
             style={{ 
-              width: '64px', height: '64px', background: 'rgba(255,255,255,0.2)', 
-              borderRadius: '50%', overflow: 'hidden', flexShrink: 0, 
+              width: '80px', height: '80px', background: 'rgba(255,255,255,0.2)', 
+              borderRadius: '50%', flexShrink: 0, 
               cursor: 'pointer', border: '2px solid rgba(255,255,255,0.3)',
               transition: 'transform 0.2s', transform: showManuelBio ? 'scale(1.1)' : 'scale(1)',
               position: 'relative'
             }}
           >
-            <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 5 }}>MANUEL</div>
-            <img src="/images/manuel.png" alt="Manuel" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 5, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>MANUEL</div>
+            <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
+              <img src="/images/manuel.png" alt="Manuel" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
           </div>
 
           {showManuelBio && (
@@ -355,17 +357,19 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: 700 }}>Respiro Fiscal</h4>
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div 
                 onClick={() => setShowDanteBio(!showDanteBio)}
                 style={{ 
-                  width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', 
-                  borderRadius: '10px', overflow: 'hidden', cursor: 'pointer',
+                  width: '60px', height: '60px', background: 'rgba(255,255,255,0.05)', 
+                  borderRadius: '16px', cursor: 'pointer',
                   border: '1px solid rgba(255,255,255,0.1)', position: 'relative'
                 }}
               >
-                <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.2)', zIndex: 5 }}>DANTE</div>
-                <img src="/images/dante.png" alt="Dante" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', zIndex: 5, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>DANTE</div>
+                <div style={{ width: '100%', height: '100%', borderRadius: '16px', overflow: 'hidden' }}>
+                  <img src="/images/dante.png" alt="Dante" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
               </div>
 
               <button 
