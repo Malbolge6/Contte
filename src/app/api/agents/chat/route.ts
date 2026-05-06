@@ -100,5 +100,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Erro interno no servidor de IA' }, { status: 500 })
   }
 }
-
-}
