@@ -101,9 +101,4 @@ export async function POST(req: Request) {
   }
 }
 
-
-  } catch (error: any) {
-    console.error("ERRO CRÍTICO CHAT:", error)
-    return NextResponse.json({ error: 'Erro interno no servidor de IA' }, { status: 500 })
-  }
 }
