@@ -83,34 +83,24 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey.trim())
     
-    let modelToUse = "gemini-1.5-flash" // Fallback padrão
+    // Modelos Oficiais de 2026 extraídos da documentação fornecida pelo usuário
+    const modelsToTry = [
+      "gemini-3-flash-preview", 
+      "gemini-3-flash",
+      "gemini-2.5-flash", 
+      "gemini-3.1-pro",
+      "gemini-1.5-flash-latest"
+    ]
     
-    try {
-      // DESCOBERTA DINÂMICA: Listar modelos disponíveis para esta chave
-      console.log("Listando modelos disponíveis...")
-      const modelList = await genAI.listModels()
-      const availableModels = modelList.models
-        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
-        .map(m => m.name.replace('models/', ''))
-      
-      if (availableModels.length > 0) {
-        // Priorizar modelos Flash por custo/velocidade, ou pegar o primeiro disponível
-        modelToUse = availableModels.find(m => m.includes('flash')) || availableModels[0]
-        console.log(`Modelo dinâmico selecionado: ${modelToUse}`)
-      }
-    } catch (listError) {
-      console.error("Erro ao listar modelos, usando fallback:", listError)
-      // Se não conseguir listar, tentamos os nomes conhecidos
-      modelToUse = "gemini-1.5-flash"
-    }
-
-    const modelsToTry = [modelToUse, "gemini-3-flash", "gemini-1.5-flash", "gemini-pro"]
     let lastError = null
 
     for (const modelName of modelsToTry) {
       try {
+        console.log(`Conectando ao cérebro: ${modelName}`)
         const model = genAI.getGenerativeModel({ model: modelName })
-        const fullPrompt = `### INSTRUÇÕES DO SISTEMA ###\n${systemPrompt}\n\n### CONTEXTO FINANCEIRO ###\n${contextStr}\n\n### COMANDO DO USUÁRIO ###\n${userInstruction}`
+        
+        // Formatação de prompt recomendada para 2026
+        const fullPrompt = `INSTRUÇÕES:\n${systemPrompt}\n\nCONTEXTO DO USUÁRIO:\n${contextStr}\n\nPERGUNTA:\n${userInstruction}`
         
         const result = await model.generateContent(fullPrompt)
         const responseText = result.response.text()
@@ -119,15 +109,15 @@ export async function POST(req: Request) {
           return NextResponse.json({ response: responseText })
         }
       } catch (error: any) {
-        console.error(`Falha no modelo ${modelName}:`, error.message)
+        console.error(`Erro no modelo ${modelName}:`, error.message)
         lastError = error
         continue 
       }
     }
 
-    // Se chegou aqui, todos os modelos falharam
+    // Se todos falharem, mostramos um erro amigável com a dica da documentação
     return NextResponse.json({ 
-      response: `🤖 **PROBLEMA DE CONFIGURAÇÃO NA IA**\n\nA conexão com o Google falhou.\n\n**Erro:** ${lastError?.message || 'Desconhecido'}\n\n**Ação necessária:** Acesse o [Google AI Studio](https://aistudio.google.com/), crie uma NOVA chave de API e substitua a variável GEMINI_API_KEY no Vercel. Certifique-se de que a 'Generative Language API' está ativa.` 
+      response: `🤖 **PROBLEMA DE CONEXÃO [MAIO/2026]**\n\nNão consegui ativar os modelos Gemini 3 ou 2.5.\n\n**Causa provável:** Sua chave de API nova pode precisar de alguns minutos para propagar no Google Cloud, ou a 'Generative Language API' ainda não foi ativada para este projeto específico.\n\n**Erro técnico:** ${lastError?.message || 'Desconhecido'}` 
     })
 
   } catch (error: any) {
