@@ -73,7 +73,8 @@ export async function POST(req: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    // O modelo gemini-1.5-flash é ultra rápido e excelente para leitura de dados
+    
+    // O modelo gemini-1.5-flash é o padrão. Se der erro 404, tentamos o gemini-1.5-flash-latest
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       systemInstruction: systemPrompt 
@@ -87,6 +88,12 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("AI_AGENT_ERROR:", error)
+    // Se o erro for de modelo não encontrado, avisamos o usuário
+    if (error.message?.includes('404') || error.message?.includes('not found')) {
+      return NextResponse.json({ 
+        response: "🤖 **ERRO DE CONEXÃO**\n\nO Google não encontrou o modelo 'gemini-1.5-flash' na sua região ou com essa chave. Tente atualizar a página ou verificar sua conta no Google AI Studio."
+      })
+    }
     return NextResponse.json({ error: error.message || 'Erro interno no servidor da IA.' }, { status: 500 })
   }
 }
