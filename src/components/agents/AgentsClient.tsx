@@ -37,6 +37,14 @@ const AGENTS = [
     color: '#E65100',
     status: 'active',
   },
+  {
+    id: 'dante',
+    name: 'Dante',
+    tagline: 'Contador da Contte, responsável pela parte fiscal e tributos',
+    image: '/images/dante.png',
+    color: '#2E7D32',
+    status: 'active',
+  },
 ]
 
 export function AgentsClient() {
@@ -172,14 +180,7 @@ export function AgentsClient() {
       {activeTab === 'agentes' && (
         <div className="fade-in" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Ative robôs focados em missões específicas.</p>
-            <button onClick={() => setShowCreate(true)} style={{
-              padding: '10px 16px', borderRadius: '12px', background: '#FF6B00',
-              color: '#000', border: 'none', display: 'flex', alignItems: 'center', gap: '6px',
-              fontWeight: 800, cursor: 'pointer'
-            }}>
-              <Plus size={16} /> Criar Novo
-            </button>
+            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Conheça os robôs focados em missões financeiras específicas.</p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
