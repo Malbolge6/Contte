@@ -80,20 +80,21 @@ export async function POST(req: Request) {
       })
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey)
+    const genAI = new GoogleGenerativeAI(apiKey.trim())
     
     // Modelos para tentar (em ordem de preferência)
-    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"]
+    // Removido 'systemInstruction' do getGenerativeModel para compatibilidade total com todos os modelos
+    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"]
     let lastError = null
 
     for (const modelName of modelsToTry) {
       try {
-        const model = genAI.getGenerativeModel({ 
-          model: modelName,
-          systemInstruction: systemPrompt 
-        })
+        console.log(`Tentando modelo: ${modelName}`)
+        const model = genAI.getGenerativeModel({ model: modelName })
         
-        const fullPrompt = `CONTEXTO DO USUÁRIO:\n${contextStr}\n\nCOMANDO:\n${userInstruction}`
+        // Colocamos a instrução de sistema dentro do prompt para garantir compatibilidade
+        const fullPrompt = `### INSTRUÇÕES DO SISTEMA ###\n${systemPrompt}\n\n### CONTEXTO FINANCEIRO ###\n${contextStr}\n\n### COMANDO DO USUÁRIO ###\n${userInstruction}`
+        
         const result = await model.generateContent(fullPrompt)
         const responseText = result.response.text()
         
@@ -103,13 +104,14 @@ export async function POST(req: Request) {
       } catch (error: any) {
         console.error(`Falha no modelo ${modelName}:`, error.message)
         lastError = error
-        continue // Tenta o próximo modelo
+        // Se for erro de segurança ou algo do tipo, pode ser que o próximo modelo funcione
+        continue 
       }
     }
 
     // Se chegou aqui, todos os modelos falharam
     return NextResponse.json({ 
-      response: `🤖 **INSTABILIDADE NA IA**\n\nNão consegui conectar com o cérebro do Google agora. Erro: ${lastError?.message || 'Desconhecido'}. Tente novamente em instantes.` 
+      response: `🤖 **INSTABILIDADE NA IA**\n\nFalha ao conectar com os modelos Gemini (${modelsToTry.join(', ')}).\n\n**Erro mais recente:** ${lastError?.message || 'Desconhecido'}\n\n**Dica:** Verifique se a 'Generative Language API' está ativada no seu console do Google e se a chave de API está correta.` 
     })
 
   } catch (error: any) {
