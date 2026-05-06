@@ -290,6 +290,7 @@ export function GoalsClient({ goals, wallets }: GoalsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null)
+  const [showLamarBio, setShowLamarBio] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -313,7 +314,7 @@ export function GoalsClient({ goals, wallets }: GoalsClientProps) {
 
   return (
     <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', letterSpacing: '-1px' }}>Metas</h1>
@@ -323,9 +324,47 @@ export function GoalsClient({ goals, wallets }: GoalsClientProps) {
             Planeje o seu futuro, passo a passo.
           </p>
         </div>
-        <button onClick={() => setShowAdd(true)} style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
-          <Plus size={24} />
-        </button>
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div style={{ position: 'relative' }}>
+            <div 
+              onClick={() => setShowLamarBio(!showLamarBio)}
+              style={{ 
+                width: '64px', height: '64px', borderRadius: '16px', 
+                background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', 
+                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.1)',
+                position: 'relative', boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>LAMAR</div>
+              <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            {showLamarBio && (
+              <div className="scale-in" style={{
+                position: 'absolute', top: '100%', right: '0', width: '240px',
+                background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+                marginTop: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                zIndex: 100, border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+                  <strong>E aí, sou o Lamar!</strong> 🦝🚀<br/><br/>
+                  Sou o estrategista de metas, planos e conquistas financeiras. Vou te ajudar a transformar seus sonhos em realidade, um passo de cada vez!
+                </p>
+                <div style={{ 
+                  position: 'absolute', bottom: '100%', right: '20px', 
+                  width: '0', height: '0', 
+                  borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+                  borderBottom: '10px solid #000' 
+                }} />
+              </div>
+            )}
+          </div>
+
+          <button onClick={() => setShowAdd(true)} style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', border: '1px solid rgba(204, 255, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <Plus size={24} />
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
