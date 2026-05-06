@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+// V4.1 - Forçando redeploy para carregar nova API Key e usando Descoberta Dinâmica
 export const dynamic = 'force-dynamic'
 
 // Formatador de moeda para o contexto da IA
