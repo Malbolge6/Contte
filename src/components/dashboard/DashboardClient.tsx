@@ -642,6 +642,26 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                 <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             </div>
+
+            {showAntonioBio && (
+              <div className="scale-in" style={{
+                position: 'absolute', bottom: '100%', right: '20px', width: '240px',
+                background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+                marginBottom: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                zIndex: 20, border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+                  <strong>Olá, sou o Antonio!</strong> 🦦👔<br/><br/>
+                  Sou o líder da Contte. Minha missão é organizar sua vida financeira e garantir que seu caixa esteja sempre saudável e sob controle!
+                </p>
+                <div style={{ 
+                  position: 'absolute', top: '100%', right: '30px', 
+                  width: '0', height: '0', 
+                  borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+                  borderTop: '10px solid #000' 
+                }} />
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
