@@ -55,6 +55,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [taxProfile, setTaxProfile] = useState<any>(null)
   const [showBalanceDetails, setShowBalanceDetails] = useState(false)
   const [showManuelBio, setShowManuelBio] = useState(false)
+  const [showDanteBio, setShowDanteBio] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -275,9 +276,11 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
               width: '64px', height: '64px', background: 'rgba(255,255,255,0.2)', 
               borderRadius: '50%', overflow: 'hidden', flexShrink: 0, 
               cursor: 'pointer', border: '2px solid rgba(255,255,255,0.3)',
-              transition: 'transform 0.2s', transform: showManuelBio ? 'scale(1.1)' : 'scale(1)'
+              transition: 'transform 0.2s', transform: showManuelBio ? 'scale(1.1)' : 'scale(1)',
+              position: 'relative'
             }}
           >
+            <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 5 }}>MANUEL</div>
             <img src="/images/manuel.png" alt="Manuel" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
@@ -346,19 +349,44 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           flexDirection: 'column',
           gap: '16px'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Shield size={18} color="#ccff00" />
               <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: 700 }}>Respiro Fiscal</h4>
             </div>
-            <button 
-              onClick={() => setShowTaxConfig(true)}
-              style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: '#ccff00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <Settings size={12} />
-              Configurar
-            </button>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div 
+                onClick={() => setShowDanteBio(!showDanteBio)}
+                style={{ 
+                  width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', 
+                  borderRadius: '10px', overflow: 'hidden', cursor: 'pointer',
+                  border: '1px solid rgba(255,255,255,0.1)', position: 'relative'
+                }}
+              >
+                <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '8px', fontWeight: 900, padding: '1px 4px', borderRadius: '3px', border: '1px solid rgba(255,255,255,0.2)', zIndex: 5 }}>DANTE</div>
+                <img src="/images/dante.png" alt="Dante" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+
+              <button 
+                onClick={() => setShowTaxConfig(true)}
+                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 700, color: '#ccff00', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Settings size={12} />
+                Configurar
+              </button>
+            </div>
           </div>
+
+          {showDanteBio && (
+            <div className="scale-in" style={{
+              background: 'rgba(0,0,0,0.4)', color: '#fff', padding: '12px', borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.1)', fontSize: '12px', lineHeight: 1.4
+            }}>
+              <strong>Prazer, Dante!</strong> 🐢<br/>
+              Sou o contador oficial da Contte. Cuido de toda a sua parte fiscal e tributos, garantindo que você pague apenas o necessário e mantenha seu respiro financeiro em dia.
+            </div>
+          )}
 
           {!taxProfile || taxProfile.taxProfile === 'NONE' ? (
             <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
