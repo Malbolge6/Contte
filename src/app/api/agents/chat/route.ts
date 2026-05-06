@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const mockResponses: Record<string, string> = {
       'antonio': `👔 **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
       'claudia': `🕵️ **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
-      'megamen': `🚀 **RELATÓRIO DO PC GAMER**\n\nFoco no setup! Você já poupou o suficiente para o teclado mecânico. Faltam R$ 5.400 para a RTX 5090!`,
+      'lamar': `🚀 **RELATÓRIO DO LAMAR**\n\nFoco nas metas! Analisei seus sonhos e estou traçando o plano perfeito para você alcançar seu PC Gamer e sua próxima viagem.`,
       'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
     }
 
