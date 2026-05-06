@@ -48,7 +48,7 @@ const AGENTS = [
 ]
 
 export function AgentsClient() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'agentes'>('chat')
+  const [activeTab, setActiveTab] = useState<'chat' | 'agentes'>('agentes')
   const [activeAgents, setActiveAgents] = useState<string[]>(['jubileu'])
   
   // Custom Agent Creation
@@ -151,108 +151,28 @@ export function AgentsClient() {
             Inteligência
           </h1>
           <span style={{ padding: '4px 8px', background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00', borderRadius: '8px', fontSize: '11px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Sparkles size={12} /> GEMINI
+            <Zap size={12} fill="#FF6B00" /> AGENTES
           </span>
         </div>
 
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
           <button 
-            onClick={() => setActiveTab('chat')}
             style={{
-              flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
               fontWeight: 800, fontSize: '14px', transition: 'all 0.2s',
-              background: activeTab === 'chat' ? 'rgba(255,255,255,0.1)' : 'transparent',
-              color: activeTab === 'chat' ? '#fff' : '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              background: 'rgba(255, 107, 0, 0.15)',
+              color: '#FF6B00', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}
           >
-            <BrainCircuit size={18} /> Contte AI
-          </button>
-          <button 
-            onClick={() => setActiveTab('agentes')}
-            style={{
-              flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-              fontWeight: 800, fontSize: '14px', transition: 'all 0.2s',
-              background: activeTab === 'agentes' ? 'rgba(255, 107, 0, 0.15)' : 'transparent',
-              color: activeTab === 'agentes' ? '#FF6B00' : '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-            }}
-          >
-            <Bot size={18} /> Robôs Agentes
+            <Bot size={18} /> Robôs Agentes de Elite
           </button>
         </div>
       </div>
 
-      {/* --- CHAT TAB --- */}
+      {/* --- CHAT TAB (HIDDEN) --- */}
       {activeTab === 'chat' && (
-        <div className="fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-          
-          {/* Chat Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {messages.map((msg) => (
-              <div key={msg.id} style={{
-                display: 'flex', flexDirection: 'column', 
-                alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                width: '100%'
-              }}>
-                {msg.role === 'ai' && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', marginLeft: '4px' }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: '#FF6B00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <BrainCircuit size={14} color="#000" />
-                    </div>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#a1a1aa' }}>{msg.agentName}</span>
-                  </div>
-                )}
-                
-                <div style={{
-                  maxWidth: '85%', padding: '16px 20px', borderRadius: '20px',
-                  borderBottomRightRadius: msg.role === 'user' ? '4px' : '20px',
-                  borderTopLeftRadius: msg.role === 'ai' ? '4px' : '20px',
-                  background: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'rgba(255, 107, 0, 0.08)',
-                  color: '#e4e4e7', fontSize: '15px', lineHeight: 1.6, whiteSpace: 'pre-wrap',
-                  border: msg.role === 'ai' ? '1px solid rgba(255, 107, 0, 0.15)' : 'none'
-                }}>
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            {loadingChat && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '4px' }}>
-                <Loader2 size={18} className="animate-spin" color="#FF6B00" />
-                <span style={{ color: '#71717a', fontSize: '13px', fontWeight: 600 }}>Contte AI está analisando seus dados...</span>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Chat Input */}
-          <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <form onSubmit={handleSendMessage} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input 
-                type="text" 
-                value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                placeholder="Pergunte qualquer coisa sobre seu dinheiro..."
-                disabled={loadingChat}
-                style={{
-                  width: '100%', padding: '18px 24px', paddingRight: '60px',
-                  borderRadius: '20px', background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
-                  fontSize: '15px', outline: 'none'
-                }}
-              />
-              <button 
-                type="submit" 
-                disabled={!inputValue.trim() || loadingChat}
-                style={{
-                  position: 'absolute', right: '12px', width: '40px', height: '40px',
-                  borderRadius: '14px', background: inputValue.trim() ? '#FF6B00' : 'rgba(255,255,255,0.1)',
-                  border: 'none', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
-                }}
-              >
-                <Send size={18} />
-              </button>
-            </form>
-          </div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#71717a' }}>
+          O Chat Inteligente está em manutenção. Use os Robôs Agentes abaixo.
         </div>
       )}
 

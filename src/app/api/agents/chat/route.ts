@@ -81,44 +81,26 @@ export async function POST(req: Request) {
       })
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey.trim())
-    
-    // Modelos Oficiais de 2026 extraídos da documentação fornecida pelo usuário
-    const modelsToTry = [
-      "gemini-3-flash-preview", 
-      "gemini-3-flash",
-      "gemini-2.5-flash", 
-      "gemini-3.1-pro",
-      "gemini-1.5-flash-latest"
-    ]
-    
-    let lastError = null
-
-    for (const modelName of modelsToTry) {
-      try {
-        console.log(`Conectando ao cérebro: ${modelName}`)
-        const model = genAI.getGenerativeModel({ model: modelName })
-        
-        // Formatação de prompt recomendada para 2026
-        const fullPrompt = `INSTRUÇÕES:\n${systemPrompt}\n\nCONTEXTO DO USUÁRIO:\n${contextStr}\n\nPERGUNTA:\n${userInstruction}`
-        
-        const result = await model.generateContent(fullPrompt)
-        const responseText = result.response.text()
-        
-        if (responseText) {
-          return NextResponse.json({ response: responseText })
-        }
-      } catch (error: any) {
-        console.error(`Erro no modelo ${modelName}:`, error.message)
-        lastError = error
-        continue 
-      }
+    // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
+    const mockResponses: Record<string, string> = {
+      'jubileu': `👔 **RELATÓRIO DO JUBILEU (MODO SIMULAÇÃO)**\n\nSua saúde financeira está estável. Analisando as últimas 30 transações, notei que você está mantendo um bom equilíbrio. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Dica:** Continue monitorando suas contas pendentes.`,
+      'detetive': `🕵️ **RELATÓRIO DO DETETIVE (MODO SIMULAÇÃO)**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia. A área está segura por enquanto!`,
+      'megamen': `🚀 **RELATÓRIO DO MEGAMEN (MODO SIMULAÇÃO)**\n\nProtocolo de contenção ativo. Seus gastos de hoje estão sob controle. Mantenha o foco abaixo dos R$ 100 para ganhar o bônus de disciplina!`,
+      'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS (MODO SIMULAÇÃO)**\n\nQuá-quá! Pare de gastar com bobagens. Vi uns gastos estranhos em categorias não essenciais. Guarde esse dinheiro no cofre!`,
+      'chat': `🤖 **CONTTE AI (MODO MANUTENÇÃO)**\n\nOlá! Estamos calibrando meus circuitos cerebrais para os novos modelos Gemini de 2026. Por enquanto, posso apenas processar comandos básicos via Robôs Agentes. Volte em breve para conversarmos livremente!`,
+      'custom': `🛠️ **AGENTE CUSTOMIZADO**\n\nRecebi sua ordem: "${customPrompt}". Estou processando os dados e retornarei com uma análise completa assim que a conexão com o núcleo for restabelecida.`
     }
 
-    // Se todos falharem, mostramos um erro amigável com a dica da documentação
-    return NextResponse.json({ 
-      response: `🤖 **PROBLEMA DE CONEXÃO [MAIO/2026]**\n\nNão consegui ativar os modelos Gemini 3 ou 2.5.\n\n**Causa provável:** Sua chave de API nova pode precisar de alguns minutos para propagar no Google Cloud, ou a 'Generative Language API' ainda não foi ativada para este projeto específico.\n\n**Erro técnico:** ${lastError?.message || 'Desconhecido'}` 
-    })
+    const response = mockResponses[agentId] || mockResponses['chat']
+    
+    return NextResponse.json({ response })
+
+  } catch (error: any) {
+    console.error("ERRO CRÍTICO CHAT:", error)
+    return NextResponse.json({ error: 'Erro interno no servidor de IA' }, { status: 500 })
+  }
+}
+
 
   } catch (error: any) {
     console.error("ERRO CRÍTICO CHAT:", error)
