@@ -20,6 +20,7 @@ export function BottomNav() {
     { href: '/agentes', icon: Bot, label: 'Inteligência' },
     { href: '/timeline', icon: Activity, label: 'Feed' },
     { href: '/transacoes', icon: Wallet, label: 'Extrato' },
+    { href: '/assinaturas', icon: CreditCard, label: 'Assinaturas' },
     { href: '/contas', icon: FileText, label: 'Contas' },
     { href: '/metas', icon: Target, label: 'Metas' },
     { href: '/configuracoes', icon: Settings, label: 'Ajustes' },

@@ -47,6 +47,7 @@ model User {
   wallets      Wallet[]
   timeline     TimelineEvent[]
   pushSubscriptions PushSubscription[]
+  subscriptions Subscription[]
 }
 
 model Wallet {
@@ -246,4 +247,17 @@ model TimelineEvent {
   user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt(sort: Desc)])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  name      String
+  logo      String
+  amount    Float    @default(0)
+  category  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -1,36 +1,59 @@
 'use server'
 
-import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 
-export async function cancelSubscription() {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) throw new Error('Não autorizado')
+export async function getSubscriptions() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return []
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { stripeSubscriptionId: true }
+  try {
+    return await prisma.subscription.findMany({
+      where: { userId: session.user.id },
+      orderBy: { name: 'asc' }
+    })
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error)
+    return []
+  }
+}
+
+export async function upsertSubscription(data: { name: string, logo: string, amount: number, category: string }) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  try {
+    const existing = await prisma.subscription.findFirst({
+      where: {
+        userId: session.user.id,
+        name: data.name
+      }
     })
 
-    if (!user?.stripeSubscriptionId) {
-      throw new Error('Assinatura não encontrada')
+    if (existing) {
+      await prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          amount: data.amount,
+          category: data.category,
+          logo: data.logo
+        }
+      })
+    } else {
+      await prisma.subscription.create({
+        data: {
+          ...data,
+          userId: session.user.id
+        }
+      })
     }
 
-    // Cancela no Stripe ao fim do período atual
-    await stripe.subscriptions.update(user.stripeSubscriptionId, {
-      cancel_at_period_end: true
-    })
-
-    // Opcional: Atualizar algo no banco, mas o Webhook do Stripe cuidará disso de forma mais segura
-
-    revalidatePath('/configuracoes')
+    revalidatePath('/assinaturas')
     return { success: true }
-  } catch (error: any) {
-    console.error('CANCEL_ERROR:', error)
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error('Error upserting subscription:', error)
+    throw new Error('Failed to save subscription')
   }
 }
