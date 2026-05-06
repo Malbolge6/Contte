@@ -14,10 +14,10 @@ const AGENTS = [
     status: 'active',
   },
   {
-    id: 'detetive',
-    name: 'Detetive Duplicatas',
+    id: 'claudia',
+    name: 'Claudia',
     tagline: 'Encontra cobranças duplicadas no seu extrato',
-    image: '/images/detetive.png',
+    image: '/images/claudia.png',
     color: '#FF8A00',
     status: 'active',
   },

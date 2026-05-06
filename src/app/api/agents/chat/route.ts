@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
     const mockResponses: Record<string, string> = {
       'antonio': `👔 **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
-      'detetive': `🕵️ **RELATÓRIO DO DETETIVE**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
+      'claudia': `🕵️ **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
       'megamen': `🚀 **RELATÓRIO DO PC GAMER**\n\nFoco no setup! Você já poupou o suficiente para o teclado mecânico. Faltam R$ 5.400 para a RTX 5090!`,
       'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
     }
