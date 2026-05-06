@@ -330,14 +330,17 @@ export function GoalsClient({ goals, wallets }: GoalsClientProps) {
             <div 
               onClick={() => setShowLamarBio(!showLamarBio)}
               style={{ 
-                width: '64px', height: '64px', borderRadius: '16px', 
-                background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', 
+                width: '74px', height: '74px', borderRadius: '18px', 
+                background: 'rgba(255, 255, 255, 0.05)', 
                 cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.1)',
-                position: 'relative', boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+                position: 'relative', boxShadow: '0 8px 20px rgba(0,0,0,0.3)',
+                flexShrink: 0
               }}
             >
-              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>LAMAR</div>
-              <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>LAMAR</div>
+              <div style={{ width: '100%', height: '100%', borderRadius: '18px', overflow: 'hidden' }}>
+                <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
             </div>
 
             {showLamarBio && (
