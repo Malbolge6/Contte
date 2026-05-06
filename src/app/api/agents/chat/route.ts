@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+export const dynamic = 'force-dynamic'
+
 // Formatador de moeda para o contexto da IA
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
@@ -16,86 +18,102 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { agentId, customPrompt } = await req.json()
+    const body = await req.json().catch(() => ({}))
+    const { agentId, customPrompt } = body
 
     // 1. Pegar o Contexto Real (O que os Agentes vão ler)
     const userId = session.user.id
     
-    const wallets = await prisma.wallet.findMany({ where: { userId } })
+    // Buscar dados em paralelo para velocidade
+    const [wallets, bills, transactions] = await Promise.all([
+      prisma.wallet.findMany({ where: { userId } }),
+      prisma.bill.findMany({ 
+        where: { userId, status: 'PENDING' },
+        orderBy: { dueDate: 'asc' }
+      }),
+      prisma.transaction.findMany({
+        where: { userId },
+        orderBy: { date: 'desc' },
+        take: 30 // Aumentado para 30 transações para melhor análise
+      })
+    ])
+
     const totalBalance = wallets.reduce((acc, w) => acc + w.balance, 0)
     
-    const bills = await prisma.bill.findMany({ 
-      where: { userId, status: 'PENDING' },
-      orderBy: { dueDate: 'asc' }
-    })
-    
-    const transactions = await prisma.transaction.findMany({
-      where: { userId },
-      orderBy: { date: 'desc' },
-      take: 20 // Últimas 20 transações para leitura rápida
-    })
-
-    // Montando a memória do Agente
-    let contextStr = `\n--- CONTEXTO FINANCEIRO REAL DO USUÁRIO ---\n`
-    contextStr += `Saldo Total atual: ${formatCurrency(totalBalance)}\n`
-    contextStr += `Distribuição nas carteiras/bancos:\n${wallets.map(w => `- ${w.name}: ${formatCurrency(w.balance)}`).join('\n')}\n\n`
-    contextStr += `Contas a pagar (Pendentes):\n${bills.length === 0 ? 'Nenhuma conta pendente.' : bills.map(b => `- ${b.description}: ${formatCurrency(b.amount)} (Vence em: ${new Date(b.dueDate).toLocaleDateString('pt-BR')})`).join('\n')}\n\n`
-    contextStr += `Últimas 20 transações do extrato:\n${transactions.map(t => `- [${t.type === 'INCOME' ? 'ENTRADA' : 'SAÍDA'}] ${t.description}: ${formatCurrency(t.amount)} (${t.category}) em ${new Date(t.date).toLocaleDateString('pt-BR')}`).join('\n')}\n`
+    // Montando a memória do Agente de forma mais estruturada
+    let contextStr = `\n--- DADOS FINANCEIROS EM TEMPO REAL ---\n`
+    contextStr += `Saldo Total Consolidado: ${formatCurrency(totalBalance)}\n`
+    contextStr += `Carteiras Ativas:\n${wallets.map(w => `- ${w.name}: ${formatCurrency(w.balance)}`).join('\n')}\n\n`
+    contextStr += `Contas Pendentes:\n${bills.length === 0 ? 'Nenhuma conta pendente.' : bills.map(b => `- ${b.name}: ${formatCurrency(b.amount)} (Vencimento: ${new Date(b.dueDate).toLocaleDateString('pt-BR')})`).join('\n')}\n\n`
+    contextStr += `Últimas Movimentações:\n${transactions.map(t => `- [${t.type === 'INCOME' ? 'ENTRADA' : 'SAÍDA'}] ${t.description}: ${formatCurrency(t.amount)} (${t.category}) em ${new Date(t.date).toLocaleDateString('pt-BR')}`).join('\n')}\n`
     contextStr += `--------------------------------------\n`
 
     // 2. Definir a Missão
-    let systemPrompt = `Você é um agente de inteligência artificial de elite operando dentro da fintech 'Contte'. Responda em Português do Brasil (PT-BR). Seu tom é profissional, high-tech, analítico, porém amigável e focado em proteger o patrimônio do usuário. Use a formatação Markdown. Seja direto ao ponto.`
+    let systemPrompt = `Você é um agente de inteligência artificial de elite da fintech 'Contte'. 
+    Responda SEMPRE em Português do Brasil (PT-BR). 
+    Seu tom é profissional, tecnológico (estilo fintech premium) e analítico.
+    Use formatação Markdown para deixar as respostas bonitas (negrito, listas, etc).
+    Sempre use os dados reais fornecidos no contexto para basear suas respostas.`
     
     let userInstruction = ''
 
     if (agentId === 'jubileu') {
-      userInstruction = `Você é o Agente Jubileu 👔. Faça um raio-x rápido da situação. Avise se o Saldo Total cobre as Contas a pagar pendentes. Identifique qual é a maior despesa (SAÍDA) nas últimas transações. Dê um diagnóstico resumido da saúde do fluxo de caixa.`
+      userInstruction = `Você é o Agente Jubileu 👔. Analise o saldo total vs contas pendentes. Identifique o maior gasto recente e dê um diagnóstico curto da saúde financeira.`
     } else if (agentId === 'detetive') {
-      userInstruction = `Você é o Detetive Duplicatas 🕵️. Olhe detalhadamente o extrato de transações. Procure por despesas suspeitas (valores iguais ou descrições muito parecidas em datas próximas). Se achar algo estranho, alerte o usuário. Se estiver tudo limpo, diga que a área está segura.`
+      userInstruction = `Você é o Detetive Duplicatas 🕵️. Procure por cobranças repetidas ou valores suspeitos no extrato. Se tudo estiver ok, valide a segurança.`
     } else if (agentId === 'megamen') {
       const today = new Date().toLocaleDateString('pt-BR')
-      userInstruction = `Você é o Megamen 🚀. A data de hoje é ${today}. Olhe apenas para as transações de SAÍDA que aconteceram na data de hoje. Some o valor. Se passou de R$ 100, ative o 'Protocolo de Contenção' e dê uma bronca tática. Se for menos de R$ 100, parabenize o usuário pela disciplina.`
+      userInstruction = `Você é o Megamen 🚀. Data de hoje: ${today}. Verifique gastos de SAÍDA hoje. Se ultrapassar R$ 100, dê um alerta tático.`
     } else if (agentId === 'tiopatinhas') {
-      userInstruction = `Você é o Tio Patinhas 💰. Analise o extrato e o saldo. Identifique padrões de gastos fúteis ou categorias onde o usuário está gastando demais. Dê uma dica agressiva, porém cômica, de onde ele pode cortar gastos para investir mais dinheiro no fim do mês.`
+      userInstruction = `Você é o Tio Patinhas 💰. Seja ranzinza e econômico. Aponte onde o usuário está "rasgando dinheiro" e dê uma dica ácida para economizar.`
     } else if (agentId === 'chat') {
-      userInstruction = `Você é a Contte AI, o cérebro principal da plataforma. O usuário está conversando com você via chat. Responda à seguinte mensagem do usuário de forma útil, direta e usando os dados reais dele como base para a sua resposta. Mensagem do usuário: "${customPrompt}"`
+      userInstruction = `O usuário disse: "${customPrompt}". Responda como o cérebro central do Contte, usando os dados financeiros dele.`
     } else if (agentId === 'custom') {
-      userInstruction = `Você é um Agente Especial customizado. A ordem primordial do usuário é: "${customPrompt}". Cumpra a ordem analisando rigorosamente o contexto financeiro fornecido.`
+      userInstruction = `Ordem especial: "${customPrompt}".`
     }
 
-    // 3. Conexão com a Inteligência (Simulação vs API Real)
+    // 3. Conexão com a Inteligência
     const apiKey = process.env.GEMINI_API_KEY
-    
     if (!apiKey) {
       return NextResponse.json({ 
-        response: `🤖 **MODO OFFLINE [V4]**\n\nConfigure a GEMINI_API_KEY nas variáveis de ambiente da Vercel para ativar o cérebro da IA.` 
+        response: `🤖 **IA EM MODO DE ESPERA**\n\nChave API não configurada. Configure a GEMINI_API_KEY no painel da Vercel para ativar.` 
       })
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
     
-    try {
-      // TENTATIVA 1: Gemini 1.5 Flash (O mais moderno)
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-      const fullPrompt = `SISTEMA: ${systemPrompt}\n\n${contextStr}\n\nUSUÁRIO: ${userInstruction}`
-      const result = await model.generateContent(fullPrompt)
-      return NextResponse.json({ response: result.response.text() })
-    } catch (error) {
-      console.error("ERRO NO FLASH, TENTANDO PRO:", error)
+    // Modelos para tentar (em ordem de preferência)
+    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"]
+    let lastError = null
+
+    for (const modelName of modelsToTry) {
       try {
-        // TENTATIVA 2: Gemini Pro (O mais estável/antigo)
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" })
-        const fullPrompt = `SISTEMA: ${systemPrompt}\n\n${contextStr}\n\nUSUÁRIO: ${userInstruction}`
-        const result = await model.generateContent(fullPrompt)
-        return NextResponse.json({ response: result.response.text() })
-      } catch (innerError: any) {
-        console.error("ERRO TOTAL NA IA:", innerError)
-        return NextResponse.json({ 
-          response: `🤖 **ERRO DE INTELIGÊNCIA [V4]**\n\nO Google retornou o seguinte erro: ${innerError.message || 'Erro desconhecido'}. Verifique se sua chave de API no Google AI Studio está ativa.` 
+        const model = genAI.getGenerativeModel({ 
+          model: modelName,
+          systemInstruction: systemPrompt 
         })
+        
+        const fullPrompt = `CONTEXTO DO USUÁRIO:\n${contextStr}\n\nCOMANDO:\n${userInstruction}`
+        const result = await model.generateContent(fullPrompt)
+        const responseText = result.response.text()
+        
+        if (responseText) {
+          return NextResponse.json({ response: responseText })
+        }
+      } catch (error: any) {
+        console.error(`Falha no modelo ${modelName}:`, error.message)
+        lastError = error
+        continue // Tenta o próximo modelo
       }
     }
+
+    // Se chegou aqui, todos os modelos falharam
+    return NextResponse.json({ 
+      response: `🤖 **INSTABILIDADE NA IA**\n\nNão consegui conectar com o cérebro do Google agora. Erro: ${lastError?.message || 'Desconhecido'}. Tente novamente em instantes.` 
+    })
+
   } catch (error: any) {
-    return NextResponse.json({ error: 'Erro crítico no servidor [V4]' }, { status: 500 })
+    console.error("ERRO CRÍTICO CHAT:", error)
+    return NextResponse.json({ error: 'Erro interno no servidor de IA' }, { status: 500 })
   }
 }
