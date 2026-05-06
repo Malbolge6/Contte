@@ -313,7 +313,7 @@ export function GoalsClient({ goals, wallets }: GoalsClientProps) {
   }
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
+    <div className="fade-in" style={{ paddingTop: '80px', paddingBottom: '100px' }}>
       <div style={{ marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>

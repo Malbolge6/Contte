@@ -75,8 +75,8 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
   }, {})
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="fade-in" style={{ paddingTop: '80px', paddingBottom: '100px' }}>
+      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0 8px' }}>
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
             Extrato

@@ -204,7 +204,7 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
   }
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
+    <div className="fade-in" style={{ paddingTop: '80px', paddingBottom: '100px' }}>
       <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0 8px' }}>
         <div>
           <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>Compromissos</h1>
