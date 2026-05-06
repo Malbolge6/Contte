@@ -57,6 +57,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [showManuelBio, setShowManuelBio] = useState(false)
   const [showDanteBio, setShowDanteBio] = useState(false)
   const [showLamarBio, setShowLamarBio] = useState(false)
+  const [showAntonioBio, setShowAntonioBio] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -310,26 +311,34 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
       )}
 
       {/* Monthly Spent / Limited Balance (Green Card) */}
-      <div className="scale-in" style={{ marginBottom: '16px' }}>
+      <div className="scale-in" style={{ marginBottom: '16px', position: 'relative' }}>
         <div style={{ background: '#ccff00', borderRadius: '24px', padding: '24px', color: '#000', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, opacity: 0.7 }}>Gasto Mensal</p>
-            <button 
-              onClick={() => router.push('/transacoes')}
-              style={{ background: 'rgba(0,0,0,0.05)', border: 'none', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', color: '#000' }}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 600, opacity: 0.7 }}>Gasto Mensal</p>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', marginTop: '4px', marginBottom: '16px' }}>
+                <h2 className="blur-amount" style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1 }}>
+                  {formatCurrency(data.currentExpense)}
+                </h2>
+                {hourlyRate > 0 && (
+                  <span style={{ background: '#000', color: '#ccff00', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800, marginBottom: '4px' }}>
+                    {(data.currentExpense / hourlyRate).toFixed(1)}h vida
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div 
+              onClick={() => setShowAntonioBio(!showAntonioBio)}
+              style={{ 
+                width: '60px', height: '60px', borderRadius: '16px', 
+                background: 'rgba(0,0,0,0.1)', overflow: 'hidden', 
+                position: 'relative', border: '1px solid rgba(0,0,0,0.1)'
+              }}
             >
-              Mensal <ChevronRight size={14} />
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', marginBottom: '24px' }}>
-            <h2 className="blur-amount" style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1 }}>
-              {formatCurrency(data.currentExpense)}
-            </h2>
-            {hourlyRate > 0 && (
-              <span style={{ background: '#000', color: '#ccff00', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800, marginBottom: '4px' }}>
-                {(data.currentExpense / hourlyRate).toFixed(1)}h vida
-              </span>
-            )}
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>ANTONIO</div>
+              <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
           </div>
           
           {/* Simple progress bar representation */}
@@ -339,6 +348,26 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             ))}
           </div>
         </div>
+
+        {showAntonioBio && (
+          <div className="scale-in" style={{
+            position: 'absolute', bottom: '100%', right: '20px', width: '240px',
+            background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+            marginBottom: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            zIndex: 20, border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+              <strong>Olá, sou o Antonio!</strong> 🦦👔<br/><br/>
+              Sou o líder da Contte. Minha missão é organizar sua vida financeira e garantir que seu caixa esteja sempre saudável e sob controle!
+            </p>
+            <div style={{ 
+              position: 'absolute', top: '100%', right: '30px', 
+              width: '0', height: '0', 
+              borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+              borderTop: '10px solid #000' 
+            }} />
+          </div>
+        )}
       </div>
 
       {/* Ideia 3: Respiro Fiscal (Advanced Bento Card) */}
@@ -584,13 +613,29 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
 
       {/* Alerts */}
       {alerts.length > 0 && (
-        <div style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: '20px', padding: '20px', marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <AlertCircle size={20} color="#f43f5e" />
-            <p style={{ fontSize: '15px', fontWeight: 700, color: '#f43f5e' }}>
-              Atenção: {alerts.length} conta(s)
-            </p>
+        <div style={{ background: 'rgba(244, 63, 94, 0.1)', border: '1px solid rgba(244, 63, 94, 0.2)', borderRadius: '20px', padding: '20px', marginBottom: '24px', position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <AlertCircle size={20} color="#f43f5e" />
+              <p style={{ fontSize: '15px', fontWeight: 700, color: '#f43f5e' }}>
+                Atenção: {alerts.length} conta(s)
+              </p>
+            </div>
+
+            <div 
+              onClick={() => setShowAntonioBio(!showAntonioBio)}
+              style={{ 
+                width: '50px', height: '50px', borderRadius: '12px', 
+                background: 'rgba(244, 63, 94, 0.15)', overflow: 'hidden', 
+                position: 'relative', border: '1px solid rgba(244, 63, 94, 0.2)',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '8px', fontWeight: 900, padding: '2px 5px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>ANTONIO</div>
+              <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
           </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {alerts.slice(0, 3).map((bill: any) => {
               const days = getDaysUntilDue(bill.dueDate)
