@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Bot, Plus, X, Zap, Loader2, PlayCircle, Settings2, ShieldCheck } from 'lucide-react'
+import { Bot, Plus, X, Zap, Loader2, PlayCircle, Settings2, ShieldCheck, MessageSquare } from 'lucide-react'
 import { createPortal } from 'react-dom'
-import Image from 'next/image'
 
-// Using generic placeholders since the generated images are in the brain folder
 const AGENTS = [
   {
     id: 'jubileu',
@@ -21,7 +19,7 @@ const AGENTS = [
     tagline: 'Encontra cobranças duplicadas no seu extrato',
     icon: '🕵️',
     color: '#FF8A00',
-    status: 'inactive',
+    status: 'active',
   },
   {
     id: 'megamen',
@@ -29,7 +27,7 @@ const AGENTS = [
     tagline: 'Alerta quando seus gastos do dia passarem de R$100',
     icon: '🚀',
     color: '#FF4500',
-    status: 'inactive',
+    status: 'active',
   },
   {
     id: 'santos',
@@ -46,7 +44,10 @@ export function AgentsClient() {
   const [showCreate, setShowCreate] = useState(false)
   const [customName, setCustomName] = useState('')
   const [customPrompt, setCustomPrompt] = useState('')
-  const [loading, setLoading] = useState(false)
+  
+  // Chat / Interaction state
+  const [loadingAgentId, setLoadingAgentId] = useState<string | null>(null)
+  const [agentResponse, setAgentResponse] = useState<{ id: string, name: string, text: string, color: string } | null>(null)
 
   const toggleAgent = (id: string) => {
     if (activeAgents.includes(id)) {
@@ -56,17 +57,39 @@ export function AgentsClient() {
     }
   }
 
+  const handleRunAgent = async (agent: typeof AGENTS[0] | { id: string, name: string, color: string }, prompt?: string) => {
+    setLoadingAgentId(agent.id)
+    try {
+      const res = await fetch('/api/agents/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.id, customPrompt: prompt })
+      })
+      const data = await res.json()
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao conectar com a IA')
+      }
+
+      setAgentResponse({
+        id: agent.id,
+        name: agent.name,
+        text: data.response,
+        color: agent.color
+      })
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setLoadingAgentId(null)
+    }
+  }
+
   const handleCreateCustom = (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    // Simulate API call to Claude
-    setTimeout(() => {
-      setLoading(false)
-      setShowCreate(false)
-      alert(`Agente "${customName}" criado com sucesso! Ele agora monitora sua conta.`)
-      setCustomName('')
-      setCustomPrompt('')
-    }, 1500)
+    setShowCreate(false)
+    handleRunAgent({ id: 'custom', name: customName, color: '#4ade80' }, customPrompt)
+    setCustomName('')
+    setCustomPrompt('')
   }
 
   return (
@@ -77,10 +100,10 @@ export function AgentsClient() {
             <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
               Agentes IA
             </h1>
-            <span style={{ padding: '4px 8px', background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>BETA</span>
+            <span style={{ padding: '4px 8px', background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>LIVE</span>
           </div>
           <p style={{ color: '#71717a', fontSize: '15px', maxWidth: '500px', lineHeight: 1.5 }}>
-            Pequenos robôs baseados em Inteligência Artificial que trabalham 24/7 na sua conta. Ative os que você precisa ou crie o seu próprio.
+            O cérebro financeiro da Contte. Ative os agentes para analisar seus dados em tempo real ou crie comandos customizados.
           </p>
         </div>
         
@@ -90,7 +113,7 @@ export function AgentsClient() {
           fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 25px rgba(255, 107, 0, 0.25)'
         }}>
           <Plus size={20} />
-          Criar Meu Agente
+          Agente Custom
         </button>
       </div>
 
@@ -98,6 +121,7 @@ export function AgentsClient() {
         {AGENTS.map((agent) => {
           const isActive = activeAgents.includes(agent.id)
           const isLocked = agent.status === 'locked'
+          const isLoading = loadingAgentId === agent.id
 
           return (
             <div key={agent.id} className="scale-in" style={{
@@ -125,14 +149,31 @@ export function AgentsClient() {
                     EM BREVE
                   </span>
                 ) : (
-                  <button onClick={() => toggleAgent(agent.id)} style={{
-                    width: '44px', height: '44px', borderRadius: '14px', border: 'none',
-                    background: isActive ? agent.color : 'rgba(255,255,255,0.05)',
-                    color: isActive ? '#000' : '#fff', cursor: 'pointer', transition: 'all 0.2s',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {isActive ? <Zap size={20} fill="#000" /> : <PlayCircle size={22} />}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {isActive && (
+                      <button 
+                        onClick={() => handleRunAgent(agent)} 
+                        disabled={isLoading}
+                        style={{
+                          height: '44px', padding: '0 16px', borderRadius: '14px', border: 'none',
+                          background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700,
+                          fontSize: '13px'
+                        }}
+                      >
+                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
+                        Pedir Análise
+                      </button>
+                    )}
+                    <button onClick={() => toggleAgent(agent.id)} style={{
+                      width: '44px', height: '44px', borderRadius: '14px', border: 'none',
+                      background: isActive ? agent.color : 'rgba(255,255,255,0.05)',
+                      color: isActive ? '#000' : '#fff', cursor: 'pointer', transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {isActive ? <Zap size={20} fill="#000" /> : <PlayCircle size={22} />}
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -144,18 +185,45 @@ export function AgentsClient() {
                   {agent.tagline}
                 </p>
               </div>
-
-              {isActive && (
-                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '8px', color: agent.color, fontSize: '12px', fontWeight: 700 }}>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: agent.color, boxShadow: `0 0 10px ${agent.color}` }} />
-                  Monitorando sua conta agora
-                </div>
-              )}
             </div>
           )
         })}
       </div>
 
+      {/* Modal para exibir a resposta do Agente */}
+      {agentResponse && createPortal(
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setAgentResponse(null)}>
+          <div className="modal-content" style={{ maxWidth: '600px', margin: 'auto' }}>
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.15)', borderRadius: '2px', margin: '12px auto 0' }} />
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: `${agentResponse.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Bot size={24} color={agentResponse.color} />
+                </div>
+                <div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>{agentResponse.name}</h2>
+                  <p style={{ fontSize: '12px', color: '#71717a' }}>Relatório do Sistema</p>
+                </div>
+                <button onClick={() => setAgentResponse(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#71717a', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div style={{ 
+                background: 'rgba(255,255,255,0.02)', padding: '20px', 
+                borderRadius: '16px', border: `1px solid rgba(255,255,255,0.05)`,
+                color: '#e4e4e7', fontSize: '15px', lineHeight: 1.6,
+                whiteSpace: 'pre-wrap' // Important for markdown/newlines from Claude
+              }}>
+                {agentResponse.text}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal Criar Custom */}
       {showCreate && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowCreate(false)}>
           <div className="modal-content">
@@ -163,8 +231,8 @@ export function AgentsClient() {
             <div style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div>
-                  <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>Criar Agente Personalizado</h2>
-                  <p style={{ fontSize: '13px', color: '#71717a' }}>Descreva o que seu robô deve fazer com seus dados.</p>
+                  <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>Criar Agente</h2>
+                  <p style={{ fontSize: '13px', color: '#71717a' }}>Defina a ordem. Ele usará a IA para analisar seus dados.</p>
                 </div>
                 <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
                   <X size={20} />
@@ -175,36 +243,28 @@ export function AgentsClient() {
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px' }}>NOME DO AGENTE</label>
                   <input 
-                    type="text" className="input-field" placeholder="Ex: Inspetor de Ifood" required
+                    type="text" className="input-field" placeholder="Ex: Conselheiro Mestre" required
                     value={customName} onChange={e => setCustomName(e.target.value)} autoFocus
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px' }}>COMANDO DO AGENTE (PROMPT)</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px' }}>INSTRUÇÃO DA IA (PROMPT)</label>
                   <textarea 
                     className="input-field" rows={4} required style={{ resize: 'none' }}
-                    placeholder="Ex: Me mande uma notificação sempre que a soma dos meus gastos com 'Comida' passar de R$ 500 no mês."
+                    placeholder="Ex: Analise meus últimos gastos e identifique categorias onde posso cortar custos este mês."
                     value={customPrompt} onChange={e => setCustomPrompt(e.target.value)}
                   />
                 </div>
 
-                <div style={{ padding: '16px', background: 'rgba(74, 222, 128, 0.05)', borderRadius: '16px', border: '1px solid rgba(74, 222, 128, 0.1)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <ShieldCheck size={20} color="#4ade80" style={{ flexShrink: 0 }} />
-                  <div>
-                    <h4 style={{ fontSize: '13px', fontWeight: 800, color: '#4ade80', marginBottom: '4px' }}>Segurança Garantida</h4>
-                    <p style={{ fontSize: '12px', color: '#a1a1aa' }}>Este agente rodará isolado na sua conta usando a API da Anthropic. Ele não pode fazer transações reais, apenas monitorar e alertar.</p>
-                  </div>
-                </div>
-
-                <button type="submit" disabled={loading} style={{
-                  height: '56px', borderRadius: '16px', background: '#FF6B00', color: '#000',
+                <button type="submit" disabled={loadingAgentId === 'custom'} style={{
+                  height: '56px', borderRadius: '16px', background: '#4ade80', color: '#000',
                   fontSize: '16px', fontWeight: 800, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                  opacity: loading ? 0.7 : 1
+                  opacity: loadingAgentId === 'custom' ? 0.7 : 1
                 }}>
-                  {loading ? <Loader2 size={20} className="animate-spin" /> : <Bot size={20} />}
-                  {loading ? 'Treinando Agente...' : 'Ativar Agente'}
+                  {loadingAgentId === 'custom' ? <Loader2 size={20} className="animate-spin" /> : <Bot size={20} />}
+                  {loadingAgentId === 'custom' ? 'Processando dados...' : 'Executar Agora'}
                 </button>
               </form>
             </div>
