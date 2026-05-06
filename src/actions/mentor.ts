@@ -38,29 +38,29 @@ export async function getMentorInsight() {
 
     // Sistema de Regras Inteligentes
     let mood = 'neutral' // happy, neutral, warning, danger
-    let title = 'Insight do Dia'
-    let message = 'Tudo parece em ordem por aqui. Continue registrando seus gastos para uma análise mais profunda!'
+    let title = 'Manuel Analisa...'
+    let message = 'Tudo parece calmo por aqui. Continue registrando seus movimentos para que eu possa proteger seu futuro com precisão.'
 
     if (transactions.length === 0) {
        title = 'Bem-vindo ao Mentor'
        message = 'Ainda não tenho dados suficientes. Comece lançando seus ganhos e gastos deste mês!'
     } else if (balance < 0) {
       mood = 'danger'
-      title = 'Alerta de Saldo'
-      message = 'Atenção! Suas despesas superaram seus ganhos este mês. É hora de cortar gastos supérfluos imediatamente.'
+      title = 'Alerta de Cuidado'
+      message = 'Atenção! Suas despesas superaram seus ganhos este mês. É hora de parar, respirar e cortar gastos supérfluos imediatamente.'
     } else if (pendingBillsCount > 0 && balance < pendingBillsTotal) {
       mood = 'warning'
-      title = 'Atenção às Contas'
-      message = `Você tem R$ ${pendingBillsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em contas pendentes, mas seu saldo atual não cobre tudo. Priorize o que vence logo.`
+      title = 'Aviso de Manuel'
+      message = `Notei que você tem R$ ${pendingBillsTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em contas pendentes, mas o saldo não cobre tudo. Vamos priorizar o essencial?`
     } else if (totalExpense > totalIncome * 0.8 && totalIncome > 0) {
       mood = 'warning'
-      title = 'Alerta de Consumo'
-      message = 'Você já comprometeu 80% da sua renda mensal. Tente segurar os gastos nas próximas semanas.'
+      title = 'Alerta de Ritmo'
+      message = 'Você já comprometeu 80% da sua renda. Recomendo desacelerar os gastos nas próximas semanas para não perdermos o fôlego.'
     } else if (balance > totalIncome * 0.2 && goals.length > 0 && totalIncome > 0) {
       mood = 'happy'
       const mainGoal = goals[0].title
-      title = 'Excelente Trabalho!'
-      message = `Você está com uma ótima margem de sobra! Que tal investir um pouco mais na sua meta de "${mainGoal}"?`
+      title = 'Sabedoria Financeira'
+      message = `Você está com uma ótima margem! Que tal dar um passo calmo e firme em direção à sua meta: "${mainGoal}"?`
     } else if (totalIncome > 0 && totalExpense < totalIncome * 0.5) {
       mood = 'happy'
       title = 'Ritmo de Elite'

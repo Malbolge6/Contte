@@ -54,6 +54,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [predictionData, setPredictionData] = useState<any>(null)
   const [taxProfile, setTaxProfile] = useState<any>(null)
   const [showBalanceDetails, setShowBalanceDetails] = useState(false)
+  const [showManuelBio, setShowManuelBio] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -263,14 +264,42 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
 
       {/* AI Mentor Insight (Purple Card) */}
       {mentorInsight && (
-        <div className="fade-in" style={{ marginBottom: '16px', background: '#a78bfa', borderRadius: '24px', padding: '24px', color: '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="fade-in" style={{ marginBottom: '16px', background: '#a78bfa', borderRadius: '24px', padding: '24px', color: '#000', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
           <div style={{ flex: 1, paddingRight: '16px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{mentorInsight.title}</h3>
+            <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '4px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{mentorInsight.title}</h3>
             <p style={{ fontSize: '13px', fontWeight: 500, opacity: 0.9, lineHeight: 1.5 }}>{mentorInsight.message}</p>
           </div>
-          <div style={{ width: '60px', height: '60px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Sparkles size={28} color="#fff" />
+          <div 
+            onClick={() => setShowManuelBio(!showManuelBio)}
+            style={{ 
+              width: '64px', height: '64px', background: 'rgba(255,255,255,0.2)', 
+              borderRadius: '50%', overflow: 'hidden', flexShrink: 0, 
+              cursor: 'pointer', border: '2px solid rgba(255,255,255,0.3)',
+              transition: 'transform 0.2s', transform: showManuelBio ? 'scale(1.1)' : 'scale(1)'
+            }}
+          >
+            <img src="/images/manuel.png" alt="Manuel" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
+
+          {showManuelBio && (
+            <div className="scale-in" style={{
+              position: 'absolute', bottom: '100%', right: '20px', width: '220px',
+              background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+              marginBottom: '10px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              zIndex: 10, border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+                <strong>Olá, eu sou o Manuel!</strong> 🦥<br/><br/>
+                Sou o mentor de economia da Contte. Minha missão é analisar seus dados com calma e te avisar sempre que seu saldo estiver em perigo ou quando houver chances de economizar.
+              </p>
+              <div style={{ 
+                position: 'absolute', top: '100%', right: '30px', 
+                width: '0', height: '0', 
+                borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+                borderTop: '10px solid #000' 
+              }} />
+            </div>
+          )}
         </div>
       )}
 
