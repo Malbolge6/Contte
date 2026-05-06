@@ -83,10 +83,10 @@ export async function POST(req: Request) {
 
     // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
     const mockResponses: Record<string, string> = {
-      'antonio': `👔 **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
+      'antonio': ` **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
       'claudia': ` **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
       'lamar': `**RELATÓRIO DO LAMAR**\n\nFoco nas metas! Analisei seus sonhos e estou traçando o plano perfeito para você alcançar seu PC Gamer e sua próxima viagem.`,
-      'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
+      'tiopatinhas': ` **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
     }
 
     const response = mockResponses[agentId] || mockResponses['chat']
@@ -98,4 +98,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Erro interno no servidor de IA' }, { status: 500 })
   }
 }
- :
