@@ -153,6 +153,7 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
   const [wallets, setWallets] = useState<any[]>([])
   const [showWalletSelector, setShowWalletSelector] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [showAntonioBio, setShowAntonioBio] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -204,18 +205,56 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
 
   return (
     <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>
+      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0 8px' }}>
         <div>
           <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>Compromissos</h1>
           <p style={{ color: '#71717a', fontSize: '14px', fontWeight: 500 }}>Controle suas saídas e mantenha o fluxo</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => router.push('/carteiras')} style={{ height: '48px', padding: '0 16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-            <Wallet size={18} /> Carteiras
-          </button>
-          <button onClick={() => setShowAddModal(true)} style={{ height: '48px', width: '48px', borderRadius: '16px', background: '#ccff00', color: '#000', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-            <Plus size={24} />
-          </button>
+        
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          <div style={{ position: 'relative' }}>
+            <div 
+              onClick={() => setShowAntonioBio(!showAntonioBio)}
+              style={{ 
+                width: '64px', height: '64px', borderRadius: '16px', 
+                background: 'rgba(255, 255, 255, 0.05)', overflow: 'hidden', 
+                cursor: 'pointer', border: '1px solid rgba(255, 255, 255, 0.1)',
+                position: 'relative', boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+              }}
+            >
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>ANTONIO</div>
+              <img src="/images/antonio.png" alt="Antonio" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            {showAntonioBio && (
+              <div className="scale-in" style={{
+                position: 'absolute', top: '100%', right: '0', width: '240px',
+                background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+                marginTop: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                zIndex: 100, border: '1px solid rgba(255,255,255,0.1)'
+              }}>
+                <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+                  <strong>Olá, sou o Antonio!</strong> 🦦👔<br/><br/>
+                  Sou o líder da Contte. Minha missão é organizar sua vida financeira e garantir que seu caixa esteja sempre saudável e sob controle!
+                </p>
+                <div style={{ 
+                  position: 'absolute', bottom: '100%', right: '20px', 
+                  width: '0', height: '0', 
+                  borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+                  borderBottom: '10px solid #000' 
+                }} />
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button onClick={() => router.push('/carteiras')} style={{ height: '48px', padding: '0 16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
+              <Wallet size={18} /> Carteiras
+            </button>
+            <button onClick={() => setShowAddModal(true)} style={{ height: '48px', width: '48px', borderRadius: '16px', background: '#ccff00', color: '#000', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <Plus size={24} />
+            </button>
+          </div>
         </div>
       </div>
 
