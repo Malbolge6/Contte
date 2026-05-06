@@ -82,9 +82,14 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey.trim())
     
-    // Modelos para tentar (em ordem de preferência)
-    // Removido 'systemInstruction' do getGenerativeModel para compatibilidade total com todos os modelos
-    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"]
+    // Modelos Atualizados para 2026 (Gemini 3 e 2.5)
+    const modelsToTry = [
+      "gemini-3-flash", 
+      "gemini-3.1-pro", 
+      "gemini-2.5-flash", 
+      "gemini-2.5-pro", 
+      "gemini-1.5-flash"
+    ]
     let lastError = null
 
     for (const modelName of modelsToTry) {
