@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Bot, Plus, X, Zap, Loader2, PlayCircle, Settings2, ShieldCheck, MessageSquare } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Bot, Plus, X, Zap, Loader2, PlayCircle, ShieldCheck, MessageSquare, Send, Sparkles, BrainCircuit } from 'lucide-react'
 import { createPortal } from 'react-dom'
 
 const AGENTS = [
@@ -30,24 +30,51 @@ const AGENTS = [
     status: 'active',
   },
   {
+    id: 'tiopatinhas',
+    name: 'Tio Patinhas',
+    tagline: 'Analisa e sugere onde você pode economizar mais',
+    icon: '💰',
+    color: '#E65100',
+    status: 'active',
+  },
+  {
     id: 'santos',
     name: 'Santos Dumont',
     tagline: 'Caçador de passagens baratas saindo da sua cidade',
     icon: '✈️',
-    color: '#E65100',
+    color: '#ccff00',
     status: 'locked',
   }
 ]
 
 export function AgentsClient() {
+  const [activeTab, setActiveTab] = useState<'chat' | 'agentes'>('chat')
   const [activeAgents, setActiveAgents] = useState<string[]>(['jubileu'])
+  
+  // Custom Agent Creation
   const [showCreate, setShowCreate] = useState(false)
   const [customName, setCustomName] = useState('')
   const [customPrompt, setCustomPrompt] = useState('')
   
-  // Chat / Interaction state
+  // Chat State
+  const [messages, setMessages] = useState<{ id: string, role: 'user' | 'ai', content: string, agentName?: string }[]>([
+    { id: '1', role: 'ai', content: 'Olá! Sou a Contte AI, o cérebro central da sua conta. Eu conheço todo o seu histórico financeiro. O que você quer analisar hoje?', agentName: 'Contte AI' }
+  ])
+  const [inputValue, setInputValue] = useState('')
+  const [loadingChat, setLoadingChat] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Agent Report State
   const [loadingAgentId, setLoadingAgentId] = useState<string | null>(null)
   const [agentResponse, setAgentResponse] = useState<{ id: string, name: string, text: string, color: string } | null>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const toggleAgent = (id: string) => {
     if (activeAgents.includes(id)) {
@@ -57,6 +84,35 @@ export function AgentsClient() {
     }
   }
 
+  // Action para mandar msg pro chat livre
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputValue.trim() || loadingChat) return
+
+    const userMsg = inputValue.trim()
+    setInputValue('')
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: userMsg }])
+    setLoadingChat(true)
+
+    try {
+      const res = await fetch('/api/agents/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: 'chat', customPrompt: userMsg })
+      })
+      const data = await res.json()
+      
+      if (!res.ok) throw new Error(data.error)
+
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', content: data.response, agentName: 'Contte AI' }])
+    } catch (err: any) {
+      setMessages(prev => [...prev, { id: Date.now().toString(), role: 'ai', content: `Erro: ${err.message}`, agentName: 'Sistema' }])
+    } finally {
+      setLoadingChat(false)
+    }
+  }
+
+  // Action para pedir analise de um Agente especifico
   const handleRunAgent = async (agent: typeof AGENTS[0] | { id: string, name: string, color: string }, prompt?: string) => {
     setLoadingAgentId(agent.id)
     try {
@@ -67,16 +123,9 @@ export function AgentsClient() {
       })
       const data = await res.json()
       
-      if (!res.ok) {
-        throw new Error(data.error || 'Erro ao conectar com a IA')
-      }
+      if (!res.ok) throw new Error(data.error)
 
-      setAgentResponse({
-        id: agent.id,
-        name: agent.name,
-        text: data.response,
-        color: agent.color
-      })
+      setAgentResponse({ id: agent.id, name: agent.name, text: data.response, color: agent.color })
     } catch (err: any) {
       alert(err.message)
     } finally {
@@ -93,104 +142,200 @@ export function AgentsClient() {
   }
 
   return (
-    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px' }}>
-      <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
-              Agentes IA
-            </h1>
-            <span style={{ padding: '4px 8px', background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}>LIVE</span>
-          </div>
-          <p style={{ color: '#71717a', fontSize: '15px', maxWidth: '500px', lineHeight: 1.5 }}>
-            O cérebro financeiro da Contte. Ative os agentes para analisar seus dados em tempo real ou crie comandos customizados.
-          </p>
+    <div className="fade-in" style={{ paddingTop: '8px', paddingBottom: '100px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+      
+      {/* Header & Tabs */}
+      <div style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-1.5px' }}>
+            Inteligência
+          </h1>
+          <span style={{ padding: '4px 8px', background: 'rgba(255, 107, 0, 0.15)', color: '#FF6B00', borderRadius: '8px', fontSize: '11px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Sparkles size={12} /> GEMINI
+          </span>
         </div>
-        
-        <button onClick={() => setShowCreate(true)} style={{
-          padding: '14px 20px', borderRadius: '16px', background: 'linear-gradient(135deg, #FF6B00, #FF8A00)',
-          color: '#000', border: 'none', display: 'flex', alignItems: 'center', gap: '8px',
-          fontWeight: 800, cursor: 'pointer', boxShadow: '0 8px 25px rgba(255, 107, 0, 0.25)'
-        }}>
-          <Plus size={20} />
-          Agente Custom
-        </button>
+
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '4px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <button 
+            onClick={() => setActiveTab('chat')}
+            style={{
+              flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              fontWeight: 800, fontSize: '14px', transition: 'all 0.2s',
+              background: activeTab === 'chat' ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: activeTab === 'chat' ? '#fff' : '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+            }}
+          >
+            <BrainCircuit size={18} /> Contte AI
+          </button>
+          <button 
+            onClick={() => setActiveTab('agentes')}
+            style={{
+              flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              fontWeight: 800, fontSize: '14px', transition: 'all 0.2s',
+              background: activeTab === 'agentes' ? 'rgba(255, 107, 0, 0.15)' : 'transparent',
+              color: activeTab === 'agentes' ? '#FF6B00' : '#71717a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+            }}
+          >
+            <Bot size={18} /> Robôs Agentes
+          </button>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-        {AGENTS.map((agent) => {
-          const isActive = activeAgents.includes(agent.id)
-          const isLocked = agent.status === 'locked'
-          const isLoading = loadingAgentId === agent.id
-
-          return (
-            <div key={agent.id} className="scale-in" style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${isActive ? agent.color : 'rgba(255,255,255,0.05)'}`,
-              borderRadius: '24px', padding: '24px', position: 'relative',
-              overflow: 'hidden', transition: 'all 0.3s',
-              boxShadow: isActive ? `0 0 20px ${agent.color}15` : 'none',
-              opacity: isLocked ? 0.5 : 1
-            }}>
-              {isActive && (
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: `radial-gradient(circle at top right, ${agent.color}30, transparent)`, zIndex: 0 }} />
-              )}
-              
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '18px',
-                  background: `${agent.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '28px', border: `1px solid ${agent.color}30`
-                }}>
-                  {agent.icon}
-                </div>
-                {isLocked ? (
-                  <span style={{ fontSize: '11px', color: '#71717a', fontWeight: 700, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                    EM BREVE
-                  </span>
-                ) : (
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {isActive && (
-                      <button 
-                        onClick={() => handleRunAgent(agent)} 
-                        disabled={isLoading}
-                        style={{
-                          height: '44px', padding: '0 16px', borderRadius: '14px', border: 'none',
-                          background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700,
-                          fontSize: '13px'
-                        }}
-                      >
-                        {isLoading ? <Loader2 size={16} className="animate-spin" /> : <MessageSquare size={16} />}
-                        Pedir Análise
-                      </button>
-                    )}
-                    <button onClick={() => toggleAgent(agent.id)} style={{
-                      width: '44px', height: '44px', borderRadius: '14px', border: 'none',
-                      background: isActive ? agent.color : 'rgba(255,255,255,0.05)',
-                      color: isActive ? '#000' : '#fff', cursor: 'pointer', transition: 'all 0.2s',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                      {isActive ? <Zap size={20} fill="#000" /> : <PlayCircle size={22} />}
-                    </button>
+      {/* --- CHAT TAB --- */}
+      {activeTab === 'chat' && (
+        <div className="fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+          
+          {/* Chat Messages */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {messages.map((msg) => (
+              <div key={msg.id} style={{
+                display: 'flex', flexDirection: 'column', 
+                alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                width: '100%'
+              }}>
+                {msg.role === 'ai' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', marginLeft: '4px' }}>
+                    <div style={{ width: '24px', height: '24px', borderRadius: '8px', background: '#FF6B00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <BrainCircuit size={14} color="#000" />
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#a1a1aa' }}>{msg.agentName}</span>
                   </div>
                 )}
+                
+                <div style={{
+                  maxWidth: '85%', padding: '16px 20px', borderRadius: '20px',
+                  borderBottomRightRadius: msg.role === 'user' ? '4px' : '20px',
+                  borderTopLeftRadius: msg.role === 'ai' ? '4px' : '20px',
+                  background: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'rgba(255, 107, 0, 0.08)',
+                  color: '#e4e4e7', fontSize: '15px', lineHeight: 1.6, whiteSpace: 'pre-wrap',
+                  border: msg.role === 'ai' ? '1px solid rgba(255, 107, 0, 0.15)' : 'none'
+                }}>
+                  {msg.content}
+                </div>
               </div>
-
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '6px' }}>
-                  {agent.name}
-                </h3>
-                <p style={{ fontSize: '14px', color: '#a1a1aa', lineHeight: 1.5 }}>
-                  {agent.tagline}
-                </p>
+            ))}
+            {loadingChat && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '4px' }}>
+                <Loader2 size={18} className="animate-spin" color="#FF6B00" />
+                <span style={{ color: '#71717a', fontSize: '13px', fontWeight: 600 }}>Contte AI está analisando seus dados...</span>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-      {/* Modal para exibir a resposta do Agente */}
+          {/* Chat Input */}
+          <div style={{ padding: '16px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <form onSubmit={handleSendMessage} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                placeholder="Pergunte qualquer coisa sobre seu dinheiro..."
+                disabled={loadingChat}
+                style={{
+                  width: '100%', padding: '18px 24px', paddingRight: '60px',
+                  borderRadius: '20px', background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)', color: '#fff',
+                  fontSize: '15px', outline: 'none'
+                }}
+              />
+              <button 
+                type="submit" 
+                disabled={!inputValue.trim() || loadingChat}
+                style={{
+                  position: 'absolute', right: '12px', width: '40px', height: '40px',
+                  borderRadius: '14px', background: inputValue.trim() ? '#FF6B00' : 'rgba(255,255,255,0.1)',
+                  border: 'none', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed', transition: 'all 0.2s'
+                }}
+              >
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- AGENTES TAB --- */}
+      {activeTab === 'agentes' && (
+        <div className="fade-in" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <p style={{ color: '#a1a1aa', fontSize: '14px' }}>Ative robôs focados em missões específicas.</p>
+            <button onClick={() => setShowCreate(true)} style={{
+              padding: '10px 16px', borderRadius: '12px', background: '#FF6B00',
+              color: '#000', border: 'none', display: 'flex', alignItems: 'center', gap: '6px',
+              fontWeight: 800, cursor: 'pointer'
+            }}>
+              <Plus size={16} /> Criar Novo
+            </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+            {AGENTS.map((agent) => {
+              const isActive = activeAgents.includes(agent.id)
+              const isLocked = agent.status === 'locked'
+              const isLoading = loadingAgentId === agent.id
+
+              return (
+                <div key={agent.id} className="scale-in" style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isActive ? agent.color : 'rgba(255,255,255,0.05)'}`,
+                  borderRadius: '24px', padding: '20px', position: 'relative',
+                  overflow: 'hidden', transition: 'all 0.3s',
+                  boxShadow: isActive ? `0 0 20px ${agent.color}15` : 'none',
+                  opacity: isLocked ? 0.5 : 1
+                }}>
+                  {isActive && (
+                    <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: `radial-gradient(circle at top right, ${agent.color}30, transparent)`, zIndex: 0 }} />
+                  )}
+                  
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
+                    <div style={{
+                      width: '48px', height: '48px', borderRadius: '16px',
+                      background: `${agent.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '24px', border: `1px solid ${agent.color}30`
+                    }}>
+                      {agent.icon}
+                    </div>
+                    {isLocked ? (
+                      <span style={{ fontSize: '10px', color: '#71717a', fontWeight: 800, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>EM BREVE</span>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {isActive && (
+                          <button onClick={() => handleRunAgent(agent)} disabled={isLoading} style={{
+                            height: '36px', padding: '0 12px', borderRadius: '10px', border: 'none',
+                            background: 'rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, fontSize: '12px'
+                          }}>
+                            {isLoading ? <Loader2 size={14} className="animate-spin" /> : <MessageSquare size={14} />} Executar
+                          </button>
+                        )}
+                        <button onClick={() => toggleAgent(agent.id)} style={{
+                          width: '36px', height: '36px', borderRadius: '10px', border: 'none',
+                          background: isActive ? agent.color : 'rgba(255,255,255,0.05)',
+                          color: isActive ? '#000' : '#fff', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                          {isActive ? <Zap size={16} fill="#000" /> : <PlayCircle size={18} />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>{agent.name}</h3>
+                    <p style={{ fontSize: '13px', color: '#a1a1aa', lineHeight: 1.4 }}>{agent.tagline}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* --- MODALS --- */}
+      
+      {/* Agent Output Modal */}
       {agentResponse && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setAgentResponse(null)}>
           <div className="modal-content" style={{ maxWidth: '600px', margin: 'auto' }}>
@@ -208,12 +353,10 @@ export function AgentsClient() {
                   <X size={20} />
                 </button>
               </div>
-
               <div style={{ 
                 background: 'rgba(255,255,255,0.02)', padding: '20px', 
                 borderRadius: '16px', border: `1px solid rgba(255,255,255,0.05)`,
-                color: '#e4e4e7', fontSize: '15px', lineHeight: 1.6,
-                whiteSpace: 'pre-wrap' // Important for markdown/newlines from Claude
+                color: '#e4e4e7', fontSize: '15px', lineHeight: 1.6, whiteSpace: 'pre-wrap'
               }}>
                 {agentResponse.text}
               </div>
@@ -223,7 +366,7 @@ export function AgentsClient() {
         document.body
       )}
 
-      {/* Modal Criar Custom */}
+      {/* Create Custom Agent Modal */}
       {showCreate && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowCreate(false)}>
           <div className="modal-content">
@@ -232,7 +375,7 @@ export function AgentsClient() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                 <div>
                   <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#fff' }}>Criar Agente</h2>
-                  <p style={{ fontSize: '13px', color: '#71717a' }}>Defina a ordem. Ele usará a IA para analisar seus dados.</p>
+                  <p style={{ fontSize: '13px', color: '#71717a' }}>Este robô existirá apenas para você.</p>
                 </div>
                 <button onClick={() => setShowCreate(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
                   <X size={20} />
@@ -249,22 +392,22 @@ export function AgentsClient() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px' }}>INSTRUÇÃO DA IA (PROMPT)</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#71717a', marginBottom: '8px' }}>A MISSÃO DELE (PROMPT)</label>
                   <textarea 
                     className="input-field" rows={4} required style={{ resize: 'none' }}
-                    placeholder="Ex: Analise meus últimos gastos e identifique categorias onde posso cortar custos este mês."
+                    placeholder="Ex: Você é um conselheiro chato. Analise meus gastos de hoje e reclame de tudo que não for essencial."
                     value={customPrompt} onChange={e => setCustomPrompt(e.target.value)}
                   />
                 </div>
 
                 <button type="submit" disabled={loadingAgentId === 'custom'} style={{
-                  height: '56px', borderRadius: '16px', background: '#4ade80', color: '#000',
+                  height: '56px', borderRadius: '16px', background: '#FF6B00', color: '#000',
                   fontSize: '16px', fontWeight: 800, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
                   opacity: loadingAgentId === 'custom' ? 0.7 : 1
                 }}>
                   {loadingAgentId === 'custom' ? <Loader2 size={20} className="animate-spin" /> : <Bot size={20} />}
-                  {loadingAgentId === 'custom' ? 'Processando dados...' : 'Executar Agora'}
+                  {loadingAgentId === 'custom' ? 'Criando Consciência...' : 'Gerar & Executar Agora'}
                 </button>
               </form>
             </div>

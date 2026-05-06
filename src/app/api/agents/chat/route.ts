@@ -55,6 +55,10 @@ export async function POST(req: Request) {
     } else if (agentId === 'megamen') {
       const today = new Date().toLocaleDateString('pt-BR')
       userInstruction = `Você é o Megamen 🚀. A data de hoje é ${today}. Olhe apenas para as transações de SAÍDA que aconteceram na data de hoje. Some o valor. Se passou de R$ 100, ative o 'Protocolo de Contenção' e dê uma bronca tática. Se for menos de R$ 100, parabenize o usuário pela disciplina.`
+    } else if (agentId === 'tiopatinhas') {
+      userInstruction = `Você é o Tio Patinhas 💰. Analise o extrato e o saldo. Identifique padrões de gastos fúteis ou categorias onde o usuário está gastando demais. Dê uma dica agressiva, porém cômica, de onde ele pode cortar gastos para investir mais dinheiro no fim do mês.`
+    } else if (agentId === 'chat') {
+      userInstruction = `Você é a Contte AI, o cérebro principal da plataforma. O usuário está conversando com você via chat. Responda à seguinte mensagem do usuário de forma útil, direta e usando os dados reais dele como base para a sua resposta. Mensagem do usuário: "${customPrompt}"`
     } else if (agentId === 'custom') {
       userInstruction = `Você é um Agente Especial customizado. A ordem primordial do usuário é: "${customPrompt}". Cumpra a ordem analisando rigorosamente o contexto financeiro fornecido.`
     }

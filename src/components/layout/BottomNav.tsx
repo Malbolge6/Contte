@@ -17,11 +17,11 @@ export function BottomNav() {
 
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Início' },
+    { href: '/agentes', icon: Bot, label: 'Inteligência' },
     { href: '/timeline', icon: Activity, label: 'Feed' },
     { href: '/transacoes', icon: Wallet, label: 'Extrato' },
     { href: '/contas', icon: FileText, label: 'Contas' },
     { href: '/metas', icon: Target, label: 'Metas' },
-    { href: '/agentes', icon: Bot, label: 'Agentes' },
     { href: '/configuracoes', icon: Settings, label: 'Ajustes' },
   ]
 
