@@ -57,3 +57,22 @@ export async function upsertSubscription(data: { name: string, logo: string, amo
     throw new Error('Failed to save subscription')
   }
 }
+
+export async function deleteSubscription(name: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  try {
+    await prisma.subscription.deleteMany({
+      where: {
+        userId: session.user.id,
+        name: name
+      }
+    })
+    revalidatePath('/assinaturas')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting subscription:', error)
+    throw new Error('Failed to delete subscription')
+  }
+}

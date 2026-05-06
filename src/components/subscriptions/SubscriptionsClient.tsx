@@ -8,7 +8,7 @@ import {
   Tv, Gamepad2, Wrench, GraduationCap, AppWindow, Dumbbell
 } from 'lucide-react'
 import { formatCurrency, parseCurrency, maskCurrency } from '@/lib/helpers'
-import { upsertSubscription } from '@/actions/subscriptions'
+import { upsertSubscription, deleteSubscription } from '@/actions/subscriptions'
 import { createPortal } from 'react-dom'
 
 interface Subscription {
@@ -112,7 +112,8 @@ export function SubscriptionsClient({ initialSubscriptions }: { initialSubscript
 
   if (!mounted) return null
 
-  const totalMonthly = subscriptions.reduce((acc, s) => acc + s.amount, 0)
+  const activeSubs = subscriptions.filter(s => s.amount > 0)
+  const totalMonthly = activeSubs.reduce((acc, s) => acc + s.amount, 0)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -120,27 +121,50 @@ export function SubscriptionsClient({ initialSubscriptions }: { initialSubscript
     setLoading(true)
     try {
       const numericAmount = parseCurrency(amount)
-      await upsertSubscription({
-        name: selectedApp.name,
-        logo: selectedApp.logo,
-        category: selectedApp.category,
-        amount: numericAmount
-      })
-      
-      // Update local state for immediate feedback
-      setSubscriptions(prev => {
-        const existing = prev.find(s => s.name === selectedApp.name)
-        if (existing) {
-          return prev.map(s => s.name === selectedApp.name ? { ...s, amount: numericAmount } : s)
-        }
-        return [...prev, { name: selectedApp.name, logo: selectedApp.logo, category: selectedApp.category, amount: numericAmount }]
-      })
+      if (numericAmount <= 0) {
+        await deleteSubscription(selectedApp.name)
+        setSubscriptions(prev => prev.filter(s => s.name !== selectedApp.name))
+      } else {
+        await upsertSubscription({
+          name: selectedApp.name,
+          logo: selectedApp.logo,
+          category: selectedApp.category,
+          amount: numericAmount
+        })
+        
+        // Update local state for immediate feedback
+        setSubscriptions(prev => {
+          const existing = prev.find(s => s.name === selectedApp.name)
+          if (existing) {
+            return prev.map(s => s.name === selectedApp.name ? { ...s, amount: numericAmount } : s)
+          }
+          return [...prev, { name: selectedApp.name, logo: selectedApp.logo, category: selectedApp.category, amount: numericAmount }]
+        })
+      }
 
       setSelectedApp(null)
       setAmount('')
       router.refresh()
     } catch (err) {
       alert('Erro ao salvar assinatura')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedApp) return
+    if (!confirm(`Deseja realmente remover a assinatura do ${selectedApp.name}?`)) return
+    
+    setLoading(true)
+    try {
+      await deleteSubscription(selectedApp.name)
+      setSubscriptions(prev => prev.filter(s => s.name !== selectedApp.name))
+      setSelectedApp(null)
+      setAmount('')
+      router.refresh()
+    } catch (err) {
+      alert('Erro ao remover assinatura')
     } finally {
       setLoading(false)
     }
@@ -170,7 +194,7 @@ export function SubscriptionsClient({ initialSubscriptions }: { initialSubscript
           </p>
           <div style={{ padding: '6px 12px', background: 'rgba(248, 113, 113, 0.1)', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <TrendingDown size={14} color="#f87171" />
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#f87171' }}>{subscriptions.length} assinaturas ativas</span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#f87171' }}>{activeSubs.length} assinaturas ativas</span>
           </div>
         </div>
       </div>
@@ -265,9 +289,20 @@ export function SubscriptionsClient({ initialSubscriptions }: { initialSubscript
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button type="button" onClick={() => setSelectedApp(null)} style={{ flex: 1, padding: '16px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Cancelar</button>
                   <button type="submit" disabled={loading} style={{ flex: 2, padding: '16px', borderRadius: '16px', background: '#ccff00', color: '#000', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    {loading ? <Loader2 size={20} className="animate-spin" /> : 'Salvar Assinatura'}
+                    {loading ? <Loader2 size={20} className="animate-spin" /> : 'Confirmar'}
                   </button>
                 </div>
+
+                {subscriptions.some(s => s.name === selectedApp.name) && (
+                  <button 
+                    type="button" 
+                    onClick={handleDelete}
+                    disabled={loading}
+                    style={{ marginTop: '12px', width: '100%', background: 'transparent', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.2)', padding: '14px', borderRadius: '16px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+                  >
+                    Remover Assinatura
+                  </button>
+                )}
               </form>
             </div>
           </div>
