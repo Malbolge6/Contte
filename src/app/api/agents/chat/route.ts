@@ -82,22 +82,33 @@ export async function POST(req: Request) {
 
     const genAI = new GoogleGenerativeAI(apiKey.trim())
     
-    // Modelos Atualizados para 2026 (Gemini 3 e 2.5)
-    const modelsToTry = [
-      "gemini-3-flash", 
-      "gemini-3.1-pro", 
-      "gemini-2.5-flash", 
-      "gemini-2.5-pro", 
-      "gemini-1.5-flash"
-    ]
+    let modelToUse = "gemini-1.5-flash" // Fallback padrão
+    
+    try {
+      // DESCOBERTA DINÂMICA: Listar modelos disponíveis para esta chave
+      console.log("Listando modelos disponíveis...")
+      const modelList = await genAI.listModels()
+      const availableModels = modelList.models
+        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+        .map(m => m.name.replace('models/', ''))
+      
+      if (availableModels.length > 0) {
+        // Priorizar modelos Flash por custo/velocidade, ou pegar o primeiro disponível
+        modelToUse = availableModels.find(m => m.includes('flash')) || availableModels[0]
+        console.log(`Modelo dinâmico selecionado: ${modelToUse}`)
+      }
+    } catch (listError) {
+      console.error("Erro ao listar modelos, usando fallback:", listError)
+      // Se não conseguir listar, tentamos os nomes conhecidos
+      modelToUse = "gemini-1.5-flash"
+    }
+
+    const modelsToTry = [modelToUse, "gemini-3-flash", "gemini-1.5-flash", "gemini-pro"]
     let lastError = null
 
     for (const modelName of modelsToTry) {
       try {
-        console.log(`Tentando modelo: ${modelName}`)
         const model = genAI.getGenerativeModel({ model: modelName })
-        
-        // Colocamos a instrução de sistema dentro do prompt para garantir compatibilidade
         const fullPrompt = `### INSTRUÇÕES DO SISTEMA ###\n${systemPrompt}\n\n### CONTEXTO FINANCEIRO ###\n${contextStr}\n\n### COMANDO DO USUÁRIO ###\n${userInstruction}`
         
         const result = await model.generateContent(fullPrompt)
@@ -109,14 +120,13 @@ export async function POST(req: Request) {
       } catch (error: any) {
         console.error(`Falha no modelo ${modelName}:`, error.message)
         lastError = error
-        // Se for erro de segurança ou algo do tipo, pode ser que o próximo modelo funcione
         continue 
       }
     }
 
     // Se chegou aqui, todos os modelos falharam
     return NextResponse.json({ 
-      response: `🤖 **INSTABILIDADE NA IA**\n\nFalha ao conectar com os modelos Gemini (${modelsToTry.join(', ')}).\n\n**Erro mais recente:** ${lastError?.message || 'Desconhecido'}\n\n**Dica:** Verifique se a 'Generative Language API' está ativada no seu console do Google e se a chave de API está correta.` 
+      response: `🤖 **PROBLEMA DE CONFIGURAÇÃO NA IA**\n\nA conexão com o Google falhou.\n\n**Erro:** ${lastError?.message || 'Desconhecido'}\n\n**Ação necessária:** Acesse o [Google AI Studio](https://aistudio.google.com/), crie uma NOVA chave de API e substitua a variável GEMINI_API_KEY no Vercel. Certifique-se de que a 'Generative Language API' está ativa.` 
     })
 
   } catch (error: any) {
