@@ -101,20 +101,6 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
             Gerar PDF
           </button>
 
-          <button 
-            onClick={() => setShowAdd(true)} 
-            style={{ 
-              height: '48px', paddingLeft: '20px', paddingRight: '20px', 
-              borderRadius: '16px', background: '#ccff00', color: '#050505', 
-              border: 'none', display: 'flex', alignItems: 'center', gap: '8px', 
-              cursor: 'pointer', fontWeight: 800, fontSize: '14px',
-              boxShadow: '0 8px 20px rgba(204, 255, 0, 0.2)' 
-            }}
-          >
-            <Plus size={20} />
-            Adicionar
-          </button>
-
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <div 
               onClick={() => setShowClaudiaBio(!showClaudiaBio)}
