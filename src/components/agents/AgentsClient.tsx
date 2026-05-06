@@ -30,10 +30,10 @@ const AGENTS = [
     status: 'active',
   },
   {
-    id: 'tiopatinhas',
-    name: 'Tio Patinhas',
+    id: 'manuel',
+    name: 'Manuel',
     tagline: 'Analisa e sugere onde você pode economizar mais',
-    image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&q=80&w=400',
+    image: '/images/manuel.png',
     color: '#E65100',
     status: 'active',
   },

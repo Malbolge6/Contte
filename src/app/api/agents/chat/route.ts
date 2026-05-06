@@ -24,11 +24,11 @@ export async function POST(req: Request) {
 
     // 1. Pegar o Contexto Real (O que os Agentes vão ler)
     const userId = session.user.id
-    
+
     // Buscar dados em paralelo para velocidade
     const [wallets, bills, transactions] = await Promise.all([
       prisma.wallet.findMany({ where: { userId } }),
-      prisma.bill.findMany({ 
+      prisma.bill.findMany({
         where: { userId, status: 'PENDING' },
         orderBy: { dueDate: 'asc' }
       }),
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     ])
 
     const totalBalance = wallets.reduce((acc, w) => acc + w.balance, 0)
-    
+
     // Montando a memória do Agente de forma mais estruturada
     let contextStr = `\n--- DADOS FINANCEIROS EM TEMPO REAL ---\n`
     contextStr += `Saldo Total Consolidado: ${formatCurrency(totalBalance)}\n`
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     Seu tom é profissional, tecnológico (estilo fintech premium) e analítico.
     Use formatação Markdown para deixar as respostas bonitas (negrito, listas, etc).
     Sempre use os dados reais fornecidos no contexto para basear suas respostas.`
-    
+
     let userInstruction = ''
 
     if (agentId === 'jubileu') {
@@ -76,21 +76,21 @@ export async function POST(req: Request) {
     // 3. Conexão com a Inteligência
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ 
-        response: `🤖 **IA EM MODO DE ESPERA**\n\nChave API não configurada. Configure a GEMINI_API_KEY no painel da Vercel para ativar.` 
+      return NextResponse.json({
+        response: `🤖 **IA EM MODO DE ESPERA**\n\nChave API não configurada. Configure a GEMINI_API_KEY no painel da Vercel para ativar.`
       })
     }
 
     // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
     const mockResponses: Record<string, string> = {
       'antonio': `👔 **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
-      'claudia': `🕵️ **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
-      'lamar': `🚀 **RELATÓRIO DO LAMAR**\n\nFoco nas metas! Analisei seus sonhos e estou traçando o plano perfeito para você alcançar seu PC Gamer e sua próxima viagem.`,
-      'tiopatinhas': `💰 **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
+      'claudia': ` **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
+      'lamar': `**RELATÓRIO DO LAMAR**\n\nFoco nas metas! Analisei seus sonhos e estou traçando o plano perfeito para você alcançar seu PC Gamer e sua próxima viagem.`,
+      'manuel': `💰 **RELATÓRIO DO MANUEL**\n\nCom calma e sabedoria, analisei seus dados. Notei que você pode economizar R$ 150 mensais se ajustar seus serviços de assinatura. Devagar se vai ao longe!`
     }
 
     const response = mockResponses[agentId] || mockResponses['chat']
-    
+
     return NextResponse.json({ response })
 
   } catch (error: any) {
