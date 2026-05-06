@@ -56,6 +56,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
   const [showBalanceDetails, setShowBalanceDetails] = useState(false)
   const [showManuelBio, setShowManuelBio] = useState(false)
   const [showDanteBio, setShowDanteBio] = useState(false)
+  const [showLamarBio, setShowLamarBio] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -459,7 +460,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
       </div>
 
       {/* Quick Action: Simulation */}
-      <div style={{ marginBottom: '24px' }}>
+      <div style={{ marginBottom: '24px', position: 'relative' }}>
         <button 
           onClick={() => {
             if (!isPremium) {
@@ -477,8 +478,19 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(204, 255, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Activity size={22} color="#ccff00" />
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowLamarBio(!showLamarBio);
+              }}
+              style={{ 
+                width: '60px', height: '60px', borderRadius: '16px', 
+                background: 'rgba(204, 255, 0, 0.1)', overflow: 'hidden', 
+                position: 'relative', border: '1px solid rgba(204, 255, 0, 0.2)'
+              }}
+            >
+              <div style={{ position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)', background: '#000', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap', zIndex: 10, marginBottom: '6px' }}>LAMAR</div>
+              <img src="/images/lamar.png" alt="Lamar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <div style={{ textAlign: 'left' }}>
               <p style={{ fontSize: '16px', fontWeight: 800, color: '#ccff00' }}>Simulação Rápida</p>
@@ -487,6 +499,26 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
           </div>
           <ChevronRight size={22} color="#ccff00" />
         </button>
+
+        {showLamarBio && (
+          <div className="scale-in" style={{
+            position: 'absolute', bottom: '100%', left: '20px', width: '240px',
+            background: '#000', color: '#fff', padding: '16px', borderRadius: '20px',
+            marginBottom: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            zIndex: 20, border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <p style={{ fontSize: '12px', lineHeight: 1.5 }}>
+              <strong>Fala, eu sou o Lamar!</strong> 🦝🚀<br/><br/>
+              Sou o estrategista de metas da Contte. Minha função é simular o impacto de cada gasto no seu plano de vida, garantindo que você chegue nos seus objetivos mais rápido!
+            </p>
+            <div style={{ 
+              position: 'absolute', top: '100%', left: '30px', 
+              width: '0', height: '0', 
+              borderLeft: '10px solid transparent', borderRight: '10px solid transparent', 
+              borderTop: '10px solid #000' 
+            }} />
+          </div>
+        )}
       </div>
 
       {/* Prediction Area */}
