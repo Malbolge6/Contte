@@ -570,8 +570,8 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
             <div style={{ background: 'rgba(204, 255, 0, 0.1)', color: '#ccff00', fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '99px' }}>PRÓXIMOS 30 DIAS</div>
           </div>
 
-          <div style={{ height: '180px', width: '100%', marginBottom: '20px' }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={1}>
+          <div style={{ height: '180px', width: '100%', marginBottom: '20px', minHeight: '180px' }}>
+            <ResponsiveContainer width="99%" height={180}>
               <LineChart data={predictionData.slice(0, 30)}>
                 <defs>
                   <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">

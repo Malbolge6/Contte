@@ -26,20 +26,29 @@ export async function POST(req: Request) {
     const userId = session.user.id
 
     // Buscar dados em paralelo para velocidade
-    const [wallets, bills, transactions] = await Promise.all([
-      prisma.wallet.findMany({ where: { userId } }),
-      prisma.bill.findMany({
-        where: { userId, status: 'PENDING' },
-        orderBy: { dueDate: 'asc' }
-      }),
-      prisma.transaction.findMany({
-        where: { userId },
-        orderBy: { date: 'desc' },
-        take: 30 // Aumentado para 30 transações para melhor análise
-      })
-    ])
+    let wallets: any[] = [], bills: any[] = [], transactions: any[] = []
+    try {
+      const results = await Promise.all([
+        prisma.wallet.findMany({ where: { userId } }),
+        prisma.bill.findMany({
+          where: { userId, status: 'PENDING' },
+          orderBy: { dueDate: 'asc' }
+        }),
+        prisma.transaction.findMany({
+          where: { userId },
+          orderBy: { date: 'desc' },
+          take: 30
+        })
+      ])
+      wallets = results[0]
+      bills = results[1]
+      transactions = results[2]
+    } catch (dbError: any) {
+      console.error("ERRO BANCO DE DADOS:", dbError)
+      // Se falhar o banco, ainda tentamos rodar a IA com dados vazios em vez de dar 500
+    }
 
-    const totalBalance = wallets.reduce((acc, w) => acc + w.balance, 0)
+    const totalBalance = wallets.reduce((acc, w) => acc + (w.balance || 0), 0)
 
     // Montando a memória do Agente de forma mais estruturada
     let contextStr = `\n--- DADOS FINANCEIROS EM TEMPO REAL ---\n`
@@ -83,29 +92,32 @@ export async function POST(req: Request) {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey)
+      // Usando o modelo mais estável
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
       const fullPrompt = `
         ${systemPrompt}
         
         MISSÃO DO AGENTE:
-        ${agentMission}
+        ${agentMission || 'Você é o cérebro central da Contte.'}
         
         CONTEXTO DO USUÁRIO:
         ${contextStr}
         
         INSTRUÇÃO FINAL:
-        Gere um relatório curto, impactante e com a personalidade do seu agente.
+        Gere um relatório curto, impactante e com a personalidade do seu agente. Seja criativo.
       `
 
       const result = await model.generateContent(fullPrompt)
+      if (!result.response) throw new Error("Sem resposta do modelo")
+      
       const response = result.response.text()
 
       return NextResponse.json({ response })
     } catch (aiError: any) {
       console.error("ERRO GEMINI API:", aiError)
       return NextResponse.json({ 
-        response: `⚠️ **SISTEMA DE INTELIGÊNCIA EM MANUTENÇÃO**\n\nErro na API: ${aiError.message}`
+        response: `⚠️ **SISTEMA DE INTELIGÊNCIA EM MANUTENÇÃO**\n\nDesculpe, meu cérebro central (Gemini) está temporariamente indisponível.\n\nDetalhe técnico: ${aiError.message || 'Erro de conexão'}`
       })
     }
 
