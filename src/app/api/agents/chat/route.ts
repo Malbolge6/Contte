@@ -48,14 +48,24 @@ export async function POST(req: Request) {
       // Se falhar o banco, ainda tentamos rodar a IA com dados vazios em vez de dar 500
     }
 
-    const totalBalance = wallets.reduce((acc, w) => acc + (w.balance || 0), 0)
+    const totalBalance = wallets.reduce((acc, w) => acc + (Number(w.balance) || 0), 0)
 
-    // Montando a memória do Agente de forma mais estruturada
+    // Montando a memória do Agente de forma mais estruturada e SEGURA
     let contextStr = `\n--- DADOS FINANCEIROS EM TEMPO REAL ---\n`
     contextStr += `Saldo Total Consolidado: ${formatCurrency(totalBalance)}\n`
-    contextStr += `Carteiras Ativas:\n${wallets.map(w => `- ${w.name}: ${formatCurrency(w.balance)}`).join('\n')}\n\n`
-    contextStr += `Contas Pendentes:\n${bills.length === 0 ? 'Nenhuma conta pendente.' : bills.map(b => `- ${b.name}: ${formatCurrency(b.amount)} (Vencimento: ${new Date(b.dueDate).toLocaleDateString('pt-BR')})`).join('\n')}\n\n`
-    contextStr += `Últimas Movimentações:\n${transactions.map(t => `- [${t.type === 'INCOME' ? 'ENTRADA' : 'SAÍDA'}] ${t.description}: ${formatCurrency(t.amount)} (${t.category}) em ${new Date(t.date).toLocaleDateString('pt-BR')}`).join('\n')}\n`
+    
+    contextStr += `Carteiras Ativas:\n${wallets.length === 0 ? 'Nenhuma carteira encontrada.' : wallets.map(w => `- ${w.name || 'Sem nome'}: ${formatCurrency(Number(w.balance) || 0)}`).join('\n')}\n\n`
+    
+    contextStr += `Contas Pendentes:\n${bills.length === 0 ? 'Nenhuma conta pendente.' : bills.map(b => {
+      const dateStr = b.dueDate ? new Date(b.dueDate).toLocaleDateString('pt-BR') : 'Sem data'
+      return `- ${b.name || 'Conta sem nome'}: ${formatCurrency(Number(b.amount) || 0)} (Vencimento: ${dateStr})`
+    }).join('\n')}\n\n`
+    
+    contextStr += `Últimas Movimentações:\n${transactions.length === 0 ? 'Nenhuma movimentação recente.' : transactions.map(t => {
+      const dateStr = t.date ? new Date(t.date).toLocaleDateString('pt-BR') : 'Sem data'
+      return `- [${t.type === 'INCOME' ? 'ENTRADA' : 'SAÍDA'}] ${t.description || 'Sem descrição'}: ${formatCurrency(Number(t.amount) || 0)} (${t.category || 'Geral'}) em ${dateStr}`
+    }).join('\n')}\n`
+    
     contextStr += `--------------------------------------\n`
 
     // 2. Definir a Missão com Personas Reais
