@@ -49,47 +49,57 @@ export async function POST(req: Request) {
     contextStr += `Últimas Movimentações:\n${transactions.map(t => `- [${t.type === 'INCOME' ? 'ENTRADA' : 'SAÍDA'}] ${t.description}: ${formatCurrency(t.amount)} (${t.category}) em ${new Date(t.date).toLocaleDateString('pt-BR')}`).join('\n')}\n`
     contextStr += `--------------------------------------\n`
 
-    // 2. Definir a Missão
+    // 2. Definir a Missão com Personas Reais
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({
+        response: `🤖 **IA EM MODO DE ESPERA**\n\nChave API não configurada no servidor. Ative a GEMINI_API_KEY para iniciar as análises reais.`
+      })
+    }
+
     let systemPrompt = `Você é um agente de inteligência artificial de elite da fintech 'Contte'. 
     Responda SEMPRE em Português do Brasil (PT-BR). 
     Seu tom é profissional, tecnológico (estilo fintech premium) e analítico.
     Use formatação Markdown para deixar as respostas bonitas (negrito, listas, etc).
     Sempre use os dados reais fornecidos no contexto para basear suas respostas.`
 
-    let userInstruction = ''
+    let agentMission = ''
 
-    if (agentId === 'jubileu') {
-      userInstruction = `Você é o Agente Jubileu 👔. Analise o saldo total vs contas pendentes. Identifique o maior gasto recente e dê um diagnóstico curto da saúde financeira.`
-    } else if (agentId === 'detetive') {
-      userInstruction = `Você é o Detetive Duplicatas 🕵️. Procure por cobranças repetidas ou valores suspeitos no extrato. Se tudo estiver ok, valide a segurança.`
-    } else if (agentId === 'megamen') {
-      const today = new Date().toLocaleDateString('pt-BR')
-      userInstruction = `Você é o Megamen 🚀. Data de hoje: ${today}. Verifique gastos de SAÍDA hoje. Se ultrapassar R$ 100, dê um alerta tático.`
-    } else if (agentId === 'tiopatinhas') {
-      userInstruction = `Você é o Tio Patinhas 💰. Seja ranzinza e econômico. Aponte onde o usuário está "rasgando dinheiro" e dê uma dica ácida para economizar.`
+    if (agentId === 'antonio') {
+      agentMission = `Você é o Antonio 🦦👔, o líder estrategista da Contte. Sua missão é analisar o saldo consolidado (${formatCurrency(totalBalance)}) contra as contas pendentes e dar um diagnóstico de liderança sobre a saúde do caixa. Seja direto, confiante e organizacional.`
+    } else if (agentId === 'claudia') {
+      agentMission = `Você é a Claudia 🦉🔍, a auditora detalhista. Analise o extrato em busca de cobranças duplicadas, padrões de gastos suspeitos ou qualquer anomalia. Se tudo estiver limpo, valide a integridade das movimentações com precisão cirúrgica.`
+    } else if (agentId === 'lamar') {
+      agentMission = `Você é o Lamar 🦝🚀, o estrategista de metas e sonhos. Olhe para o saldo atual e foque em como transformar esse capital em conquistas. Incentive o usuário a bater suas metas e dê um passo tático para a próxima grande compra.`
+    } else if (agentId === 'manuel') {
+      agentMission = `Você é o Manuel 🦥💰, o mentor de economia. Com calma e sabedoria, identifique onde o usuário está gastando demais (olhe as categorias do extrato) e sugira um corte específico para poupar pelo menos 10% no próximo mês.`
+    } else if (agentId === 'dante') {
+      agentMission = `Você é o Dante 🐢⚖️, o contador fiscal. Analise os valores totais e as movimentações sob a ótica de organização tributária e fôlego fiscal. Sua fala é ponderada e focada em manter as obrigações em dia e o "respiro" financeiro positivo.`
     } else if (agentId === 'chat') {
-      userInstruction = `O usuário disse: "${customPrompt}". Responda como o cérebro central do Contte, usando os dados financeiros dele.`
+      agentMission = `Você é o Cérebro Central da Contte 🧠. Responda à dúvida do usuário: "${customPrompt}". Use todos os dados financeiros disponíveis para dar uma resposta ultra-personalizada.`
     } else if (agentId === 'custom') {
-      userInstruction = `Ordem especial: "${customPrompt}".`
+      agentMission = `Ordem especial: "${customPrompt}". Execute como um agente de elite.`
     }
 
-    // 3. Conexão com a Inteligência
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({
-        response: `🤖 **IA EM MODO DE ESPERA**\n\nChave API não configurada. Configure a GEMINI_API_KEY no painel da Vercel para ativar.`
-      })
-    }
+    // 3. Conexão Real com Gemini
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
-    // MODO DE SIMULAÇÃO (IA DESATIVADA TEMPORARIAMENTE)
-    const mockResponses: Record<string, string> = {
-      'antonio': ` **RELATÓRIO DO ANTONIO**\n\nOlá! Sou o Antonio. Analisei seu caixa e organizei sua vida financeira. \n\n*   **Saldo Total:** ${formatCurrency(totalBalance)}\n*   **Status:** Tudo sob controle.`,
-      'claudia': ` **RELATÓRIO DA CLAUDIA**\n\nFiz uma varredura no seu extrato e não encontrei nenhuma cobrança duplicada óbvia.`,
-      'lamar': `**RELATÓRIO DO LAMAR**\n\nFoco nas metas! Analisei seus sonhos e estou traçando o plano perfeito para você alcançar seu PC Gamer e sua próxima viagem.`,
-      'tiopatinhas': ` **RELATÓRIO DO TIO PATINHAS**\n\nQuá-quá! Economize mais!`
-    }
+    const fullPrompt = `
+      ${systemPrompt}
+      
+      MISSÃO DO AGENTE:
+      ${agentMission}
+      
+      CONTEXTO DO USUÁRIO:
+      ${contextStr}
+      
+      INSTRUÇÃO FINAL:
+      Gere um relatório curto, impactante e com a personalidade do seu agente.
+    `
 
-    const response = mockResponses[agentId] || mockResponses['chat']
+    const result = await model.generateContent(fullPrompt)
+    const response = result.response.text()
 
     return NextResponse.json({ response })
 
