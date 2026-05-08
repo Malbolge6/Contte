@@ -81,27 +81,33 @@ export async function POST(req: Request) {
       agentMission = `Ordem especial: "${customPrompt}". Execute como um agente de elite.`
     }
 
-    // 3. Conexão Real com Gemini
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey)
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
-    const fullPrompt = `
-      ${systemPrompt}
-      
-      MISSÃO DO AGENTE:
-      ${agentMission}
-      
-      CONTEXTO DO USUÁRIO:
-      ${contextStr}
-      
-      INSTRUÇÃO FINAL:
-      Gere um relatório curto, impactante e com a personalidade do seu agente.
-    `
+      const fullPrompt = `
+        ${systemPrompt}
+        
+        MISSÃO DO AGENTE:
+        ${agentMission}
+        
+        CONTEXTO DO USUÁRIO:
+        ${contextStr}
+        
+        INSTRUÇÃO FINAL:
+        Gere um relatório curto, impactante e com a personalidade do seu agente.
+      `
 
-    const result = await model.generateContent(fullPrompt)
-    const response = result.response.text()
+      const result = await model.generateContent(fullPrompt)
+      const response = result.response.text()
 
-    return NextResponse.json({ response })
+      return NextResponse.json({ response })
+    } catch (aiError: any) {
+      console.error("ERRO GEMINI API:", aiError)
+      return NextResponse.json({ 
+        response: `⚠️ **SISTEMA DE INTELIGÊNCIA EM MANUTENÇÃO**\n\nErro na API: ${aiError.message}`
+      })
+    }
 
   } catch (error: any) {
     console.error("ERRO CRÍTICO CHAT:", error)
