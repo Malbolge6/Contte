@@ -79,9 +79,10 @@ export async function deleteDocument(id: string) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  await prisma.document.delete({
+  await prisma.document.deleteMany({
     where: { id, userId: session.user.id },
   })
 
   revalidatePath('/documentos')
+  revalidatePath('/dashboard')
 }

@@ -149,6 +149,27 @@ export async function markBillAsPaid(id: string, walletId?: string) {
         }
       })
     }
+
+    // 4. Handle Recurrence
+    if (bill.recurrent) {
+      const nextDate = new Date(bill.dueDate)
+      nextDate.setMonth(nextDate.getMonth() + 1)
+      
+      await tx.bill.create({
+        data: {
+          name: bill.name,
+          amount: bill.amount,
+          dueDate: nextDate,
+          description: bill.description,
+          pixKey: bill.pixKey,
+          barcode: bill.barcode,
+          category: bill.category,
+          recurrent: true,
+          userId: session.user.id,
+          status: 'PENDING'
+        }
+      })
+    }
   })
 
   await createTimelineEvent({

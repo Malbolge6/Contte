@@ -15,7 +15,7 @@ export async function addGoalContribution(data: {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  const goal = await prisma.goal.findUnique({
+  const goal = await prisma.goal.findFirst({
     where: { id: data.goalId, userId: session.user.id }
   })
 
@@ -23,7 +23,7 @@ export async function addGoalContribution(data: {
 
   let walletName = ''
   if (data.walletId) {
-    const wallet = await prisma.wallet.findUnique({
+    const wallet = await prisma.wallet.findFirst({
       where: { id: data.walletId, userId: session.user.id }
     })
     if (wallet) {

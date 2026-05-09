@@ -42,7 +42,7 @@ export async function updateWallet(id: string, data: {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  const wallet = await prisma.wallet.update({
+  const wallet = await prisma.wallet.updateMany({
     where: { id, userId: session.user.id },
     data,
   })
@@ -55,7 +55,7 @@ export async function deleteWallet(id: string) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) throw new Error('Não autenticado')
 
-  await prisma.wallet.delete({
+  await prisma.wallet.deleteMany({
     where: { id, userId: session.user.id },
   })
 

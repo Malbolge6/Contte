@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  Plus, X, Target, TrendingUp, Loader2, 
+  Plus, X, Target, TrendingUp, Loader2, AlertCircle,
   Trash2, Edit2, ChevronRight, ArrowUpCircle, 
   ArrowDownCircle, Wallet as WalletIcon, History, Sparkles, CheckCircle2
 } from 'lucide-react'

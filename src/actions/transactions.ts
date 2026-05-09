@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { createTimelineEvent } from './timeline'
 
 export async function getTransactions(params?: {
   type?: string
@@ -34,7 +35,28 @@ export async function getTransactions(params?: {
   })
 }
 
-import { createTimelineEvent } from './timeline'
+export async function updateTransaction(id: string, data: {
+  amount?: number
+  type?: string
+  category?: string
+  description?: string
+  date?: Date
+  paymentMethod?: string
+  notes?: string
+}) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Não autenticado')
+
+  await prisma.transaction.updateMany({
+    where: { id, userId: session.user.id },
+    data,
+  })
+
+  revalidatePath('/dashboard')
+  revalidatePath('/transacoes')
+  revalidatePath('/timeline')
+  revalidatePath('/carteiras')
+}
 
 export async function createTransaction(data: {
   amount: number
@@ -200,18 +222,28 @@ export async function getDashboardData() {
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
-  const [currentMonthTx, lastMonthTx, pendingBills, overdueBills, goals, wallets] = await Promise.all([
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+
+  const [currentMonthTx, lastMonthTx, sixMonthsTx, pendingBills, overdueBills, goals, wallets] = await Promise.all([
     prisma.transaction.findMany({
       where: {
         userId: session.user.id,
         date: { gte: startOfMonth, lte: endOfMonth },
       },
+      orderBy: { date: 'desc' },
     }),
     prisma.transaction.findMany({
       where: {
         userId: session.user.id,
         date: { gte: startOfLastMonth, lte: endOfLastMonth },
       },
+    }),
+    prisma.transaction.findMany({
+      where: {
+        userId: session.user.id,
+        date: { gte: sixMonthsAgo },
+      },
+      orderBy: { date: 'asc' }
     }),
     prisma.bill.findMany({
       where: {
@@ -262,21 +294,22 @@ export async function getDashboardData() {
       return acc
     }, {})
 
-  // Monthly evolution (last 6 months)
+  // Monthly evolution (last 6 months) processed in memory
   const monthlyData = []
   for (let i = 5; i >= 0; i--) {
-    const start = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59)
-    const monthTx = await prisma.transaction.findMany({
-      where: {
-        userId: session.user.id,
-        date: { gte: start, lte: end },
-      },
+    const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59)
+    
+    const monthTx = sixMonthsTx.filter(t => {
+      const d = new Date(t.date)
+      return d >= mStart && d <= mEnd
     })
+
     const income = monthTx.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0)
     const expense = monthTx.filter(t => t.type === 'EXPENSE').reduce((s, t) => s + t.amount, 0)
+    
     monthlyData.push({
-      month: start.toLocaleDateString('pt-BR', { month: 'short' }),
+      month: mStart.toLocaleDateString('pt-BR', { month: 'short' }),
       income,
       expense,
     })

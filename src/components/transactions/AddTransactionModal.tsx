@@ -3,28 +3,29 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { X, ChevronDown, Loader2 } from 'lucide-react'
-import { createTransaction } from '@/actions/transactions'
+import { createTransaction, updateTransaction } from '@/actions/transactions'
 import { CATEGORIES, PAYMENT_METHODS, maskCurrency, parseCurrency, formatCurrency } from '@/lib/helpers'
 import { createPortal } from 'react-dom'
 import { useEffect } from 'react'
 
 interface AddTransactionModalProps {
   onClose: () => void
+  initialData?: any
 }
 
-export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
+export function AddTransactionModal({ onClose, initialData }: AddTransactionModalProps) {
   const router = useRouter()
-  const [type, setType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [type, setType] = useState<'INCOME' | 'EXPENSE'>(initialData?.type || 'EXPENSE')
+  const [amount, setAmount] = useState(initialData ? formatCurrency(initialData.amount).replace('R$', '').trim() : '')
+  const [category, setCategory] = useState(initialData?.category || '')
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [date, setDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0])
 
-  const [walletId, setWalletId] = useState('')
+  const [walletId, setWalletId] = useState(initialData?.walletId || '')
   const [wallets, setWallets] = useState<any[]>([])
-  const [paymentMethod, setPaymentMethod] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState(initialData?.paymentMethod || '')
   const [installments, setInstallments] = useState('1')
-  const [notes, setNotes] = useState('')
+  const [notes, setNotes] = useState(initialData?.notes || '')
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -55,7 +56,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
     setError('')
 
     try {
-      await createTransaction({
+      const payload = {
         amount: parseCurrency(amount),
         type,
         category,
@@ -65,7 +66,13 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
         paymentMethod: paymentMethod || undefined,
         installments: parseInt(installments) || 1,
         notes: notes || undefined,
-      })
+      }
+
+      if (initialData) {
+        await updateTransaction(initialData.id, payload)
+      } else {
+        await createTransaction(payload)
+      }
       router.refresh()
       onClose()
     } catch (err: any) {
@@ -84,7 +91,7 @@ export function AddTransactionModal({ onClose }: AddTransactionModalProps) {
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f8f9fa' }}>Nova Transação</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f8f9fa' }}>{initialData ? 'Editar Transação' : 'Nova Transação'}</h2>
           <button
             onClick={onClose}
             style={{

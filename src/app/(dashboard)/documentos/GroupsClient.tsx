@@ -77,31 +77,24 @@ export function GroupsClient() {
     if (!selectedFolder || !selectedFile) return
     setUploading(true)
     try {
-      // 1. Upload to Supabase Storage
-      if (!supabase) {
-        throw new Error('Supabase não configurado. Adicione NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY às variáveis de ambiente.')
-      }
-      const fileExt = selectedFile.name.split('.').pop()
-      const fileNamePath = `${Date.now()}.${fileExt}`
-      const filePath = `documents/${fileNamePath}`
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+      formData.append('groupId', selectedFolder.id) // This is folderId in the database but groupId in the API for pathing
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('comprovantes')
-        .upload(filePath, selectedFile)
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) throw uploadError
-
-      // 2. Get Public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('comprovantes')
-        .getPublicUrl(filePath)
+      const uploadData = await res.json()
+      if (!res.ok) throw new Error(uploadData.error || 'Erro no upload')
 
       // 3. Save to Database
       await saveDocument({
         name: fileName || selectedFile.name,
-        url: publicUrl,
-        type: fileExt || 'file',
-        size: selectedFile.size,
+        url: uploadData.url,
+        type: uploadData.type,
+        size: uploadData.size,
         folderId: selectedFolder.id,
         referenceDate: refDate ? new Date(refDate) : undefined
       })
@@ -111,14 +104,13 @@ export function GroupsClient() {
       setRefDate('')
       setShowAddDoc(false)
       loadData()
-      // Update selected folder view
+      
       const updated = await getFolders()
       const found = updated.find(f => f.id === selectedFolder.id)
       if (found) setSelectedFolder(found as any)
     } catch (error: any) {
       console.error('Upload error:', error)
-      const msg = error.message || 'Erro desconhecido'
-      alert(`Erro ao fazer upload: ${msg}`)
+      alert(`Erro ao fazer upload: ${error.message}`)
     } finally {
       setUploading(false)
     }

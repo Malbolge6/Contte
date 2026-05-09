@@ -8,7 +8,7 @@ async function elevate() {
       data: { plan: 'PREMIUM' }
     })
     console.log('CONTA ELEVADA: Bruno agora é PREMIUM/ADMIN!', user.id)
-  } catch (err) {
+  } catch (err: any) {
     console.error('ERRO: Usuário não encontrado. Bruno, certifique-se de que já criou a conta novamente após o reset.', err.message)
   } finally {
     await prisma.$disconnect()

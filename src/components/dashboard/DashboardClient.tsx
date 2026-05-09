@@ -586,7 +586,7 @@ export function DashboardClient({ data, userName, userId, userEmail, isPremium =
                   contentStyle={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
                   itemStyle={{ color: '#ccff00', fontWeight: 800 }}
                   labelStyle={{ display: 'none' }}
-                  formatter={(val: number) => formatCurrency(val)}
+                  formatter={(val: any) => formatCurrency(Number(val))}
                 />
                 <Line 
                   type="monotone" 

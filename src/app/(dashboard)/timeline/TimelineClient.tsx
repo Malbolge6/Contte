@@ -336,13 +336,13 @@ export function TimelineClient({ initialEvents = [], hourlyRate = 0 }: TimelineC
         )}
       </div>
       {selectedEvent && (
-        <DetailsModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+        <DetailsModal event={selectedEvent} hourlyRate={hourlyRate} onClose={() => setSelectedEvent(null)} />
       )}
     </div>
   )
 }
 
-function DetailsModal({ event, onClose }: { event: TimelineEvent; onClose: () => void }) {
+function DetailsModal({ event, hourlyRate, onClose }: { event: TimelineEvent; hourlyRate: number; onClose: () => void }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Filter, Trash2, Loader2, ArrowUpRight, ArrowDownRight, MoreVertical, FileText, Printer } from 'lucide-react'
-import { formatCurrency, formatDate, CATEGORIES } from '@/lib/helpers'
+import { Plus, Trash2, Loader2, Printer } from 'lucide-react'
+import { formatCurrency, CATEGORIES } from '@/lib/helpers'
 import { deleteTransaction } from '@/actions/transactions'
 import { AddTransactionModal } from './AddTransactionModal'
 
@@ -28,6 +28,7 @@ interface TransactionsClientProps {
 export function TransactionsClient({ transactions }: TransactionsClientProps) {
   const router = useRouter()
   const [showAdd, setShowAdd] = useState(false)
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null)
   const [showClaudiaBio, setShowClaudiaBio] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -75,7 +76,7 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
   }, {})
 
   return (
-    <div className="fade-in" style={{ paddingTop: '80px', paddingBottom: '100px' }}>
+    <div className="fade-in" style={{ paddingTop: '80px', paddingBottom: '160px' }}>
       <div style={{ marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0 8px' }}>
         <div>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
@@ -184,50 +185,59 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
                       onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                       onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                     >
-                      <div style={{
-                        width: '44px', height: '44px', borderRadius: '50%',
-                        background: tx.type === 'INCOME' ? 'rgba(204, 255, 0, 0.1)' : 'rgba(255,255,255,0.05)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
-                        flexShrink: 0
-                      }}>
-                        {cat?.icon || (tx.type === 'INCOME' ? '💰' : '💸')}
-                      </div>
-                      
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {tx.description}
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                          <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{cat?.label}</span>
-                          {tx.totalInstallments && tx.totalInstallments > 1 && (
-                            <>
-                              <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#3f3f46' }} />
-                              <span style={{ fontSize: '12px', color: '#a1a1aa' }}>
-                                {tx.installments}/{tx.totalInstallments}
-                              </span>
-                            </>
-                          )}
+                      <div 
+                        onClick={() => setSelectedTx(tx)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}
+                      >
+                        <div style={{
+                          width: '44px', height: '44px', borderRadius: '50%',
+                          background: tx.type === 'INCOME' ? 'rgba(204, 255, 0, 0.1)' : 'rgba(255,255,255,0.05)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+                          flexShrink: 0
+                        }}>
+                          {cat?.icon || (tx.type === 'INCOME' ? '💰' : '💸')}
+                        </div>
+                        
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: '15px', fontWeight: 600, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {tx.description}
+                          </p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                            <span style={{ fontSize: '12px', color: '#a1a1aa' }}>{cat?.label}</span>
+                            {tx.totalInstallments && tx.totalInstallments > 1 && (
+                              <>
+                                <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#3f3f46' }} />
+                                <span style={{ fontSize: '12px', color: '#a1a1aa' }}>
+                                  {tx.installments}/{tx.totalInstallments}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
+                          <p style={{
+                            fontSize: '16px', fontWeight: 800,
+                            color: tx.type === 'INCOME' ? '#ccff00' : '#fff',
+                          }}>
+                            {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
+                          </p>
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px', flexShrink: 0 }}>
-                        <p style={{
-                          fontSize: '16px', fontWeight: 800,
-                          color: tx.type === 'INCOME' ? '#ccff00' : '#fff',
-                        }}>
-                          {tx.type === 'INCOME' ? '+' : '-'}{formatCurrency(tx.amount)}
-                        </p>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleDelete(tx.id); }}
-                          disabled={deletingId === tx.id}
-                          style={{
-                            background: 'transparent', border: 'none', cursor: 'pointer', color: '#71717a',
-                            display: 'flex', alignItems: 'center',
-                          }}
-                        >
-                          {deletingId === tx.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        </button>
-                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(tx.id); }}
+                        disabled={deletingId === tx.id}
+                        style={{
+                          background: 'transparent', border: 'none', cursor: 'pointer', color: '#71717a',
+                          display: 'flex', alignItems: 'center', padding: '8px', borderRadius: '8px',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#f43f5e')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#71717a')}
+                      >
+                        {deletingId === tx.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                      </button>
                     </div>
                   )
                 })}
@@ -237,12 +247,39 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
         </div>
       )}
 
-
-
       {showAdd && <AddTransactionModal onClose={() => setShowAdd(false)} />}
+      {selectedTx && <AddTransactionModal initialData={selectedTx} onClose={() => setSelectedTx(null)} />}
+
+      {/* FAB Add Button */}
+      <button
+        onClick={() => setShowAdd(true)}
+        style={{
+          position: 'fixed',
+          bottom: '110px',
+          right: '20px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: '#ccff00',
+          color: '#000',
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 8px 24px rgba(204,255,0,0.4)',
+          zIndex: 40,
+          transition: 'all 0.2s',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+        title="Nova Transação"
+      >
+        <Plus size={28} strokeWidth={2.5} />
+      </button>
 
       {/* --- Printable PDF Area (Hidden from UI) --- */}
-      <div id="printable-statement" className="print-only" style={{ 
+      <div id="printable-statement" style={{ 
         display: 'none', 
         padding: '40px', 
         background: '#fff', 
@@ -303,17 +340,17 @@ export function TransactionsClient({ transactions }: TransactionsClientProps) {
         </div>
       </div>
 
-      <style jsx global>{`
+      <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #printable-statement, #printable-statement * { visibility: visible; }
+          body * { visibility: hidden !important; }
+          #printable-statement, #printable-statement * { visibility: visible !important; }
           #printable-statement { 
-            visibility: visible; 
             display: block !important; 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%;
+            position: fixed !important; 
+            left: 0 !important; 
+            top: 0 !important; 
+            width: 100% !important;
+            z-index: 9999 !important;
           }
           .no-print { display: none !important; }
         }

@@ -76,3 +76,23 @@ export async function deleteSubscription(name: string) {
     throw new Error('Failed to delete subscription')
   }
 }
+
+export async function cancelSubscription() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) throw new Error('Unauthorized')
+
+  try {
+    // In a real app, this would call Stripe to cancel. 
+    // Here we just mark the user as basic in our DB for demonstration.
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { plan: 'FREE' }
+    })
+    revalidatePath('/dashboard')
+    revalidatePath('/configuracoes')
+    return { success: true }
+  } catch (error) {
+    console.error('Error canceling subscription:', error)
+    return { success: false, error: 'Erro ao cancelar assinatura' }
+  }
+}

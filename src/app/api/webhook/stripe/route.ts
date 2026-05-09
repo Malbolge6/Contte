@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed':
         if (session.subscription && session.customer) {
-          const sub = await stripe.subscriptions.retrieve(session.subscription as string)
+          const sub = (await stripe.subscriptions.retrieve(session.subscription as string)) as any
           await prisma.user.update({
             where: { stripeCustomerId: session.customer as string },
             data: {
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
       case 'invoice.payment_succeeded':
         if (session.subscription) {
-          const sub = await stripe.subscriptions.retrieve(session.subscription as string)
+          const sub = (await stripe.subscriptions.retrieve(session.subscription as string)) as any
           await prisma.user.update({
             where: { stripeSubscriptionId: sub.id },
             data: {
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
       case 'customer.subscription.deleted':
       case 'customer.subscription.updated':
-        const updatedSub = await stripe.subscriptions.retrieve(subscription.id)
+        const updatedSub = (await stripe.subscriptions.retrieve(subscription.id)) as any
         await prisma.user.update({
           where: { stripeSubscriptionId: subscription.id },
           data: {
