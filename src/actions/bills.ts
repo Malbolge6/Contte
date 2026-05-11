@@ -125,7 +125,7 @@ export async function markBillAsPaid(id: string, walletId?: string) {
       },
     })
 
-    // 2. Create Transaction
+    // 2. Create Transaction (linked to bill, walletId NOT in schema — handled separately)
     await tx.transaction.create({
       data: {
         amount: bill.amount,
@@ -133,10 +133,9 @@ export async function markBillAsPaid(id: string, walletId?: string) {
         category: bill.category || 'outros',
         description: `Pagamento: ${bill.name}`,
         date: new Date(),
-        paymentMethod: bill.pixKey ? 'pix' : bill.barcode ? 'boleto' : undefined,
+        paymentMethod: walletId ? 'carteira' : (bill.pixKey ? 'pix' : bill.barcode ? 'boleto' : undefined),
         userId: session.user.id,
         billId: id,
-        walletId: walletId || undefined,
       },
     })
 

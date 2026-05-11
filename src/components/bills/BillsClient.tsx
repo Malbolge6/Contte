@@ -365,33 +365,45 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
         </div>
       )}
 
-      {/* Wallet Selector Modal - rendered via portal to avoid z-index conflicts */}
+      {/* Wallet Selector Modal */}
       {showWalletSelector && mounted && createPortal(
         <div
-          onClick={() => setShowWalletSelector(null)}
+          onClick={() => { if (!markingPaid) setShowWalletSelector(null) }}
           style={{
             position: 'fixed', inset: 0, zIndex: 99999,
             background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-            padding: '0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: '100%', maxWidth: '480px',
+              width: '100%', maxWidth: '420px',
+              maxHeight: '80vh',
+              overflowY: 'auto',
               background: '#0f0f0f',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '28px 28px 0 0',
-              padding: '12px 24px 40px',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '28px',
+              padding: '28px 24px 28px',
             }}
           >
-            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '0 auto 20px' }} />
-            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>De onde sai o dinheiro?</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff' }}>De onde sai o dinheiro?</h3>
+              <button
+                onClick={() => setShowWalletSelector(null)}
+                disabled={!!markingPaid}
+                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#71717a', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={16} />
+              </button>
+            </div>
             <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '20px' }}>Selecione a carteira para descontar o valor automaticamente.</p>
 
             {wallets.length === 0 ? (
-              <p style={{ color: '#71717a', textAlign: 'center', padding: '16px' }}>Nenhuma carteira cadastrada. Adicione em Carteiras.</p>
+              <p style={{ color: '#71717a', textAlign: 'center', padding: '16px 0' }}>
+                Nenhuma carteira cadastrada.<br />Adicione em <strong style={{ color: '#ccff00' }}>Carteiras</strong>.
+              </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
                 {wallets.map(w => {
@@ -400,14 +412,14 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
                     <button
                       key={w.id}
                       onClick={() => handleMarkPaid(showWalletSelector, w.id)}
-                      disabled={markingPaid === showWalletSelector}
+                      disabled={!!markingPaid}
                       style={{
-                        width: '100%', padding: '16px 20px', borderRadius: '18px',
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        width: '100%', padding: '14px 18px', borderRadius: '18px',
+                        background: isLoading ? 'rgba(204,255,0,0.06)' : 'rgba(255,255,255,0.04)',
+                        border: `1px solid ${isLoading ? 'rgba(204,255,0,0.3)' : 'rgba(255,255,255,0.08)'}`,
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                        cursor: markingPaid ? 'default' : 'pointer',
-                        opacity: markingPaid && !isLoading ? 0.5 : 1,
+                        cursor: markingPaid ? 'not-allowed' : 'pointer',
+                        opacity: markingPaid && !isLoading ? 0.45 : 1,
                         transition: 'all 0.2s',
                       }}
                     >
@@ -420,8 +432,10 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
                           {w.type === 'bank' ? '🏦' : w.type === 'digital' ? '📱' : w.type === 'cash' ? '💵' : '💳'}
                         </div>
                         <div style={{ textAlign: 'left' }}>
-                          <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>{w.name}</p>
-                          <p style={{ color: '#71717a', fontSize: '12px' }}>Saldo: {fmt(w.balance)}</p>
+                          <p style={{ color: '#fff', fontWeight: 700, fontSize: '14px' }}>{w.name}</p>
+                          <p style={{ color: w.balance < 0 ? '#f87171' : '#71717a', fontSize: '12px' }}>
+                            Saldo: <strong>{fmt(w.balance)}</strong>
+                          </p>
                         </div>
                       </div>
                       {isLoading
@@ -434,17 +448,18 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
               </div>
             )}
 
-            {/* Pay without wallet deduction */}
             <button
               onClick={() => handleMarkPaid(showWalletSelector!)}
-              disabled={markingPaid === showWalletSelector}
+              disabled={!!markingPaid}
               style={{
                 width: '100%', padding: '14px', borderRadius: '16px',
                 background: 'transparent',
                 border: '1px dashed rgba(255,255,255,0.15)',
-                color: '#71717a', fontSize: '14px', fontWeight: 600,
-                cursor: markingPaid ? 'default' : 'pointer',
+                color: markingPaid === showWalletSelector && payingWalletId === null ? '#ccff00' : '#71717a',
+                fontSize: '13px', fontWeight: 600,
+                cursor: markingPaid ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                transition: 'all 0.2s',
               }}
             >
               {markingPaid === showWalletSelector && payingWalletId === null
