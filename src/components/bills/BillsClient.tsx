@@ -11,6 +11,8 @@ import { markBillAsPaid, unmarkBillAsPaid, deleteBill, createBill, updateBill } 
 import { getWallets } from '@/actions/wallets'
 import { createPortal } from 'react-dom'
 
+const fmt = (v: number) => formatCurrency(v)
+
 interface Bill {
   id: string
   name: string
@@ -175,6 +177,7 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
   const [showModal, setShowModal] = useState(false)
   const [editingBill, setEditingBill] = useState<Bill | null>(null)
   const [markingPaid, setMarkingPaid] = useState<string | null>(null)
+  const [payingWalletId, setPayingWalletId] = useState<string | null>(null)
   const [wallets, setWallets] = useState<any[]>([])
   const [showWalletSelector, setShowWalletSelector] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -188,9 +191,10 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
   if (!mounted) return null
 
   const bills = Array.isArray(rawBills) ? rawBills.filter(b => b && typeof b === 'object') : []
+  // Separate clearly: recurrent bills always go to RECURRENT tab; regular pending go to PENDING
   const pendingBills = bills.filter(b => b.status === 'PENDING' && !b.recurrent)
   const paidBills = bills.filter(b => b.status === 'PAID')
-  const recurrentBills = bills.filter(b => b.recurrent)
+  const recurrentBills = bills.filter(b => b.recurrent && b.status === 'PENDING')
 
   const filtered = activeTab === 'PENDING' ? pendingBills
     : activeTab === 'PAID' ? paidBills
@@ -201,11 +205,17 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
 
   async function handleMarkPaid(id: string, walletId?: string) {
     setMarkingPaid(id)
+    setPayingWalletId(walletId || null)
     try {
       await markBillAsPaid(id, walletId)
       router.refresh()
       setShowWalletSelector(null)
-    } finally { setMarkingPaid(null) }
+    } catch (err: any) {
+      alert('Erro ao pagar conta: ' + (err.message || 'Tente novamente'))
+    } finally {
+      setMarkingPaid(null)
+      setPayingWalletId(null)
+    }
   }
 
   async function handleUnmarkPaid(id: string) {
@@ -355,26 +365,94 @@ export function BillsClient({ bills: rawBills }: BillsClientProps) {
         </div>
       )}
 
-      {/* Wallet Selector Modal */}
-      {showWalletSelector && createPortal(
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} onClick={() => setShowWalletSelector(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '28px', padding: '24px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', marginBottom: '8px' }}>De onde sairá o dinheiro?</h3>
-            <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '24px' }}>Selecione a carteira para realizar o pagamento.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {wallets.map(w => (
-                <button key={w.id} onClick={() => handleMarkPaid(showWalletSelector, w.id)} style={{ padding: '16px', borderRadius: '18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${w.color || '#ccff00'}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>{w.type === 'bank' ? '🏦' : '📱'}</div>
-                    <span style={{ color: '#fff', fontWeight: 600 }}>{w.name}</span>
-                  </div>
-                  <span style={{ color: '#ccff00', fontWeight: 800 }}>{formatCurrency(w.balance)}</span>
-                </button>
-              ))}
-              <button onClick={() => handleMarkPaid(showWalletSelector)} style={{ padding: '16px', borderRadius: '18px', background: 'transparent', border: '1px dashed rgba(255,255,255,0.1)', color: '#71717a', fontSize: '13px', cursor: 'pointer' }}>
-                Pagar sem descontar de carteira
-              </button>
-            </div>
+      {/* Wallet Selector Modal - rendered via portal to avoid z-index conflicts */}
+      {showWalletSelector && mounted && createPortal(
+        <div
+          onClick={() => setShowWalletSelector(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 99999,
+            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            padding: '0',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '480px',
+              background: '#0f0f0f',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '28px 28px 0 0',
+              padding: '12px 24px 40px',
+            }}
+          >
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.2)', borderRadius: '2px', margin: '0 auto 20px' }} />
+            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', marginBottom: '4px' }}>De onde sai o dinheiro?</h3>
+            <p style={{ fontSize: '13px', color: '#71717a', marginBottom: '20px' }}>Selecione a carteira para descontar o valor automaticamente.</p>
+
+            {wallets.length === 0 ? (
+              <p style={{ color: '#71717a', textAlign: 'center', padding: '16px' }}>Nenhuma carteira cadastrada. Adicione em Carteiras.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px' }}>
+                {wallets.map(w => {
+                  const isLoading = markingPaid === showWalletSelector && payingWalletId === w.id
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => handleMarkPaid(showWalletSelector, w.id)}
+                      disabled={markingPaid === showWalletSelector}
+                      style={{
+                        width: '100%', padding: '16px 20px', borderRadius: '18px',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        cursor: markingPaid ? 'default' : 'pointer',
+                        opacity: markingPaid && !isLoading ? 0.5 : 1,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '40px', height: '40px', borderRadius: '12px',
+                          background: `${w.color || '#ccff00'}20`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                        }}>
+                          {w.type === 'bank' ? '🏦' : w.type === 'digital' ? '📱' : w.type === 'cash' ? '💵' : '💳'}
+                        </div>
+                        <div style={{ textAlign: 'left' }}>
+                          <p style={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>{w.name}</p>
+                          <p style={{ color: '#71717a', fontSize: '12px' }}>Saldo: {fmt(w.balance)}</p>
+                        </div>
+                      </div>
+                      {isLoading
+                        ? <Loader2 size={20} className="animate-spin" color="#ccff00" />
+                        : <Check size={18} color="#ccff00" />
+                      }
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Pay without wallet deduction */}
+            <button
+              onClick={() => handleMarkPaid(showWalletSelector!)}
+              disabled={markingPaid === showWalletSelector}
+              style={{
+                width: '100%', padding: '14px', borderRadius: '16px',
+                background: 'transparent',
+                border: '1px dashed rgba(255,255,255,0.15)',
+                color: '#71717a', fontSize: '14px', fontWeight: 600,
+                cursor: markingPaid ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
+            >
+              {markingPaid === showWalletSelector && payingWalletId === null
+                ? <Loader2 size={16} className="animate-spin" />
+                : <CheckCircle size={16} />
+              }
+              Marcar como pago (sem descontar saldo)
+            </button>
           </div>
         </div>,
         document.body
